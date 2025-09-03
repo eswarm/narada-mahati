@@ -1,15 +1,16 @@
 plugins {
-    id 'com.android.application'
-    id 'org.jetbrains.kotlin.android'
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.compose)
 }
 
 android {
-    compileSdk 35
+    compileSdk 36
 
     defaultConfig {
         applicationId "in.eswarm.narada"
         minSdk 23
-        targetSdk 35
+        targetSdk 36
         versionCode 2
         versionName "1.1"
 
@@ -37,7 +38,7 @@ android {
         compose true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion compose_compiler_version
+        kotlinCompilerExtensionVersion libs.versions.composeCompiler.get()
     }
     packagingOptions {
         resources {
@@ -51,24 +52,24 @@ android {
 }
 
 dependencies {
-    implementation 'androidx.core:core-ktx:1.15.0'
-    implementation "androidx.compose.ui:ui:$compose_version"
-    implementation "androidx.compose.material:material:$compose_version"
-    implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
-    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.8.7'
-    implementation 'androidx.activity:activity-compose:1.10.1'
-    implementation "androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7"
-    testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
-    androidTestImplementation "androidx.compose.ui:ui-test-junit4:$compose_version"
-    debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
+    implementation libs.androidx.core.ktx
+    implementation libs.androidx.compose.ui
+    implementation libs.androidx.compose.material
+    implementation libs.androidx.compose.ui.tooling.preview
+    implementation libs.androidx.lifecycle.runtime.ktx
+    implementation libs.androidx.activity.compose
+    implementation libs.androidx.lifecycle.viewmodel.compose
+    testImplementation libs.junit
+    androidTestImplementation libs.androidx.test.ext.junit
+    androidTestImplementation libs.androidx.test.espresso.core
+    androidTestImplementation libs.androidx.compose.ui.test.junit4
+    debugImplementation libs.androidx.compose.ui.tooling
 
-    implementation "androidx.navigation:navigation-compose:$nav_version"
-    implementation "androidx.datastore:datastore-preferences:1.1.3"
+    implementation libs.androidx.navigation.compose
+    implementation libs.androidx.datastore.preferences
 
-    implementation('com.github.moquette-io:moquette:0.18.0') {
+    implementation(libs.moquette.broker) {
         exclude group: "org.slf4j", module: "slf4j-log4j12"
     }
-    implementation('com.google.accompanist:accompanist-permissions:0.34.0')
+    implementation(libs.accompanist.permissions)
 }
