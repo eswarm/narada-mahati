@@ -90,3 +90,4 @@ google-services.json
 # Android Profiling
 *.hprof
 /upload_certificate.pem
+/app/release/*
