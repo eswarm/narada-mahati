@@ -43,12 +43,16 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx.mahati) // Using the specific alias for mahati module
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui.mahati)
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview) // This was in app, adding it here if used, as it's common
     implementation(libs.androidx.compose.material3)
+    implementation(libs.hivemq.mqtt.client)
+
     testImplementation(libs.junit)
+
     androidTestImplementation(libs.androidx.test.ext.junit.mahati)
     androidTestImplementation(libs.androidx.test.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
