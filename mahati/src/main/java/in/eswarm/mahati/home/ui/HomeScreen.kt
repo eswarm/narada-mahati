@@ -29,10 +29,10 @@ import `in`.eswarm.mahati.mqtt.common.MqttConnectionParams // Required for Previ
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    viewModel: HomeViewModel = viewModel(),
     onNavigateToNewConnection: () -> Unit,
-    onNavigateToConnectionDetails: (profileId: String) -> Unit
-) {
+    onNavigateToConnectionDetails: (profileId: String) -> Unit,
+    viewModel: HomeViewModel = viewModel(),
+    ) {
     val profiles by viewModel.profiles.collectAsState()
     val sideEffect by viewModel.sideEffects.collectAsState()
 
