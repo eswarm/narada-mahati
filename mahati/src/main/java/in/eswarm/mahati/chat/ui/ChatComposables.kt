@@ -58,7 +58,7 @@ fun ChatScreen(
             }
         }
     }
-    
+
     LaunchedEffect(uiState.error) {
         uiState.error?.let {
             snackbarHostState.showSnackbar(message = it, duration = SnackbarDuration.Short)
@@ -87,11 +87,21 @@ fun ChatScreen(
         }
     ) { innerPadding ->
         if (!uiState.isConnected && uiState.messages.isEmpty()) {
-            Box(modifier = Modifier.fillMaxSize().padding(innerPadding), contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+                contentAlignment = Alignment.Center
+            ) {
                 Text("Connecting to chat...", style = MaterialTheme.typography.titleMedium)
             }
         } else if (uiState.messages.isEmpty()) {
-             Box(modifier = Modifier.fillMaxSize().padding(innerPadding), contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+                contentAlignment = Alignment.Center
+            ) {
                 Text("No messages yet. Send one!", style = MaterialTheme.typography.titleMedium)
             }
         } else {
@@ -121,8 +131,10 @@ fun ChatScreen(
 // Message Bubble Composable
 @Composable
 fun MessageBubble(message: ChatMessage) {
-    val bubbleColor = if (message.isSentByUser) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.secondaryContainer
-    val textColor = if (message.isSentByUser) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSecondaryContainer
+    val bubbleColor =
+        if (message.isSentByUser) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.secondaryContainer
+    val textColor =
+        if (message.isSentByUser) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSecondaryContainer
     val alignment = if (message.isSentByUser) Alignment.CenterEnd else Alignment.CenterStart
     val bubbleShape = if (message.isSentByUser) {
         RoundedCornerShape(topStart = 16.dp, topEnd = 4.dp, bottomStart = 16.dp, bottomEnd = 16.dp)
@@ -141,7 +153,7 @@ fun MessageBubble(message: ChatMessage) {
                 .padding(horizontal = 12.dp, vertical = 8.dp)
         ) {
             if (!message.isSentByUser) { // Show sender ID for received messages if desired (e.g. group chat)
-                 Text(
+                Text(
                     text = message.senderId, // Or a display name if available
                     fontSize = 12.sp,
                     color = textColor.copy(alpha = 0.7f),
@@ -181,10 +193,12 @@ fun MessageStatusIcon(status: MessageStatus) {
             icon = Icons.Default.DateRange
             tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
         }
+
         MessageStatus.SENT -> {
             icon = Icons.Default.Check // Single check for sent to broker
             tint = MaterialTheme.colorScheme.primary // Or a specific "sent" color
         }
+
         MessageStatus.FAILED -> {
             icon = Icons.Default.Close
             tint = MaterialTheme.colorScheme.error
@@ -223,11 +237,15 @@ fun ChatInputBar(
                 onValueChange = onTextChanged,
                 modifier = Modifier.weight(1f),
                 placeholder = { Text(if (isConnected) "Type a message..." else "Connecting...") },
-                colors = TextFieldDefaults.textFieldColors(
-                    containerColor = Color.Transparent, // Makes it look more like WhatsApp input
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
+                    disabledContainerColor = Color.Transparent,
+                    errorContainerColor = Color.Transparent,
+                    errorIndicatorColor = Color.Transparent,
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
-                    disabledIndicatorColor = Color.Transparent
+                    disabledIndicatorColor = Color.Transparent,
                 ),
                 keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Send),
                 keyboardActions = KeyboardActions(onSend = {
@@ -268,8 +286,8 @@ fun ChatInputBar(
 fun ChatScreenPreview_Empty() {
     val previewMqttManager = PreviewMqttManager() // Assuming PreviewMqttManager is accessible
     val viewModel = ChatViewModel(previewMqttManager, "preview/chat", "user123")
-     (viewModel.uiState as MutableStateFlow).value =
-         ChatUiState(isConnected = true, messages = emptyList())
+    (viewModel.uiState as MutableStateFlow).value =
+        ChatUiState(isConnected = true, messages = emptyList())
     MaterialTheme {
         ChatScreen(viewModel = viewModel)
     }
@@ -283,12 +301,34 @@ fun ChatScreenPreview_WithMessages() {
     val viewModel = ChatViewModel(previewMqttManager, "preview/chat", "user123")
 
     val previewMessages = listOf(
-        ChatMessage(text = "Hello there!", senderId = "userOther", isSentByUser = false, timestamp = Date(System.currentTimeMillis() - 200000)),
-        ChatMessage(text = "Hi! How are you?", senderId = "user123", isSentByUser = true, status = MessageStatus.SENT, timestamp = Date(System.currentTimeMillis() - 100000)),
-        ChatMessage(text = "Doing great! This chat UI looks neat.", senderId = "userOther", isSentByUser = false, timestamp = Date(System.currentTimeMillis() - 50000)),
-        ChatMessage(text = "Thanks! Trying to make it WhatsApp-like.", senderId = "user123", isSentByUser = true, status = MessageStatus.SENDING)
+        ChatMessage(
+            text = "Hello there!",
+            senderId = "userOther",
+            isSentByUser = false,
+            timestamp = Date(System.currentTimeMillis() - 200000)
+        ),
+        ChatMessage(
+            text = "Hi! How are you?",
+            senderId = "user123",
+            isSentByUser = true,
+            status = MessageStatus.SENT,
+            timestamp = Date(System.currentTimeMillis() - 100000)
+        ),
+        ChatMessage(
+            text = "Doing great! This chat UI looks neat.",
+            senderId = "userOther",
+            isSentByUser = false,
+            timestamp = Date(System.currentTimeMillis() - 50000)
+        ),
+        ChatMessage(
+            text = "Thanks! Trying to make it WhatsApp-like.",
+            senderId = "user123",
+            isSentByUser = true,
+            status = MessageStatus.SENDING
+        )
     )
-    (viewModel.uiState as MutableStateFlow).value = ChatUiState(isConnected = true, messages = previewMessages)
+    (viewModel.uiState as MutableStateFlow).value =
+        ChatUiState(isConnected = true, messages = previewMessages)
 
     MaterialTheme {
         ChatScreen(viewModel = viewModel)
@@ -301,7 +341,8 @@ fun ChatScreenPreview_WithMessages() {
 fun ChatScreenPreview_NotConnected() {
     val previewMqttManager = PreviewMqttManager()
     val viewModel = ChatViewModel(previewMqttManager, "preview/chat", "user123")
-     (viewModel.uiState as MutableStateFlow).value = ChatUiState(isConnected = false, messages = emptyList())
+    (viewModel.uiState as MutableStateFlow).value =
+        ChatUiState(isConnected = false, messages = emptyList())
     MaterialTheme {
         ChatScreen(viewModel = viewModel)
     }
