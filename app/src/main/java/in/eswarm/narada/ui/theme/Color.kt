@@ -34,8 +34,3 @@ val surfaceVariantDark = Color(0xFF212946) // Slightly different shade from wall
 val onSurfaceVariantDark = Color(0xFFB0BEC5) // A light grey for onSurfaceVariant
 val outlineDark = Color(0xFF78909C) // A neutral outline color
 
-// Original M2 colors (can be kept if used elsewhere or removed if truly unused)
-val Purple200 = Color(0xFFBB86FC)
-val Purple500 = Color(0xFF6200EE)
-val Purple700 = Color(0xFF3700B3)
-val Teal200 = Color(0xFF03DAC5)
