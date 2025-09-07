@@ -9,7 +9,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.NaradaMQTTBroker">
         <activity
-            android:name=".Home"
+            android:name=".Main"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.NaradaMQTTBroker">

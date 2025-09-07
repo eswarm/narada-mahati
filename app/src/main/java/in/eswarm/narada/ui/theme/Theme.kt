@@ -12,7 +12,7 @@ import androidx.core.view.WindowCompat
 
 // Define the Material 3 Dark Color Scheme using the colors from Color.kt
 private val DarkColorScheme = darkColorScheme(
-    primary = жителиConsole,
+    primary = console,
     onPrimary = onPrimaryDark,
     primaryContainer = primaryContainerDark,
     onPrimaryContainer = onPrimaryContainerDark,

@@ -3,7 +3,7 @@ package `in`.eswarm.narada.ui.theme
 import androidx.compose.ui.graphics.Color
 
 // Your existing custom colors, now mapped to M3 roles for Dark Theme
-val жителиConsole = Color(0xFF6EBF8B) // Used as M3 'primary'
+val console = Color(0xFF6EBF8B) // Used as M3 'primary'
 val networkSecondary = Color(0xFFD82148) // Used as M3 'secondary'
 val wallpaperBackground = Color(0xFF151D3B) // Used as M3 'background' and 'surface'
 val cardColor = Color(0xFFDADBBD) // Used as M3 'tertiary'

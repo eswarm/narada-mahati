@@ -54,16 +54,18 @@ dependencies {
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui.mahati)
     implementation(libs.androidx.compose.ui.graphics)
-    implementation(libs.androidx.compose.ui.tooling.preview) // This was in app, adding it here if used, as it's common
+    implementation(libs.androidx.compose.ui.tooling.preview) 
     implementation(libs.androidx.compose.material3)
     implementation(libs.hivemq.mqtt.client)
+
+    implementation(libs.androidx.navigation.compose) // Added Compose Navigation
 
     testImplementation(libs.junit)
 
     androidTestImplementation(libs.androidx.test.ext.junit.mahati)
     androidTestImplementation(libs.androidx.test.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.compose.ui.test.junit4) // This was in app, uses compose version
-    debugImplementation(libs.androidx.compose.ui.tooling) // This was in app, uses compose version
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4) 
+    debugImplementation(libs.androidx.compose.ui.tooling) 
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 }
