@@ -1,15 +1,14 @@
-package `in`.eswarm.mahati.chat.viewmodel
+package `in`.eswarm.mahati.chat
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import `in`.eswarm.mahati.chat.model.ChatMessage
-import `in`.eswarm.mahati.chat.model.MessageStatus
 import `in`.eswarm.mahati.mqtt.common.MqttClientState
 import `in`.eswarm.mahati.mqtt.core.MqttManager
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.Date
+import java.util.UUID
 
 // A simple structure for messages on the wire.
 // In a real app, you'd use a robust serialization format like JSON (e.g., with kotlinx.serialization).
@@ -95,7 +94,7 @@ class ChatViewModel(
         val inputText = _uiState.value.currentInput.trim()
         if (inputText.isEmpty() || !_uiState.value.isConnected) return
 
-        val tempMessageId = java.util.UUID.randomUUID().toString()
+        val tempMessageId = UUID.randomUUID().toString()
         val chatMessage = ChatMessage(
             id = tempMessageId,
             text = inputText,

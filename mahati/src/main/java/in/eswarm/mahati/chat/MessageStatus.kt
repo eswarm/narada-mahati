@@ -1,4 +1,4 @@
-package `in`.eswarm.mahati.chat.model
+package `in`.eswarm.mahati.chat
 
 /**
  * Represents the status of a sent chat message.

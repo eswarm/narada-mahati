@@ -1,6 +1,6 @@
-package `in`.eswarm.mahati.home.model
+package `in`.eswarm.mahati.home
 
-import `in`.eswarm.mahati.mqtt.common.MqttConnectionParams // Using the actual MqttConnectionParams
+import `in`.eswarm.mahati.mqtt.common.MqttConnectionParams
 
 /**
  * Represents a saved MQTT connection profile for the UI.

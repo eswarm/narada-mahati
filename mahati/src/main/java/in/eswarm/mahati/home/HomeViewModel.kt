@@ -1,8 +1,7 @@
-package `in`.eswarm.mahati.home.viewmodel
+package `in`.eswarm.mahati.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import `in`.eswarm.mahati.home.model.MqttConnectionProfile
 import `in`.eswarm.mahati.mqtt.common.MqttConnectionParams // Ensure this import is correct
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

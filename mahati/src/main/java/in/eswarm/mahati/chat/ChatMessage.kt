@@ -1,4 +1,4 @@
-package `in`.eswarm.mahati.chat.model
+package `in`.eswarm.mahati.chat
 
 import java.util.UUID
 import java.util.Date

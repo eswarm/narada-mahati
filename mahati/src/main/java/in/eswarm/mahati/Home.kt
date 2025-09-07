@@ -7,7 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
-import `in`.eswarm.mahati.home.ui.HomeScreen
+import `in`.eswarm.mahati.home.HomeScreen
 import `in`.eswarm.mahati.ui.theme.NaradaMQTTBrokerTheme
 
 class Home : ComponentActivity() {

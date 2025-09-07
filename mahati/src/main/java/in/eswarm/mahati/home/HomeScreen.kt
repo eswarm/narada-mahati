@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalMaterial3Api::class)
 
-package `in`.eswarm.mahati.home.ui
+package `in`.eswarm.mahati.home
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.*
@@ -16,13 +16,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import `in`.eswarm.mahati.home.model.MqttConnectionProfile
-import `in`.eswarm.mahati.home.viewmodel.HomeSideEffect
-import `in`.eswarm.mahati.home.viewmodel.HomeUiEvent
-import `in`.eswarm.mahati.home.viewmodel.HomeViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import `in`.eswarm.mahati.mqtt.common.MqttConnectionParams // Required for Preview
 
@@ -150,7 +147,7 @@ fun EmptyConnectionsView(modifier: Modifier = Modifier) {
             text = "No MQTT connections yet.\nTap the '+' button to add one.",
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            textAlign = TextAlign.Center
         )
     }
 }

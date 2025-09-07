@@ -1,4 +1,4 @@
-package `in`.eswarm.mahati.chat.ui
+package `in`.eswarm.mahati.chat
 
 import android.annotation.SuppressLint
 import androidx.compose.animation.*
@@ -27,11 +27,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import `in`.eswarm.mahati.chat.model.ChatMessage
-import `in`.eswarm.mahati.chat.model.MessageStatus
-import `in`.eswarm.mahati.chat.viewmodel.ChatUiState
-import `in`.eswarm.mahati.chat.viewmodel.ChatViewModel
-import `in`.eswarm.mahati.topics.ui.PreviewMqttManager // Re-use preview MqttManager
+import `in`.eswarm.mahati.topics.PreviewMqttManager // Re-use preview MqttManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat

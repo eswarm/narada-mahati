@@ -1,4 +1,4 @@
-package `in`.eswarm.mahati.topics.ui
+package `in`.eswarm.mahati.topics
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.*
@@ -17,12 +17,10 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import `in`.eswarm.mahati.mqtt.common.MqttClientState
+import `in`.eswarm.mahati.mqtt.common.MqttConnectionParams
 import `in`.eswarm.mahati.mqtt.common.MqttMessage
 import `in`.eswarm.mahati.mqtt.core.MqttManager
-import `in`.eswarm.mahati.topics.model.SubscribedTopic
-import `in`.eswarm.mahati.topics.viewmodel.TopicSubscriptionEvent
-import `in`.eswarm.mahati.topics.viewmodel.TopicSubscriptionUiState
-import `in`.eswarm.mahati.topics.viewmodel.TopicSubscriptionViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.text.SimpleDateFormat
@@ -236,8 +234,8 @@ fun SubscribeToTopicDialog(
 
 // A mock MqttManager for previews
 class PreviewMqttManager : MqttManager {
-    override val connectionState: StateFlow<`in`.eswarm.mahati.mqtt.common.MqttClientState> =
-        MutableStateFlow(`in`.eswarm.mahati.mqtt.common.MqttClientState.Disconnected)
+    override val connectionState: StateFlow<MqttClientState> =
+        MutableStateFlow(MqttClientState.Disconnected)
 
     // override val receivedMessages: StateFlow<`in`.eswarm.mahati.mqtt.common.ReceivedMqttMessage?> = MutableStateFlow(null) // Adjusted for preview
     // Simplified receivedMessages for preview
@@ -247,7 +245,7 @@ class PreviewMqttManager : MqttManager {
         _previewReceivedMessages.asStateFlow() // Fixed to use SharedFlow's subtyping with StateFlow for preview simplicity
 
 
-    override fun connect(params: `in`.eswarm.mahati.mqtt.common.MqttConnectionParams) {}
+    override fun connect(params: MqttConnectionParams) {}
     override fun disconnect() {}
     override suspend fun publish(
         topic: String,

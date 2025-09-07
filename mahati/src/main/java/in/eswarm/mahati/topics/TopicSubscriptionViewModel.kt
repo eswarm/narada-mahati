@@ -1,9 +1,8 @@
-package `in`.eswarm.mahati.topics.viewmodel
+package `in`.eswarm.mahati.topics
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import `in`.eswarm.mahati.mqtt.core.MqttManager
-import `in`.eswarm.mahati.topics.model.SubscribedTopic
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

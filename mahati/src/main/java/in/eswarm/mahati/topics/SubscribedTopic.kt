@@ -1,4 +1,4 @@
-package `in`.eswarm.mahati.topics.model
+package `in`.eswarm.mahati.topics
 
 import java.util.Date
 
