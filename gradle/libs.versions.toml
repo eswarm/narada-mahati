@@ -1,9 +1,9 @@
 [versions]
 # Root build.gradle versions
-androidGradlePlugin = "8.9.3"
+androidGradlePlugin = "8.13.0"
 kotlin = "2.2.10" # org.jetbrains.kotlin.android and org.jetbrains.kotlin.plugin.compose
 composeCompiler = "1.5.13" # ext.compose_compiler_version
-compose = "1.6.7" # ext.compose_version
+# compose = "1.6.7" # This may become unused by app module if all compose deps use BOM
 navigation = "2.8.9" # ext.nav_version
 
 # app module versions
@@ -20,35 +20,37 @@ accompanistPermissions = "0.37.3"
 hivemqMqttClient = "1.3.9" # Added HiveMQ client
 
 # mahati module versions
-androidxComposeBom = "2025.08.01"
+androidxComposeBom = "2025.08.01" # BOM version
 androidxTestExtJunitMahati = "1.3.0" # mahati module (different from app)
 
 [libraries]
 # app module dependencies
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidxCoreKtx" }
-androidx-compose-ui = { group = "androidx.compose.ui", name = "ui", version.ref = "compose" }
-androidx-compose-material = { group = "androidx.compose.material", name = "material", version.ref = "compose" }
-androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview", version.ref = "compose" }
+androidx-compose-ui = { group = "androidx.compose.ui", name = "ui" } # Version from BOM
+# androidx-compose-material = { group = "androidx.compose.material", name = "material", version.ref = "compose" } # Removed M2
+androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" } # Version from BOM
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "androidxLifecycle" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "androidxActivityCompose" }
 androidx-lifecycle-viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "androidxLifecycleViewmodelCompose" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidxTestExtJunit" }
 androidx-test-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "androidxTestEspressoCore" }
-androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4", version.ref = "compose" }
-androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling", version.ref = "compose" }
+androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" } # Version from BOM
+androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" } # Version from BOM
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation" }
 androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "androidxDatastorePreferences" }
-moquette-broker = { group = "com.github.moquette-io", name = "moquette-broker", version.ref = "moquette" } # Renamed from 'moquette' for clarity
+moquette-broker = { group = "com.github.moquette-io", name = "moquette", version.ref = "moquette" } # Renamed from 'moquette' for clarity
 accompanist-permissions = { group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "accompanistPermissions" }
 hivemq-mqtt-client = { group = "com.hivemq", name = "hivemq-mqtt-client", version.ref = "hivemqMqttClient" } # Added HiveMQ client
 
+# Common Compose BOM and Material 3 (can be used by any module)
+androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "androidxComposeBom" }
+androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" } # Version from BOM
+
 # mahati module dependencies
 androidx-lifecycle-runtime-ktx-mahati = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "androidxLifecycleViewmodelCompose" } # Uses version from app's viewmodel-compose
-androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "androidxComposeBom" }
-androidx-compose-ui-mahati = { group = "androidx.compose.ui", name = "ui" } # No version, uses BOM
+androidx-compose-ui-mahati = { group = "androidx.compose.ui", name = "ui" } # No version, uses BOM (example, already defined as androidx-compose-ui)
 androidx-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" } # No version, uses BOM
-androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" } # No version, uses BOM
 androidx-test-ext-junit-mahati = { group = "androidx.test.ext", name = "junit", version.ref = "androidxTestExtJunitMahati" }
 androidx-compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" } # No version, uses BOM
 

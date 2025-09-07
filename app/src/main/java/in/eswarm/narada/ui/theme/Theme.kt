@@ -1,46 +1,64 @@
 package `in`.eswarm.narada.ui.theme
 
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.darkColors
+import android.app.Activity
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
+import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
 
-/*
-private val DarkColorPalette = darkColors(
-    primary = biscuitColor,
-    primaryVariant = biscuitColor,
-    secondary = redSecondary,
-    background = blueBackground,
-    onBackground = Color.White,
-    onSurface = Color.White,
-    onSecondary = Color.White,
-    onPrimary = Color.White
-)
-
- */
-
-private val ColorPalette = darkColors(
-    primary = greenConsole,
-    primaryVariant = greenConsole,
-    secondary = redSecondary,
-    background = blueBackground,
-    surface = blueBackground,
-    onBackground = Color.White,
-    onSurface = Color.White,
-    onSecondary = Color.White,
-    onPrimary = Color.White
+// Define the Material 3 Dark Color Scheme using the colors from Color.kt
+private val DarkColorScheme = darkColorScheme(
+    primary = жителиConsole,
+    onPrimary = onPrimaryDark,
+    primaryContainer = primaryContainerDark,
+    onPrimaryContainer = onPrimaryContainerDark,
+    secondary = networkSecondary,
+    onSecondary = onSecondaryDark,
+    secondaryContainer = secondaryContainerDark,
+    onSecondaryContainer = onSecondaryContainerDark,
+    tertiary = cardColor,
+    onTertiary = onTertiaryDark,
+    tertiaryContainer = tertiaryContainerDark,
+    onTertiaryContainer = onTertiaryContainerDark,
+    error = errorDark,
+    onError = onErrorDark,
+    errorContainer = errorContainerDark,
+    onErrorContainer = onErrorContainerDark,
+    background = wallpaperBackground,
+    onBackground = onBackgroundDark,
+    surface = wallpaperBackground, // Often same as background for dark themes
+    onSurface = onSurfaceDark,
+    surfaceVariant = surfaceVariantDark,
+    onSurfaceVariant = onSurfaceVariantDark,
+    outline = outlineDark
 )
 
 @Composable
 fun NaradaMQTTBrokerTheme(
+    darkTheme: Boolean = isSystemInDarkTheme(), // For now, we only have a dark theme defined
     content: @Composable () -> Unit
 ) {
-    val colors = ColorPalette
+    // We are only using the DarkColorScheme as per the original setup.
+    // If a light theme is needed in the future, a lightColorScheme would be defined and chosen here.
+    val colorScheme = DarkColorScheme
+
+    val view = LocalView.current
+    if (!view.isInEditMode) {
+        SideEffect {
+            val window = (view.context as Activity).window
+            window.statusBarColor = colorScheme.primary.toArgb() // Or background.toArgb()
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
+        }
+    }
 
     MaterialTheme(
-        colors = colors,
-        typography = Typography,
-        shapes = Shapes,
+        colorScheme = colorScheme,
+        typography = Typography, // Assuming Typography.kt is M3 compatible or will be updated
+        shapes = Shapes,       // Assuming Shapes.kt is M3 compatible or will be updated
         content = content
     )
 }

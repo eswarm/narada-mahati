@@ -1,4 +1,4 @@
-package in.eswarm.mahati.ui.connection
+package `in`.eswarm.mahati.connection
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions

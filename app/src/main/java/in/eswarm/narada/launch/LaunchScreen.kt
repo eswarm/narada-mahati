@@ -8,11 +8,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize // Added for Surface if needed, and for Scaffold content
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.shape.CornerSize
-import androidx.compose.material.*
+// import androidx.compose.foundation.shape.CornerSize // Not directly used in M3 BottomAppBar for cutout
+import androidx.compose.material3.* // Changed from material to material3
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.Composable
@@ -23,44 +24,63 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
-import androidx.navigation.NavController
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 
-@OptIn(ExperimentalPermissionsApi::class)
+@OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class) // Added ExperimentalMaterial3Api
 @Composable
 fun LaunchScreen(
     launchViewModel: LaunchViewModel, navController: NavController
 ) {
     val notifPermissionState = rememberPermissionState(Manifest.permission.POST_NOTIFICATIONS)
 
-    Scaffold(floatingActionButton = {
-        FloatingActionButton(onClick = { navController.navigate("settings") }) {
-            Icon(
-                Icons.Filled.Settings,
-                contentDescription = stringResource(id = R.string.settings),
+    Scaffold(
+        floatingActionButton = {
+            FloatingActionButton(onClick = { navController.navigate("settings") }) {
+                Icon(
+                    Icons.Filled.Settings,
+                    contentDescription = stringResource(id = R.string.settings),
+                )
+            }
+        },
+        // isFloatingActionButtonDocked = true, // Not in M3 Scaffold directly
+        bottomBar = {
+            BottomAppBar(
+                // cutoutShape = MaterialTheme.shapes.small.copy( // Not in M3 BottomAppBar
+                // CornerSize(percent = 50)
+                // ),
+                // In M3, you might place the FAB as actions item or handle layout manually
+                // For simplicity, we'll have a standard BottomAppBar for now.
+                // The FAB will overlay it due to Scaffold's default behavior if not handled.
+            ) {
+                // You can add actions here if needed, e.g.,
+                // IconButton(onClick = { /* doSomething() */ }) {
+                //     Icon(Icons.Filled.Menu, contentDescription = "Menu")
+                // }
+            }
+        },
+        topBar = {
+            TopAppBar( // M3 TopAppBar
+                title = { Text(stringResource(id = R.string.app_name)) },
+                modifier = Modifier.windowInsetsPadding(WindowInsets.statusBars)
+                // colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.primaryContainer) // Example M3 coloring
             )
         }
-    }, isFloatingActionButtonDocked = true, bottomBar = {
-        BottomAppBar(
-            cutoutShape = MaterialTheme.shapes.small.copy(
-                CornerSize(percent = 50)
-            )
-        ) {}
-    }, topBar = {
-        TopAppBar(
-            title = { Text(stringResource(id = R.string.app_name)) },
-            modifier = Modifier.windowInsetsPadding(WindowInsets.statusBars)
-        )
-    }) { innerPadding ->
+    ) { innerPadding ->
 
-        Column(modifier = Modifier.padding(innerPadding)) {
+        Column(
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize() // Good practice for scrollable content or to ensure background color fills
+                .padding(horizontal = 16.dp) // Added some horizontal padding for content
+        ) {
 
             Row(modifier = Modifier.padding(vertical = Dp(4f))) {
                 Text(
-                    "State", style = MaterialTheme.typography.subtitle1
+                    "State", style = MaterialTheme.typography.titleMedium // M2 subtitle1 -> M3 titleMedium
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Text(launchViewModel.serverStatus(), lineHeight = TextUnit(24f, TextUnitType.Sp))
@@ -69,7 +89,7 @@ fun LaunchScreen(
             Row(modifier = Modifier.padding(vertical = Dp(4f))) {
                 Text(
                     stringResource(id = R.string.ip_address),
-                    style = MaterialTheme.typography.subtitle1
+                    style = MaterialTheme.typography.titleMedium // M2 subtitle1 -> M3 titleMedium
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Text(launchViewModel.getLocalIpAddress() ?: "-")
@@ -78,7 +98,7 @@ fun LaunchScreen(
             Row(modifier = Modifier.padding(vertical = Dp(4f))) {
                 Text(
                     stringResource(id = R.string.clients_connected),
-                    style = MaterialTheme.typography.subtitle1
+                    style = MaterialTheme.typography.titleMedium // M2 subtitle1 -> M3 titleMedium
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Text(launchViewModel.clientsCount.value.toString())
@@ -100,18 +120,21 @@ fun LaunchScreen(
                 }
             }
 
-            Text(stringResource(id = R.string.logs), style = MaterialTheme.typography.h5)
+            Text(
+                stringResource(id = R.string.logs),
+                style = MaterialTheme.typography.headlineSmall, // M2 h5 -> M3 headlineSmall
+                modifier = Modifier.padding(bottom = 8.dp) // Added some space
+            )
 
             if (Build.VERSION.SDK_INT < TIRAMISU || notifPermissionState.status.isGranted) {
                 LogView(logs = launchViewModel.logs)
             } else {
                 Column(modifier = Modifier.padding(vertical = Dp(16f))) {
-
                     Text(text = stringResource(id = R.string.no_notification_permission_description))
-
-                    Button(modifier = Modifier
-                        .padding(all = 16.dp)
-                        .align(Alignment.CenterHorizontally),
+                    Button(
+                        modifier = Modifier
+                            .padding(all = 16.dp)
+                            .align(Alignment.CenterHorizontally),
                         onClick = { notifPermissionState.launchPermissionRequest() }) {
                         Text(text = stringResource(R.string.request_permission))
                     }

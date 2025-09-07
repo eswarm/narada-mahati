@@ -11,10 +11,11 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Divider
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
+import androidx.compose.material3.HorizontalDivider // Changed import
+import androidx.compose.material3.MaterialTheme   // Changed import
+import androidx.compose.material3.Scaffold        // Changed import
+import androidx.compose.material3.Text            // Changed import
+import androidx.compose.material3.ExperimentalMaterial3Api // Added for Scaffold if specific features are used
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
@@ -25,19 +26,20 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 
+@OptIn(ExperimentalMaterial3Api::class) // Added for M3 Scaffold
 @Composable
 fun SettingsScreen(
     settingsViewModel: SettingsViewModel
 ) {
     val scrollState = rememberScrollState()
 
-    Scaffold { innerPadding ->
+    Scaffold { innerPadding -> // M3 Scaffold
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
+                .padding(innerPadding) // This padding comes from the M3 Scaffold
                 .verticalScroll(scrollState)
-                .windowInsetsPadding(WindowInsets.statusBars)
+                .windowInsetsPadding(WindowInsets.statusBars) // Apply status bar padding inside the scrollable column
         ) {
 
             val showDialog = remember { mutableStateOf(false) }
@@ -73,9 +75,9 @@ fun SettingsScreen(
 
             val dialogAction = remember {
                 mutableStateOf(
-                    { _: String -> })
+                    { _: String -> }
+                )
             }
-
 
             val context = LocalContext.current
 
@@ -91,31 +93,34 @@ fun SettingsScreen(
             val pathString = stringResource(id = R.string.path)
 
             if (showDialog.value) {
+                // Assuming CustomDialog will be updated to M3 or is M3 compatible.
+                // If CustomDialog uses M2 components internally, it will need migration.
                 CustomDialog(
                     openDialogCustom = showDialog,
                     dialogTitle.value,
-                    dialogTitle.value,
+                    labelTitle.value, // Corrected parameter name from dialogTitle.value to labelTitle.value based on typical use
                     defValue.value,
                     isNumber.value,
                     onOkRequest = dialogAction.value
                 )
             }
 
-            Text(
+            Text( // M3 Text
                 text = stringResource(id = R.string.settings),
-                style = MaterialTheme.typography.h3,
+                style = MaterialTheme.typography.headlineLarge, // M2 h3 -> M3 headlineLarge
                 modifier = Modifier.padding(top = 16.dp, bottom = 4.dp, start = 16.dp, end = 16.dp)
             )
 
-            Text(
+            Text( // M3 Text
                 text = stringResource(id = R.string.settings_info),
-                style = MaterialTheme.typography.body1,
+                style = MaterialTheme.typography.bodyLarge, // M2 body1 -> M3 bodyLarge
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
             )
 
-            Divider()
+            HorizontalDivider() // M3 HorizontalDivider
 
-
+            // Assuming RegularPreference will be updated to M3 or is M3 compatible.
+            // If it uses M2 components internally, it will need migration.
             RegularPreference(
                 title = mqttPortString, subtitle = mqttPort.value.toString(), onClick = {
                     showDialog.value = true
@@ -133,8 +138,10 @@ fun SettingsScreen(
                     }
                 })
 
-            Divider()
+            HorizontalDivider() // M3 HorizontalDivider
 
+            // Assuming SwitchPreference will be updated to M3 or is M3 compatible.
+            // If it uses M2 Switch or Text internally, it will need migration.
             SwitchPreference(
                 title = stringResource(id = R.string.enable_ws_title),
                 subtitle = wsEnabled.value.toString(),
@@ -143,7 +150,7 @@ fun SettingsScreen(
                     settingsViewModel.setWSEnabled(it)
                 })
 
-            Divider()
+            HorizontalDivider() // M3 HorizontalDivider
 
             RegularPreference(title = wsPortString, subtitle = wsPort.value.toString(), onClick = {
                 showDialog.value = true
@@ -161,7 +168,7 @@ fun SettingsScreen(
                 }
             })
 
-            Divider()
+            HorizontalDivider() // M3 HorizontalDivider
 
             RegularPreference(title = wsPathString, subtitle = wsPath.value, onClick = {
                 showDialog.value = true
@@ -174,7 +181,7 @@ fun SettingsScreen(
                 }
             })
 
-            Divider()
+            HorizontalDivider() // M3 HorizontalDivider
 
             SwitchPreference(
                 title = stringResource(id = R.string.enable_auth),
@@ -184,7 +191,7 @@ fun SettingsScreen(
                     settingsViewModel.setAuthEnabled(value)
                 })
 
-            Divider()
+            HorizontalDivider() // M3 HorizontalDivider
 
             RegularPreference(title = userNameString, subtitle = userName.value, onClick = {
                 showDialog.value = true
@@ -202,7 +209,7 @@ fun SettingsScreen(
                 }
             })
 
-            Divider()
+            HorizontalDivider() // M3 HorizontalDivider
 
             RegularPreference(title = passwordString, subtitle = password.value, onClick = {
                 showDialog.value = true
@@ -220,9 +227,7 @@ fun SettingsScreen(
                 }
             })
         }
-
     }
-
 }
 
 /*
@@ -230,7 +235,7 @@ fun SettingsScreen(
 @Composable
 fun DefaultPreview() {
     NaradaMQTTBrokerTheme {
-        SettingsScreen()
+        SettingsScreen() // This would need a SettingsViewModel instance
     }
 }
 */

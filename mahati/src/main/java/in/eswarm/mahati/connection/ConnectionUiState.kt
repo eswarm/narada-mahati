@@ -1,4 +1,4 @@
-package in.eswarm.mahati.ui.connection
+package `in`.eswarm.mahati.connection
 
 data class ConnectionUiState(
     val clientId: String = "",

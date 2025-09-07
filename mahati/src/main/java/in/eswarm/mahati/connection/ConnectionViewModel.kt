@@ -1,4 +1,4 @@
-package in.eswarm.mahati.ui.connection
+package `in`.eswarm.mahati.connection
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -8,8 +8,8 @@ import `in`.eswarm.mahati.mqtt.core.MqttManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.launch
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 class ConnectionViewModel(
     private val mqttManager: MqttManager // Dependency Injection
