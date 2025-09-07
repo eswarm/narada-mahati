@@ -1,7 +1,9 @@
 package `in`.eswarm.mahati.connection
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import `in`.eswarm.mahati.chat.ChatViewModel
 import `in`.eswarm.mahati.mqtt.common.MqttClientState
 import `in`.eswarm.mahati.mqtt.common.MqttConnectionParams
 import `in`.eswarm.mahati.mqtt.core.MqttManager
@@ -30,14 +32,29 @@ class ConnectionViewModel(
                                 connectionSuccess = false
                             )
                         }
+
                         MqttClientState.Connecting -> {
-                            currentUiState.copy(isConnecting = true, connectionSuccess = false, connectionError = null)
+                            currentUiState.copy(
+                                isConnecting = true,
+                                connectionSuccess = false,
+                                connectionError = null
+                            )
                         }
+
                         is MqttClientState.Connected -> {
-                            currentUiState.copy(isConnecting = false, connectionSuccess = true, connectionError = null)
+                            currentUiState.copy(
+                                isConnecting = false,
+                                connectionSuccess = true,
+                                connectionError = null
+                            )
                         }
+
                         is MqttClientState.Error -> {
-                            currentUiState.copy(isConnecting = false, connectionSuccess = false, connectionError = state.message)
+                            currentUiState.copy(
+                                isConnecting = false,
+                                connectionSuccess = false,
+                                connectionError = state.message
+                            )
                         }
                     }
                 }
@@ -46,15 +63,33 @@ class ConnectionViewModel(
     }
 
     fun onClientIdChange(clientId: String) {
-        _uiState.update { it.copy(clientId = clientId, clientIdError = null, connectionError = null, connectionSuccess = false) }
+        _uiState.update {
+            it.copy(
+                clientId = clientId,
+                clientIdError = null,
+                connectionError = null,
+                connectionSuccess = false
+            )
+        }
     }
 
     fun onHostnameChange(hostname: String) {
-        _uiState.update { it.copy(hostname = hostname, hostnameError = null, connectionError = null, connectionSuccess = false) }
+        _uiState.update {
+            it.copy(
+                hostname = hostname,
+                hostnameError = null,
+                connectionError = null,
+                connectionSuccess = false
+            )
+        }
     }
 
     fun onPortChange(port: String) {
-        _uiState.update { it.copy(port = port, portError = null, connectionError = null, connectionSuccess = false) }
+        _uiState.update {
+            it.copy(
+                port = port, portError = null, connectionError = null, connectionSuccess = false
+            )
+        }
     }
 
     fun onUsernameChange(username: String) {
@@ -79,7 +114,16 @@ class ConnectionViewModel(
         var isValid = true
 
         // Clear previous validation errors and connection status messages
-        _uiState.update { it.copy(clientIdError = null, hostnameError = null, portError = null, connectionError = null, connectionSuccess = false, isConnecting = false) }
+        _uiState.update {
+            it.copy(
+                clientIdError = null,
+                hostnameError = null,
+                portError = null,
+                connectionError = null,
+                connectionSuccess = false,
+                isConnecting = false
+            )
+        }
 
         if (currentState.clientId.isBlank()) {
             _uiState.update { it.copy(clientIdError = "Client ID cannot be empty") }
@@ -120,18 +164,31 @@ class ConnectionViewModel(
 
     fun cancel() {
         // Reset input fields and any error/status messages, keeping checkbox states
-         _uiState.update { current ->
+        _uiState.update { current ->
             ConnectionUiState(
-                useSsl = current.useSsl,
-                useWebsockets = current.useWebsockets
+                useSsl = current.useSsl, useWebsockets = current.useWebsockets
             )
         }
 
         // Request disconnection
         val currentMqttState = mqttManager.connectionState.value
         if (currentMqttState is MqttClientState.Connected || currentMqttState is MqttClientState.Connecting) {
-             mqttManager.disconnect()
+            mqttManager.disconnect()
         }
         // The MqttClientState.Disconnected emission from connectionState will update uiState.
+    }
+
+    companion object {
+        fun Factory(
+            mqttManager: MqttManager,
+        ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                if (modelClass.isAssignableFrom(ConnectionViewModel::class.java)) {
+                    return ConnectionViewModel(mqttManager) as T
+                }
+                throw IllegalArgumentException("Unknown ViewModel class")
+            }
+        }
     }
 }

@@ -27,6 +27,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import `in`.eswarm.mahati.AppComponent
 import `in`.eswarm.mahati.topics.PreviewMqttManager // Re-use preview MqttManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -37,9 +39,16 @@ import java.util.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatScreen(
-    // Example: Provide the factory if you have one set up
-    // viewModel: ChatViewModel = viewModel(factory = ChatViewModel.Factory(yourMqttManager, "yourChatTopic", "currentUser"))
-    viewModel: ChatViewModel // Needs to be provided with factory
+    appComponent: AppComponent,
+    topic: String,
+    userID: String,
+    viewModel: ChatViewModel = viewModel(
+        factory = ChatViewModel.Factory(
+            appComponent.mqttManager,
+            topic,
+            userID
+        )
+    )
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val listState = rememberLazyListState()
@@ -274,7 +283,7 @@ fun ChatInputBar(
     }
 }
 
-
+/*
 // --- Preview Section ---
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Preview(showBackground = true, name = "Chat Screen - Empty")
@@ -344,3 +353,4 @@ fun ChatScreenPreview_NotConnected() {
     }
 }
 
+*/

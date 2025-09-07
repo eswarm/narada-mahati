@@ -9,11 +9,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel // For viewModel()
+import androidx.lifecycle.viewmodel.compose.viewModel
+import `in`.eswarm.mahati.AppComponent
 
 @Composable
 fun ConnectionScreen(
-    connectionViewModel: ConnectionViewModel = viewModel() // Or injected
+    appComponent: AppComponent, connectionViewModel: ConnectionViewModel = viewModel(
+        factory = ConnectionViewModel.Factory(
+            appComponent.mqttManager
+        )
+    )
 ) {
     val uiState by connectionViewModel.uiState.collectAsState() // Consider collectAsStateWithLifecycle for better lifecycle management
 
@@ -35,7 +40,11 @@ fun ConnectionScreen(
             modifier = Modifier.fillMaxWidth()
         )
         if (uiState.clientIdError != null) {
-            Text(text = uiState.clientIdError!!, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+            Text(
+                text = uiState.clientIdError!!,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall
+            )
         }
 
         OutlinedTextField(
@@ -47,7 +56,11 @@ fun ConnectionScreen(
             modifier = Modifier.fillMaxWidth()
         )
         if (uiState.hostnameError != null) {
-            Text(text = uiState.hostnameError!!, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+            Text(
+                text = uiState.hostnameError!!,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall
+            )
         }
 
         OutlinedTextField(
@@ -60,7 +73,11 @@ fun ConnectionScreen(
             modifier = Modifier.fillMaxWidth()
         )
         if (uiState.portError != null) {
-            Text(text = uiState.portError!!, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+            Text(
+                text = uiState.portError!!,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall
+            )
         }
 
         OutlinedTextField(
@@ -82,24 +99,20 @@ fun ConnectionScreen(
         )
 
         Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
+            verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()
         ) {
             Checkbox(
                 checked = uiState.useSsl,
-                onCheckedChange = { connectionViewModel.onUseSslChange(it) }
-            )
+                onCheckedChange = { connectionViewModel.onUseSslChange(it) })
             Text("Enable SSL/TLS")
         }
 
         Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
+            verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()
         ) {
             Checkbox(
                 checked = uiState.useWebsockets,
-                onCheckedChange = { connectionViewModel.onUseWebsocketsChange(it) }
-            )
+                onCheckedChange = { connectionViewModel.onUseWebsocketsChange(it) })
             Text("Use WebSockets")
         }
 
@@ -110,17 +123,24 @@ fun ConnectionScreen(
         }
 
         if (uiState.connectionError != null) {
-            Text(text = uiState.connectionError!!, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyLarge)
+            Text(
+                text = uiState.connectionError!!,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodyLarge
+            )
         }
 
         if (uiState.connectionSuccess) {
-            Text("Connection Successful!", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.bodyLarge)
+            Text(
+                "Connection Successful!",
+                color = MaterialTheme.colorScheme.primary,
+                style = MaterialTheme.typography.bodyLarge
+            )
         }
 
 
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
+            modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             Button(
                 onClick = { connectionViewModel.cancel() },
@@ -129,8 +149,7 @@ fun ConnectionScreen(
                 Text("Cancel")
             }
             Button(
-                onClick = { connectionViewModel.connect() },
-                enabled = !uiState.isConnecting
+                onClick = { connectionViewModel.connect() }, enabled = !uiState.isConnecting
             ) {
                 Text("Connect")
             }

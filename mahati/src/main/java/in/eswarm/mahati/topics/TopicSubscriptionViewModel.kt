@@ -1,7 +1,10 @@
 package `in`.eswarm.mahati.topics
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.CreationExtras
+import `in`.eswarm.mahati.AppComponent
 import `in`.eswarm.mahati.mqtt.core.MqttManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -52,12 +55,15 @@ class TopicSubscriptionViewModel(
             is TopicSubscriptionEvent.FabClicked -> {
                 _uiState.update { it.copy(showSubscribeDialog = true) }
             }
+
             is TopicSubscriptionEvent.DismissSubscribeDialog -> {
                 _uiState.update { it.copy(showSubscribeDialog = false) }
             }
+
             is TopicSubscriptionEvent.SubscribeToTopic -> {
                 handleSubscribeToTopic(event.topicFilter, event.qos)
             }
+
             is TopicSubscriptionEvent.UnsubscribeFromTopic -> {
                 handleUnsubscribeFromTopic(event.topicFilter)
             }
@@ -66,7 +72,11 @@ class TopicSubscriptionViewModel(
 
     private fun handleSubscribeToTopic(topicFilter: String, qos: Int) {
         if (topicFilter.isBlank()) {
-            _uiState.update { it.copy(error = "Topic filter cannot be empty", showSubscribeDialog = false) }
+            _uiState.update {
+                it.copy(
+                    error = "Topic filter cannot be empty", showSubscribeDialog = false
+                )
+            }
             return
         }
         _uiState.update { it.copy(isLoading = true, showSubscribeDialog = false) }
@@ -77,7 +87,10 @@ class TopicSubscriptionViewModel(
                 _uiState.update { currentState ->
                     // Avoid duplicates if already present (though MQTT broker handles actual subscription state)
                     if (currentState.subscribedTopics.any { it.topicFilter == topicFilter }) {
-                        currentState.copy(isLoading = false, error = "Already subscribed to $topicFilter (or re-subscribed)")
+                        currentState.copy(
+                            isLoading = false,
+                            error = "Already subscribed to $topicFilter (or re-subscribed)"
+                        )
                     } else {
                         currentState.copy(
                             subscribedTopics = currentState.subscribedTopics + newSubscription,
@@ -87,7 +100,11 @@ class TopicSubscriptionViewModel(
                     }
                 }
             } else {
-                _uiState.update { it.copy(isLoading = false, error = "Failed to subscribe to $topicFilter") }
+                _uiState.update {
+                    it.copy(
+                        isLoading = false, error = "Failed to subscribe to $topicFilter"
+                    )
+                }
             }
         }
     }
@@ -111,4 +128,14 @@ class TopicSubscriptionViewModel(
     fun clearError() {
         _uiState.update { it.copy(error = null) }
     }
+}
+
+class TopicViewModelFactory(val appComponent: AppComponent) : ViewModelProvider.Factory {
+
+    override fun <T : ViewModel> create(
+        modelClass: Class<T>, extras: CreationExtras
+    ): T {
+        return TopicSubscriptionViewModel(appComponent.mqttManager) as T
+    }
+
 }

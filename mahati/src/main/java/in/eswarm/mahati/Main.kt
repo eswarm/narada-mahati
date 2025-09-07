@@ -28,12 +28,11 @@ class Main : ComponentActivity() { // This class now hosts the navigation
         enableEdgeToEdge()
         setContent {
             NaradaMQTTBrokerTheme {
-                // A surface container using the 'background' color from the theme
                 Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
+                    modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background
                 ) {
-                    AppNavigation() // Call the main navigation composable
+                    val appComponent = (this.applicationContext as MahatiApplication).appComponent
+                    AppNavigation(appComponent)
                 }
             }
         }
@@ -41,26 +40,22 @@ class Main : ComponentActivity() { // This class now hosts the navigation
 }
 
 @Composable
-fun AppNavigation() {
+fun AppNavigation(appComponent: AppComponent) {
     val navController = rememberNavController()
 
     NavHost(navController = navController, startDestination = Screen.Connection.route) {
         composable(Screen.Connection.route) {
             ConnectionScreen(
-                // Assuming ConnectionViewModel is injected or provided by viewModel()
-                // If ConnectionScreen needs to navigate, pass navController:
+                appComponent
                 // onConnectionSuccess = { navController.navigate(Screen.Home.route) { popUpTo(Screen.Connection.route) { inclusive = true } } }
             )
         }
         composable(Screen.Home.route) {
-            HomeScreen(
-                onNavigateToSubscription = { navController.navigate(Screen.TopicSubscription.route) },
-                onNavigateToChat = { topic -> navController.navigate(Screen.Chat.createRoute(topic)) }
-            )
+            HomeScreen({}, {})
         }
         composable(Screen.TopicSubscription.route) {
             TopicSubscriptionScreen(
-                // Assuming ViewModel is injected or provided
+                appComponent
                 // onSubscribed = { navController.popBackStack() }
             )
         }
@@ -71,8 +66,7 @@ fun AppNavigation() {
             val topicName = backStackEntry.arguments?.getString("topicName")
             if (topicName != null) {
                 ChatScreen(
-                    topicName = topicName
-                    // Assuming ViewModel is injected or provided
+                    appComponent, topicName, "" // TODO: Fix this.
                     // onNavigateBack = { navController.popBackStack() }
                 )
             } else {

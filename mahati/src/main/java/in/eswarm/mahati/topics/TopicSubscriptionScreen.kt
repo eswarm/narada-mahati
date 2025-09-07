@@ -17,6 +17,8 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.viewmodel.compose.viewModel
+import `in`.eswarm.mahati.AppComponent
 import `in`.eswarm.mahati.mqtt.common.MqttClientState
 import `in`.eswarm.mahati.mqtt.common.MqttConnectionParams
 import `in`.eswarm.mahati.mqtt.common.MqttMessage
@@ -32,8 +34,8 @@ import kotlinx.coroutines.flow.asStateFlow
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopicSubscriptionScreen(
-    // You'll need a ViewModelFactory or DI to provide the MqttManager
-    viewModel: TopicSubscriptionViewModel // = viewModel(factory = YourViewModelFactory)
+    appComponent: AppComponent,
+    viewModel: TopicSubscriptionViewModel = viewModel(factory = TopicViewModelFactory(appComponent))
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -41,24 +43,19 @@ fun TopicSubscriptionScreen(
     LaunchedEffect(uiState.error) {
         uiState.error?.let {
             snackbarHostState.showSnackbar(
-                message = it,
-                duration = SnackbarDuration.Short
+                message = it, duration = SnackbarDuration.Short
             )
             viewModel.clearError() // Clear error after showing
         }
     }
 
-    Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-        topBar = {
-            TopAppBar(title = { Text("Subscribed MQTT Topics") })
-        },
-        floatingActionButton = {
-            FloatingActionButton(onClick = { viewModel.onEvent(TopicSubscriptionEvent.FabClicked) }) {
-                Icon(Icons.Filled.Add, contentDescription = "Subscribe to new topic")
-            }
+    Scaffold(snackbarHost = { SnackbarHost(snackbarHostState) }, topBar = {
+        TopAppBar(title = { Text("Subscribed MQTT Topics") })
+    }, floatingActionButton = {
+        FloatingActionButton(onClick = { viewModel.onEvent(TopicSubscriptionEvent.FabClicked) }) {
+            Icon(Icons.Filled.Add, contentDescription = "Subscribe to new topic")
         }
-    ) { innerPadding ->
+    }) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
             if (uiState.subscribedTopics.isEmpty() && !uiState.isLoading) {
                 EmptySubscriptionView(
@@ -67,11 +64,9 @@ fun TopicSubscriptionScreen(
                 )
             } else {
                 SubscribedTopicsList(
-                    topics = uiState.subscribedTopics,
-                    onUnsubscribe = { topicFilter ->
+                    topics = uiState.subscribedTopics, onUnsubscribe = { topicFilter ->
                         viewModel.onEvent(TopicSubscriptionEvent.UnsubscribeFromTopic(topicFilter))
-                    }
-                )
+                    })
             }
 
             if (uiState.isLoading && uiState.subscribedTopics.isEmpty()) { // Show full screen loader if loading initial list
@@ -83,8 +78,7 @@ fun TopicSubscriptionScreen(
                     onDismiss = { viewModel.onEvent(TopicSubscriptionEvent.DismissSubscribeDialog) },
                     onConfirm = { topicFilter, qos ->
                         viewModel.onEvent(TopicSubscriptionEvent.SubscribeToTopic(topicFilter, qos))
-                    }
-                )
+                    })
             }
         }
     }
@@ -92,9 +86,7 @@ fun TopicSubscriptionScreen(
 
 @Composable
 fun SubscribedTopicsList(
-    topics: List<SubscribedTopic>,
-    onUnsubscribe: (String) -> Unit,
-    modifier: Modifier = Modifier
+    topics: List<SubscribedTopic>, onUnsubscribe: (String) -> Unit, modifier: Modifier = Modifier
 ) {
     LazyColumn(
         modifier = modifier.fillMaxSize(),
@@ -103,9 +95,7 @@ fun SubscribedTopicsList(
     ) {
         items(topics, key = { it.topicFilter }) { topic ->
             SubscribedTopicItem(
-                topic = topic,
-                onUnsubscribe = { onUnsubscribe(topic.topicFilter) }
-            )
+                topic = topic, onUnsubscribe = { onUnsubscribe(topic.topicFilter) })
         }
     }
 }
@@ -113,9 +103,7 @@ fun SubscribedTopicsList(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SubscribedTopicItem(
-    topic: SubscribedTopic,
-    onUnsubscribe: () -> Unit,
-    modifier: Modifier = Modifier
+    topic: SubscribedTopic, onUnsubscribe: () -> Unit, modifier: Modifier = Modifier
 ) {
     val dateFormatter = remember { SimpleDateFormat("MMM dd, HH:mm", Locale.getDefault()) }
     Card(
@@ -175,8 +163,7 @@ fun EmptySubscriptionView(onSubscribeClick: () -> Unit, modifier: Modifier = Mod
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SubscribeToTopicDialog(
-    onDismiss: () -> Unit,
-    onConfirm: (topicFilter: String, qos: Int) -> Unit
+    onDismiss: () -> Unit, onConfirm: (topicFilter: String, qos: Int) -> Unit
 ) {
     var topicFilter by remember { mutableStateOf("") }
     var qosString by remember { mutableStateOf("0") } // QoS as string for TextField
@@ -208,8 +195,7 @@ fun SubscribeToTopicDialog(
                 )
                 Spacer(modifier = Modifier.height(24.dp))
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
+                    modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End
                 ) {
                     TextButton(onClick = onDismiss) {
                         Text("Cancel")
@@ -248,17 +234,11 @@ class PreviewMqttManager : MqttManager {
     override fun connect(params: MqttConnectionParams) {}
     override fun disconnect() {}
     override suspend fun publish(
-        topic: String,
-        message: String,
-        qos: Int,
-        retain: Boolean
+        topic: String, message: String, qos: Int, retain: Boolean
     ): Boolean = true
 
     override suspend fun publish(
-        topic: String,
-        payload: ByteArray,
-        qos: Int,
-        retain: Boolean
+        topic: String, payload: ByteArray, qos: Int, retain: Boolean
     ): Boolean = true
 
     override suspend fun subscribe(topicFilter: String, qos: Int): Boolean =
@@ -268,7 +248,7 @@ class PreviewMqttManager : MqttManager {
     override fun cleanup() {}
 }
 
-
+/*
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Preview(showBackground = true, name = "Topic Subscription Screen - Empty")
 @Composable
@@ -320,5 +300,5 @@ fun TopicSubscriptionScreenPreview_Dialog() {
         TopicSubscriptionScreen(viewModel = viewModel)
     }
 }
-
+*/
 

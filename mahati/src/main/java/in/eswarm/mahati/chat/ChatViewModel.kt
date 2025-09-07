@@ -132,10 +132,6 @@ class ChatViewModel(
         _uiState.update { it.copy(error = null) }
     }
 
-    /**
-     * Factory for creating ChatViewModel instances.
-     * This is needed because ChatViewModel has constructor parameters.
-     */
     companion object {
         fun Factory(
             mqttManager: MqttManager,
