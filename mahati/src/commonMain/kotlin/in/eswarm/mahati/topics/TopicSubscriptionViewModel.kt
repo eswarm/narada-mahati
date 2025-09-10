@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlin.reflect.KClass
 
 // UI Events
 sealed interface TopicSubscriptionEvent {
@@ -133,7 +134,8 @@ class TopicSubscriptionViewModel(
 class TopicViewModelFactory(val appComponent: AppComponent) : ViewModelProvider.Factory {
 
     override fun <T : ViewModel> create(
-        modelClass: Class<T>, extras: CreationExtras
+        modelClass: KClass<T>,
+        extras: CreationExtras
     ): T {
         return TopicSubscriptionViewModel(appComponent.mqttManager) as T
     }
