@@ -27,6 +27,7 @@ kotlin {
                 implementation(compose.components.resources) // For common resources (images, fonts)
                 implementation(compose.components.uiToolingPreview) // For @Preview in commonMain
                 implementation(libs.lifecycle.viewmodel.compose)
+                implementation(libs.navigation.compose)
 
                 // Kotlinx Coroutines
                 api(libs.kotlinx.coroutines.core)
