@@ -1,106 +1,113 @@
-
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.composeMultiplatform)
+    alias(libs.plugins.sqldelight) // Added SQLDelight plugin
+}
+
+sqldelight {
+    databases {
+        create("MahatiDb") {
+            packageName.set("in.eswarm.mahati.db")
+        }
+    }
 }
 
 kotlin {
-    androidTarget {
-
-    }
-
-    jvm("desktop") {
-
-    }
 
     sourceSets {
         val commonMain by getting {
             dependencies {
+                // SQLDelight
+                implementation(libs.sqldelight.runtime)
+                implementation(libs.sqldelight.coroutines.extensions)
+
+                // Dependencies from your existing file (cleaned up slightly)
                 implementation(compose.components.resources)
-                // JetBrains Compose Multiplatform
                 implementation(compose.runtime)
                 implementation(compose.foundation)
-                implementation(compose.material3) // JetBrains Material 3 for KMP
+                implementation(compose.material3)
                 implementation(compose.ui)
-                implementation(compose.components.resources) // For common resources (images, fonts)
-                implementation(compose.components.uiToolingPreview) // For @Preview in commonMain
-                implementation(libs.lifecycle.viewmodel.compose)
-                implementation(libs.navigation.compose)
-
-                // Kotlinx Coroutines
-                api(libs.kotlinx.coroutines.core)
-                implementation(compose.components.resources)
                 implementation(compose.components.uiToolingPreview)
-                // Multiplatform Settings (example, if you need KMP settings)
-                // api(libs.multiplatform.settings.no.arg)
-                // api(libs.multiplatform.settings.coroutines)
 
-                // HiveMQ MQTT Client (assuming it's pure Java/Kotlin and platform-agnostic enough for common JVM)
-                // If it has platform-specific dependencies, it may need expect/actual or to be in platform-specific source sets.
+                implementation(libs.lifecycle.viewmodel.compose) // KMP lifecycle, ensure this is the JetBrains one
+                implementation(libs.navigation.compose)     // KMP navigation, ensure this is the JetBrains one if for commonMain
+
+                // androidx.datastore and androidx.datastore.preferences are Android-specific.
+                // They should ideally be in androidMain or handled via expect/actual if common functionality is needed.
+                // implementation(libs.androidx.datastore)
+                // implementation(libs.androidx.datastore.preferences)
+
+                api(libs.kotlinx.coroutines.core)
                 api(libs.hivemq.mqtt.client)
             }
         }
 
         val androidMain by getting {
             dependencies {
-                // AndroidX libraries needed for the Android target
+                // SQLDelight Android Driver
+                implementation(libs.sqldelight.android.driver)
+
+                // Dependencies from your existing file
                 implementation(libs.androidx.core.ktx)
-                implementation(libs.androidx.activity.compose) // For ComponentActivity and Android UI hosting
-                implementation(libs.androidx.lifecycle.runtime.ktx.mahati) // Your existing alias
-                implementation(libs.androidx.lifecycle.viewmodel.compose)
-                implementation(libs.androidx.navigation.compose) // For AndroidX Navigation
+                implementation(libs.androidx.activity.compose)
+                implementation(libs.androidx.lifecycle.runtime.ktx.mahati)
+                implementation(libs.androidx.lifecycle.viewmodel.compose) // This is androidx.lifecycle for Android
+                implementation(libs.androidx.navigation.compose) // This is androidx.navigation for Android
 
-                // Android DataStore (if used in androidMain and not via a KMP settings lib)
+                // Android DataStore (correct place for these)
+                implementation(libs.androidx.datastore)
                 implementation(libs.androidx.datastore.preferences)
-
-                // Android specific tooling for previews if needed beyond common uiToolingPreview
-                // debugImplementation(libs.androidx.compose.ui.tooling)
             }
         }
 
         val desktopMain by getting {
             dependencies {
-                // This pulls in the necessary Compose for Desktop artifacts (runtime, UI, etc.)
+                // SQLDelight SQLite Driver (for JVM/Desktop)
+                implementation(libs.sqldelight.sqlite.driver)
+
+                // Dependencies from your existing file
                 implementation(compose.desktop.currentOs)
-                implementation(compose.desktop.common)  // For common desktop utilities if needed
+                implementation(compose.desktop.common)
             }
         }
 
         val commonTest by getting {
             dependencies {
                 implementation(kotlin("test"))
-                implementation(kotlin("test-junit")) // For running common tests on JVM
+                implementation(kotlin("test-junit"))
             }
         }
 
-        val androidUnitTest by getting { // Local unit tests for androidMain
+        val androidUnitTest by getting {
             dependencies {
-                implementation(libs.junit) // For JUnit tests
+                implementation(libs.junit)
             }
         }
         val desktopTest by getting {
             dependencies {
-                implementation(kotlin("test-junit")) // For JUnit tests on Desktop
+                implementation(kotlin("test-junit"))
             }
         }
-        // Instrumented tests for Android (androidTest) would be configured inside androidTarget if needed
     }
 }
 
 android {
-    namespace = "in.eswarm.mahati" // Stays as it's an Android library
+    namespace = "in.eswarm.mahati"
     compileSdk = 36
 
     defaultConfig {
         applicationId = "in.eswarm.mahati"
         minSdk = 26
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner" // For instrumented tests
+        targetSdk = 36 // Added targetSdk
+        versionCode = 1 // Added versionCode
+        versionName = "1.0" // Added versionName
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         release {
-            isMinifyEnabled = false // Adjust as needed
+            isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
@@ -112,19 +119,18 @@ android {
     kotlin {
         jvmToolchain(17)
     }
-    packagingOptions { // Keep existing packaging options
+    packagingOptions {
         resources {
             excludes += "/META-INF/INDEX.LIST"
             excludes += "/META-INF/io.netty.versions.properties"
         }
     }
     buildFeatures {
-        compose = true // Explicitly enable Compose for the Android app part
+        compose = true
     }
-    composeOptions { // Set the Kotlin Compose Compiler version
+    composeOptions {
         kotlinCompilerExtensionVersion = libs.versions.composeCompiler.get()
     }
-    // Lint options if needed
     lint {
         abortOnError = false
     }
@@ -137,7 +143,7 @@ compose.resources {
 
 compose.desktop {
     application {
-        mainClass = "in.eswarm.mahati.desktop.MainKt" // Adjust if your desktop main is elsewhere
+        mainClass = "in.eswarm.mahati.desktop.MainKt"
         nativeDistributions {
             targetFormats(org.jetbrains.compose.desktop.application.dsl.TargetFormat.Dmg, org.jetbrains.compose.desktop.application.dsl.TargetFormat.Msi, org.jetbrains.compose.desktop.application.dsl.TargetFormat.Deb)
             packageName = "Mahati"
@@ -146,7 +152,6 @@ compose.desktop {
     }
 }
 
-
-dependencies {
+dependencies { // Root level dependencies block
     coreLibraryDesugaring(libs.desugar.jdk.libs)
 }
