@@ -14,8 +14,7 @@ fun getMahatiDb(): MahatiDb {
     }
     return instance!!
 }
-// Call this from your platform-specific application setup code
-// The DriverFactory instance will come from the platform
+
 fun initializeDb(driverFactory: DriverFactory) {
     if (instance == null) {
         val driver = driverFactory.createDriver()

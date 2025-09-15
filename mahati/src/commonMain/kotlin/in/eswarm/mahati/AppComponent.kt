@@ -9,6 +9,5 @@ class AppComponent {
     val mqttManager: MqttManager = HiveMqMqttManagerImpl()
     val connectionRepo: ConnectionRepository = ConnectionRepository()
 
-    fun clear() {
-    }
+    fun clear() {}
 }

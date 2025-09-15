@@ -41,7 +41,7 @@ data class MqttConnectionParams(
 
     override fun hashCode(): Int {
         var result = brokerHost.hashCode()
-        result = 31 * result + brokerPort
+        result = 31 * result + brokerPort.hashCode()
         result = 31 * result + clientId.hashCode()
         result = 31 * result + (username?.hashCode() ?: 0)
         result = 31 * result + (password?.contentHashCode() ?: 0)

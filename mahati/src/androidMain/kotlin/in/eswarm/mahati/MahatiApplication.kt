@@ -10,8 +10,8 @@ class MahatiApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        initializeDb(DriverFactory(this))
         appComponent = AppComponent()
-        initializeDb(DriverFactory(this.applicationContext))
     }
 
     override fun onTerminate() {

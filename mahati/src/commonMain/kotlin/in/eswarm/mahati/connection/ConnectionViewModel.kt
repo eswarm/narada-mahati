@@ -164,7 +164,7 @@ class ConnectionViewModel(
 
         val params = MqttConnectionParams(
             brokerHost = currentState.hostname,
-            brokerPort = portNumber!!, // Not null due to prior validation
+            brokerPort = portNumber!!,
             clientId = currentState.clientId,
             username = currentState.username.takeIf { it.isNotBlank() },
             password = currentState.password.takeIf { it.isNotBlank() }?.encodeToByteArray(),

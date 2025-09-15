@@ -24,7 +24,7 @@ fun AppNavigation(appComponent: AppComponent) {
             )
         }
         composable(Screen.Home.route) {
-            HomeScreen({ navController.navigate(Screen.Connection.route) }, {})
+            HomeScreen({ navController.navigate(Screen.Connection.route) }, {}, appComponent)
         }
         composable(Screen.TopicSubscription.route) {
             TopicSubscriptionScreen(

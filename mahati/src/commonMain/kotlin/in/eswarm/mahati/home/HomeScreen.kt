@@ -20,15 +20,17 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import `in`.eswarm.mahati.mqtt.common.MqttConnectionParams // Required for Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
+import `in`.eswarm.mahati.AppComponent
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     onNavigateToNewConnection: () -> Unit,
     onNavigateToConnectionDetails: (profileId: String) -> Unit,
-    viewModel: HomeViewModel = viewModel(),
-    ) {
-    val profiles by viewModel.profiles.collectAsState()
+    appComponent: AppComponent,
+    viewModel: HomeViewModel = viewModel(factory = HomeViewModel.Factory(connectionRepo = appComponent.connectionRepo)),
+) {
+    val profiles by viewModel.profiles.collectAsState(emptyList())
     val sideEffect by viewModel.sideEffects.collectAsState()
 
     LaunchedEffect(sideEffect) {
@@ -37,35 +39,32 @@ fun HomeScreen(
                 onNavigateToNewConnection()
                 viewModel.clearSideEffect()
             }
+
             is HomeSideEffect.NavigateToConnectionDetails -> {
                 onNavigateToConnectionDetails(effect.profileId)
                 viewModel.clearSideEffect()
             }
-            null -> { /* No-op */ }
+
+            null -> { /* No-op */
+            }
         }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Mahati MQTT Connections") } 
-            )
-        },
-        floatingActionButton = {
-            FloatingActionButton(onClick = { viewModel.onEvent(HomeUiEvent.AddNewConnectionClicked) }) {
-                Icon(Icons.Filled.Add, contentDescription = "Add new MQTT connection")
-            }
+    Scaffold(topBar = {
+        TopAppBar(
+            title = { Text("Mahati MQTT Connections") })
+    }, floatingActionButton = {
+        FloatingActionButton(onClick = { viewModel.onEvent(HomeUiEvent.AddNewConnectionClicked) }) {
+            Icon(Icons.Filled.Add, contentDescription = "Add new MQTT connection")
         }
-    ) { innerPadding ->
+    }) { innerPadding ->
         if (profiles.isEmpty()) {
             EmptyConnectionsView(modifier = Modifier.padding(innerPadding))
         } else {
             ConnectionsList(
-                profiles = profiles,
-                onProfileClick = { profileId ->
+                profiles = profiles, onProfileClick = { profileId ->
                     viewModel.onEvent(HomeUiEvent.ConnectionSelected(profileId))
-                },
-                modifier = Modifier.padding(innerPadding)
+                }, modifier = Modifier.padding(innerPadding)
             )
         }
     }
@@ -84,9 +83,7 @@ fun ConnectionsList(
     ) {
         items(profiles, key = { it.id }) { profile ->
             ConnectionListItem(
-                profile = profile,
-                onClick = { onProfileClick(profile.id) }
-            )
+                profile = profile, onClick = { onProfileClick(profile.id) })
         }
     }
 }
@@ -94,18 +91,13 @@ fun ConnectionsList(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ConnectionListItem(
-    profile: MqttConnectionProfile,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    profile: MqttConnectionProfile, onClick: () -> Unit, modifier: Modifier = Modifier
 ) {
     Card(
-        onClick = onClick,
-        modifier = modifier.fillMaxWidth()
+        onClick = onClick, modifier = modifier.fillMaxWidth()
     ) {
         Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
+            modifier = Modifier.padding(16.dp).fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -138,8 +130,7 @@ fun ConnectionListItem(
 @Composable
 fun EmptyConnectionsView(modifier: Modifier = Modifier) {
     Box(
-        modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+        modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center
     ) {
         Text(
             text = "No MQTT connections yet.\nTap the '+' button to add one.",
@@ -154,15 +145,29 @@ fun EmptyConnectionsView(modifier: Modifier = Modifier) {
 @Composable
 fun HomeScreenPreview_WithItems() {
     val previewProfiles = listOf(
-        MqttConnectionProfile("1", "Mahati Local", MqttConnectionParams(brokerHost = "192.168.1.5", brokerPort = 1883, clientId = "client1")),
-        MqttConnectionProfile("2", "Mahati Cloud", MqttConnectionParams(brokerHost = "cloud.mqtt.com", brokerPort = 1883, clientId = "client2"))
+        MqttConnectionProfile(
+            "1", "Mahati Local", MqttConnectionParams(
+                brokerHost = "192.168.1.5", brokerPort = 1883, clientId = "client1"
+            )
+        ), MqttConnectionProfile(
+            "2", "Mahati Cloud", MqttConnectionParams(
+                brokerHost = "cloud.mqtt.com", brokerPort = 1883, clientId = "client2"
+            )
+        )
     )
-    MaterialTheme { 
+    MaterialTheme {
         Scaffold(
-             topBar = { TopAppBar(title = { Text("MQTT Connections Preview") }) },
-             floatingActionButton = { FloatingActionButton(onClick = {}) { Icon(Icons.Filled.Add, "") } }
-        ) {
-            ConnectionsList(profiles = previewProfiles, onProfileClick = {}, modifier = Modifier.padding(it))
+            topBar = { TopAppBar(title = { Text("MQTT Connections Preview") }) },
+            floatingActionButton = {
+                FloatingActionButton(onClick = {}) {
+                    Icon(
+                        Icons.Filled.Add, ""
+                    )
+                }
+            }) {
+            ConnectionsList(
+                profiles = previewProfiles, onProfileClick = {}, modifier = Modifier.padding(it)
+            )
         }
     }
 }
@@ -170,11 +175,16 @@ fun HomeScreenPreview_WithItems() {
 //@Preview(showBackground = true, name = "Home Screen Empty")
 @Composable
 fun HomeScreenPreview_Empty() {
-     MaterialTheme {
+    MaterialTheme {
         Scaffold(
-             topBar = { TopAppBar(title = { Text("MQTT Connections Preview") }) },
-             floatingActionButton = { FloatingActionButton(onClick = {}) { Icon(Icons.Filled.Add, "") } }
-        ) {
+            topBar = { TopAppBar(title = { Text("MQTT Connections Preview") }) },
+            floatingActionButton = {
+                FloatingActionButton(onClick = {}) {
+                    Icon(
+                        Icons.Filled.Add, ""
+                    )
+                }
+            }) {
             EmptyConnectionsView(modifier = Modifier.padding(it))
         }
     }
