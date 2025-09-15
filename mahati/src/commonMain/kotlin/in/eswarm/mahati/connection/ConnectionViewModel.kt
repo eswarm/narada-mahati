@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
+import `in`.eswarm.mahati.db.ConnectionRepository
 import `in`.eswarm.mahati.mqtt.common.MqttClientState
 import `in`.eswarm.mahati.mqtt.common.MqttConnectionParams
 import `in`.eswarm.mahati.mqtt.core.MqttManager
@@ -15,7 +16,8 @@ import kotlinx.coroutines.launch
 import kotlin.reflect.KClass
 
 class ConnectionViewModel(
-    private val mqttManager: MqttManager // Dependency Injection
+    private val mqttManager: MqttManager,
+    private val repo: ConnectionRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ConnectionUiState())
@@ -43,6 +45,16 @@ class ConnectionViewModel(
                         }
 
                         is MqttClientState.Connected -> {
+                            repo.addConnection(
+                                uiState.value.hostname,
+                                uiState.value.port.toLong(),
+                                uiState.value.clientId,
+                                uiState.value.username,
+                                uiState.value.password.toByteArray(),
+                                uiState.value.useSsl,
+                                ""
+                            )
+
                             currentUiState.copy(
                                 isConnecting = false,
                                 connectionSuccess = true,
@@ -182,6 +194,7 @@ class ConnectionViewModel(
     companion object {
         fun Factory(
             mqttManager: MqttManager,
+            connectionRepo: ConnectionRepository
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
 
@@ -189,7 +202,7 @@ class ConnectionViewModel(
                 modelClass: KClass<T>, extras: CreationExtras
             ): T {
                 if (modelClass.java.isAssignableFrom(ConnectionViewModel::class.java)) {
-                    return ConnectionViewModel(mqttManager) as T
+                    return ConnectionViewModel(mqttManager, connectionRepo) as T
                 }
                 throw IllegalArgumentException("Unknown ViewModel class")
 

@@ -16,7 +16,8 @@ import `in`.eswarm.mahati.AppComponent
 fun ConnectionScreen(
     appComponent: AppComponent, connectionViewModel: ConnectionViewModel = viewModel(
         factory = ConnectionViewModel.Factory(
-            appComponent.mqttManager
+            appComponent.mqttManager,
+            appComponent.connectionRepo
         )
     )
 ) {

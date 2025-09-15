@@ -11,15 +11,14 @@ class ConnectionRepository {
 
     private val queries = getMahatiDb().mqttConnectionParamsQueries
 
-    suspend fun addConnection( // Added suspend modifier
+    suspend fun addConnection(
         brokerHost: String,
         brokerPort: Long,
         clientId: String,
         username: String?,
         password: ByteArray?,
         useSsl: Boolean,
-        topicPrefix: String,
-        version: Long
+        topicPrefix: String
     ) {
         withContext(Dispatchers.IO) { // Perform DB operation on IO dispatcher
             queries.insert(
@@ -29,8 +28,7 @@ class ConnectionRepository {
                 username = username,
                 password = password,
                 useSsl = if (useSsl) 1 else 0, // Corrected: Pass Boolean directly, adapter handles it
-                topicPrefix = topicPrefix,
-                version = version
+                topicPrefix = topicPrefix
             )
         }
     }
