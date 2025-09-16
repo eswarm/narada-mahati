@@ -14,6 +14,6 @@ dependencyResolutionManagement {
         maven { url = uri("https://jitpack.io") }
     }
 }
-rootProject.name = "Narada MQTT Broker"
-include(":app")
+rootProject.name = "Narada & Mahati"
+include(":narada")
 include(":mahati")

@@ -55,7 +55,6 @@ dependencies {
     implementation(platform(libs.androidx.compose.bom)) // Added BOM
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.compose.ui)
-    // implementation(libs.androidx.compose.material) // Replaced with M2
     implementation(libs.androidx.compose.material3) // Added M3
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.lifecycle.runtime.ktx)

@@ -1,25 +1,25 @@
 [versions]
 # Root build.gradle versions
 androidGradlePlugin = "8.13.0"
-kotlin = "2.2.10" # Also for KMP
+kotlin = "2.2.20" # Also for KMP
 composeCompiler = "1.5.13" # Kotlin Compose Compiler version for composeOptions
 # androidxComposeBom is for Android specific androidx libraries (e.g. Navigation, Activity, or specific androidx.compose if needed)
-androidxComposeBom = "2024.06.00" # Adjusted for stability alongside Compose MP
-composeMultiplatform = "1.6.10" # JetBrains Compose Multiplatform plugin and libraries
-lifecycleViewmodelCompose = "2.9.2"
-navigation = "2.8.9" # androidx.navigation:navigation-compose (Android specific)
-kotlinxCoroutines = "1.8.0"
-multiplatformSettings = "1.1.1"
-jetbrainsKotlinJvm = "2.1.0"
+androidxComposeBom = "2025.09.00" # Adjusted for stability alongside Compose MP
+composeMultiplatform = "1.9.0" # JetBrains Compose Multiplatform plugin and libraries
+lifecycleViewmodelCompose = "2.9.4"
+navigation = "2.9.4" # androidx.navigation:navigation-compose (Android specific)
+kotlinxCoroutines = "1.10.2"
+multiplatformSettings = "1.3.0"
+jetbrainsKotlinJvm = "2.2.20"
 sqlDelight = "2.1.0"
 
 # app module versions (and some Android specific for KMP androidTarget)
 androidxCoreKtx = "1.17.0"
-androidxLifecycle = "2.8.7"
+androidxLifecycle = "2.9.3"
 androidxLifecycleViewmodelCompose = "2.9.3"
-androidxActivityCompose = "1.10.1"
+androidxActivityCompose = "1.11.0"
 junit = "4.13.2" # For JVM tests
-androidxTestExtJunit = "1.2.1"
+androidxTestExtJunit = "1.3.0"
 androidxTestEspressoCore = "3.7.0"
 androidxDatastorePreferences = "1.1.7" # Android specific (for app module, or androidMain in mahati if not using KMP settings)
 datastorePreferencesCore = "1.1.7" # Android specific core
@@ -30,8 +30,8 @@ hivemqMqttClient = "1.3.9" # Java lib, for JVM targets (androidMain, desktopMain
 
 # mahati module versions (for Android tests)
 androidxTestExtJunitMahati = "1.3.0"
-desugar_jdk_libs = "2.1.3"
-navigationCompose = "2.9.0-beta05"
+desugar_jdk_libs = "2.1.5"
+navigationCompose = "2.9.0"
 
 [libraries]
 # KMP Common - Coroutines
@@ -64,7 +64,6 @@ androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", versi
 # In mahati's androidMain, org.jetbrains.compose artifacts will be preferred,
 # but these can be used if specific androidx versions are needed for Android.
 androidx-compose-ui = { group = "androidx.compose.ui", name = "ui" } # Uses BOM
-androidx-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" } # Uses BOM
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" } # Uses BOM (androidx version)
 androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" } # Uses BOM
 androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" } # Uses BOM
@@ -81,11 +80,7 @@ accompanist-permissions = { group = "com.google.accompanist", name = "accompanis
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidxTestExtJunit" } # For app module android tests
 androidx-test-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "androidxTestEspressoCore" } # For app module android tests
-androidx-test-ext-junit-mahati = { group = "androidx.test.ext", name = "junit", version.ref = "androidxTestExtJunitMahati" } # For mahati androidTarget tests
 
-
-# Aliases for mahati module's original AndroidX dependencies (can be used in androidMain if needed)
-androidx-lifecycle-runtime-ktx-mahati = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "androidxLifecycleViewmodelCompose" }
 navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 
 [plugins]

@@ -1,23 +1,21 @@
 package `in`.eswarm.narada.settings
 
-import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme // Changed import
-import androidx.compose.material3.Switch // Changed import
-import androidx.compose.material3.Text // Changed import
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-// import androidx.compose.ui.graphics.Color // Color.Unspecified might not be needed
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import `in`.eswarm.narada.ui.theme.NaradaMQTTBrokerTheme // Added for Preview
+import `in`.eswarm.narada.ui.theme.NaradaMQTTBrokerTheme
 
 @Composable
 fun SwitchPreference(
@@ -58,7 +56,6 @@ fun SwitchPreference(
             .fillMaxWidth()
             .clickable(
                 interactionSource = interactionSource,
-                indication = LocalIndication.current, // Material 3 uses this for ripple
                 enabled = enabled,
                 onClick = { onCheckedChange(!checked) },
             )

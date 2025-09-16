@@ -53,9 +53,9 @@ kotlin {
                 // Dependencies from your existing file
                 implementation(libs.androidx.core.ktx)
                 implementation(libs.androidx.activity.compose)
-                implementation(libs.androidx.lifecycle.runtime.ktx.mahati)
-                implementation(libs.androidx.lifecycle.viewmodel.compose) // This is androidx.lifecycle for Android
-                implementation(libs.androidx.navigation.compose) // This is androidx.navigation for Android
+                implementation(libs.androidx.lifecycle.runtime.ktx)
+                implementation(libs.androidx.lifecycle.viewmodel.compose)
+                implementation(libs.androidx.navigation.compose) 
 
                 // Android DataStore (correct place for these)
                 implementation(libs.androidx.datastore)
