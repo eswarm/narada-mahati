@@ -16,15 +16,8 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import `in`.eswarm.mahati.AppComponent
-import `in`.eswarm.mahati.mqtt.common.MqttClientState
-import `in`.eswarm.mahati.mqtt.common.MqttMessage
-import `in`.eswarm.mahati.mqtt.core.MqttManager
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import java.text.SimpleDateFormat
 import java.util.Locale
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.flow.asStateFlow
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
