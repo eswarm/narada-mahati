@@ -3,7 +3,6 @@ package `in`.eswarm.mahati.mqtt.core
 import com.hivemq.client.internal.mqtt.datatypes.MqttUtf8StringImpl
 import com.hivemq.client.internal.mqtt.message.auth.MqttSimpleAuth
 import `in`.eswarm.mahati.mqtt.common.MqttClientState
-import `in`.eswarm.mahati.mqtt.common.MqttConnectionParams
 import `in`.eswarm.mahati.mqtt.common.MqttMessage
 import com.hivemq.client.mqtt.MqttClient
 import com.hivemq.client.mqtt.MqttGlobalPublishFilter
@@ -11,6 +10,7 @@ import com.hivemq.client.mqtt.datatypes.MqttQos
 import com.hivemq.client.mqtt.lifecycle.MqttClientConnectedContext
 import com.hivemq.client.mqtt.mqtt5.Mqtt5AsyncClient
 import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish
+import `in`.eswarm.mahati.db.MqttConnectionParamsEntity
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,7 +31,7 @@ class HiveMqMqttManagerImpl(
 ) : MqttManager {
 
     private var client: Mqtt5AsyncClient? = null
-    private var currentParams: MqttConnectionParams? = null
+    private var currentParams: MqttConnectionParamsEntity? = null
 
     private val _connectionState = MutableStateFlow<MqttClientState>(MqttClientState.Disconnected)
     override val connectionState: StateFlow<MqttClientState> = _connectionState.asStateFlow()
@@ -52,7 +52,7 @@ class HiveMqMqttManagerImpl(
         }
     }
 
-    override fun connect(params: MqttConnectionParams) {
+    override fun connect(params: MqttConnectionParamsEntity) {
         if (_connectionState.value is MqttClientState.Connected || _connectionState.value is MqttClientState.Connecting) {
             if (currentParams == params && client?.state?.isConnectedOrReconnect == true) {
                 // Already connected or connecting with the same parameters
@@ -66,8 +66,8 @@ class HiveMqMqttManagerImpl(
         _connectionState.value = MqttClientState.Connecting
 
         var clientBuilder = MqttClient.builder().useMqttVersion5()
-            .identifier(params.clientId.ifEmpty { UUID.randomUUID().toString() })
-            .serverHost(params.brokerHost).serverPort(params.brokerPort)
+            .identifier(params.clientID.ifEmpty { UUID.randomUUID().toString() })
+            .serverHost(params.brokerHost).serverPort(params.brokerPort.toInt())
             .addConnectedListener { context ->
                 _connectionState.value = MqttClientState.Connected(context.toServerUri())
             }.addDisconnectedListener { context ->
@@ -78,7 +78,7 @@ class HiveMqMqttManagerImpl(
                 // For example, if context.userInitiated is true, then MqttClientState.Disconnected
             }
 
-        if (params.useSsl) {
+        if (params.useSsl == 1L) {
             clientBuilder =
                 clientBuilder.sslWithDefaultConfig() // Consider more advanced SSL config if needed
         }

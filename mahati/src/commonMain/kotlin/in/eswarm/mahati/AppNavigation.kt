@@ -7,7 +7,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import `in`.eswarm.mahati.chat.ChatScreen
-import `in`.eswarm.mahati.connection.ConnectionScreen
+import `in`.eswarm.mahati.connection.NewConnectionScreen
 import `in`.eswarm.mahati.home.HomeScreen
 import `in`.eswarm.mahati.navigation.Screen
 import `in`.eswarm.mahati.topics.TopicSubscriptionScreen
@@ -17,20 +17,28 @@ fun AppNavigation(appComponent: AppComponent) {
     val navController = rememberNavController()
 
     NavHost(navController = navController, startDestination = Screen.Home.route) {
-        composable(Screen.Connection.route) {
-            ConnectionScreen(
+        composable(Screen.NewConnection.route) {
+            NewConnectionScreen(
                 appComponent
-                // onConnectionSuccess = { navController.navigate(Screen.Home.route) { popUpTo(Screen.Connection.route) { inclusive = true } } }
             )
         }
         composable(Screen.Home.route) {
-            HomeScreen({ navController.navigate(Screen.Connection.route) }, {}, appComponent)
-        }
-        composable(Screen.TopicSubscription.route) {
-            TopicSubscriptionScreen(
+            HomeScreen(
+                { navController.navigate(Screen.NewConnection.route) },
+                { clientID -> navController.navigate(Screen.TopicSubscription.createRoute(clientID)) },
                 appComponent
-                // onSubscribed = { navController.popBackStack() }
             )
+        }
+        composable(
+            Screen.TopicSubscription.route,
+            arguments = listOf(navArgument("clientID") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val clientID = backStackEntry.arguments?.getString("clientID")
+            if (clientID != null) {
+                TopicSubscriptionScreen(
+                    appComponent
+                )
+            }
         }
         composable(
             route = Screen.Chat.route,

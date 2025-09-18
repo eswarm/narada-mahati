@@ -5,8 +5,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import `in`.eswarm.mahati.db.ConnectionRepository
+import `in`.eswarm.mahati.db.MqttConnectionParamsEntity
 import `in`.eswarm.mahati.mqtt.common.MqttClientState
-import `in`.eswarm.mahati.mqtt.common.MqttConnectionParams
 import `in`.eswarm.mahati.mqtt.core.MqttManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -48,7 +48,7 @@ class ConnectionViewModel(
                             repo.addConnection(
                                 uiState.value.hostname,
                                 uiState.value.port.toLong(),
-                                uiState.value.clientId,
+                                uiState.value.clientID,
                                 uiState.value.username,
                                 uiState.value.password.toByteArray(),
                                 uiState.value.useSsl,
@@ -78,7 +78,7 @@ class ConnectionViewModel(
     fun onClientIdChange(clientId: String) {
         _uiState.update {
             it.copy(
-                clientId = clientId,
+                clientID = clientId,
                 clientIdError = null,
                 connectionError = null,
                 connectionSuccess = false
@@ -138,7 +138,7 @@ class ConnectionViewModel(
             )
         }
 
-        if (currentState.clientId.isBlank()) {
+        if (currentState.clientID.isBlank()) {
             _uiState.update { it.copy(clientIdError = "Client ID cannot be empty") }
             isValid = false
         }
@@ -162,15 +162,16 @@ class ConnectionViewModel(
         // isConnecting will be updated by the mqttManager.connectionState collector
         // when MqttClientState.Connecting is emitted.
 
-        val params = MqttConnectionParams(
+        val params = MqttConnectionParamsEntity(
+            id = 0,
             brokerHost = currentState.hostname,
-            brokerPort = portNumber!!,
-            clientId = currentState.clientId,
+            brokerPort = portNumber!!.toLong(),
+            clientID = currentState.clientID,
             username = currentState.username.takeIf { it.isNotBlank() },
             password = currentState.password.takeIf { it.isNotBlank() }?.encodeToByteArray(),
-            useSsl = currentState.useSsl
-            // topicPrefix will use its default value from MqttConnectionParams data class
-            // useWebsockets is not part of MqttConnectionParams
+            useSsl = if (currentState.useSsl) 1 else 0,
+            topicPrefix = "",
+            createdAt = System.currentTimeMillis()
         )
         mqttManager.connect(params)
     }

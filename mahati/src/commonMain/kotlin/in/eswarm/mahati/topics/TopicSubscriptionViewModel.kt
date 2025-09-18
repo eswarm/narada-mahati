@@ -30,7 +30,7 @@ data class TopicSubscriptionUiState(
 )
 
 class TopicSubscriptionViewModel(
-    private val mqttManager: MqttManager // Inject your MqttManager
+    private val mqttManager: MqttManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(TopicSubscriptionUiState())

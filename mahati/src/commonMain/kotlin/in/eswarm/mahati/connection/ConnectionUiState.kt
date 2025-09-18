@@ -1,7 +1,7 @@
 package `in`.eswarm.mahati.connection
 
 data class ConnectionUiState(
-    val clientId: String = "",
+    val clientID: String = "",
     val clientIdError: String? = null,
     val hostname: String = "",
     val hostnameError: String? = null,

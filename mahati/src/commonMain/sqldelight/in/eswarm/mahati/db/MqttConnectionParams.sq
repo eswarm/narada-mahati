@@ -2,7 +2,7 @@ CREATE TABLE MqttConnectionParamsEntity (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, -- Assuming you want an auto-incrementing ID
     brokerHost TEXT NOT NULL,
     brokerPort INTEGER NOT NULL DEFAULT 1883,
-    clientId TEXT NOT NULL UNIQUE,
+    clientID TEXT NOT NULL UNIQUE,
     username TEXT,
     password BLOB,
     useSsl INTEGER NOT NULL DEFAULT 0, -- 0 for false, 1 for true
@@ -14,15 +14,15 @@ CREATE TABLE MqttConnectionParamsEntity (
 selectAll:
 SELECT * FROM MqttConnectionParamsEntity;
 
-selectByClientId:
-SELECT * FROM MqttConnectionParamsEntity WHERE clientId = ?;
+selectByClientID:
+SELECT * FROM MqttConnectionParamsEntity WHERE clientID = ?;
 
 insert:
-INSERT OR REPLACE INTO MqttConnectionParamsEntity(brokerHost, brokerPort, clientId, username, password, useSsl, topicPrefix)
+INSERT OR REPLACE INTO MqttConnectionParamsEntity(brokerHost, brokerPort, clientID, username, password, useSsl, topicPrefix)
 VALUES (?, ?, ?, ?, ?, ?, ?);
 
 deleteByClientId:
-DELETE FROM MqttConnectionParamsEntity WHERE clientId = ?;
+DELETE FROM MqttConnectionParamsEntity WHERE clientID = ?;
 
 deleteAll:
 DELETE FROM MqttConnectionParamsEntity;

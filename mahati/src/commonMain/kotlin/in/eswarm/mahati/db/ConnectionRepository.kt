@@ -24,7 +24,7 @@ class ConnectionRepository {
             queries.insert(
                 brokerHost = brokerHost,
                 brokerPort = brokerPort,
-                clientId = clientId,
+                clientID = clientId,
                 username = username,
                 password = password,
                 useSsl = if (useSsl) 1 else 0, // Corrected: Pass Boolean directly, adapter handles it
@@ -33,14 +33,14 @@ class ConnectionRepository {
         }
     }
 
-    suspend fun getConnectionByClientId(clientId: String): MqttConnectionParamsEntity? {
+    suspend fun getConnectionByClientId(clientID: String): MqttConnectionParamsEntity? {
         return withContext(Dispatchers.IO) {
-            queries.selectByClientId(clientId).executeAsOneOrNull()
+            queries.selectByClientID(clientID).executeAsOneOrNull()
         }
     }
 
-    fun getConnectionByClientIdFlow(clientId: String): Flow<MqttConnectionParamsEntity?> {
-        return queries.selectByClientId(clientId).asFlow().mapToOneOrNull(Dispatchers.IO)
+    fun getConnectionByClientIdFlow(clientID: String): Flow<MqttConnectionParamsEntity?> {
+        return queries.selectByClientID(clientID).asFlow().mapToOneOrNull(Dispatchers.IO)
     }
 
     suspend fun getAllConnections(): List<MqttConnectionParamsEntity> {
@@ -53,9 +53,9 @@ class ConnectionRepository {
         return queries.selectAll().asFlow().mapToList(Dispatchers.IO)
     }
 
-    suspend fun deleteConnectionByClientId(clientId: String) {
+    suspend fun deleteConnectionByClientId(clientID: String) {
         withContext(Dispatchers.IO) {
-            queries.deleteByClientId(clientId)
+            queries.deleteByClientId(clientID)
         }
     }
 

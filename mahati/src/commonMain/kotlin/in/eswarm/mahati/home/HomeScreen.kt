@@ -25,17 +25,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import `in`.eswarm.mahati.mqtt.common.MqttConnectionParams
 import androidx.lifecycle.viewmodel.compose.viewModel
 import `in`.eswarm.mahati.AppComponent
+import `in`.eswarm.mahati.db.MqttConnectionParamsEntity
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     onNavigateToNewConnection: () -> Unit,
-    onNavigateToConnectionDetails: (profileId: String) -> Unit,
+    onNavigateToConnectionDetails: (clientID: String) -> Unit,
     appComponent: AppComponent,
-    viewModel: HomeViewModel = viewModel(factory = HomeViewModel.Factory(connectionRepo = appComponent.connectionRepo)),
+    viewModel: HomeViewModel = viewModel(
+        factory = HomeViewModel.Factory(
+            appComponent.connectionRepo,
+            appComponent.mqttManager
+        )
+    ),
 ) {
     val profiles by viewModel.profiles.collectAsState(emptyList())
     val sideEffect by viewModel.sideEffects.collectAsState()
@@ -48,7 +53,7 @@ fun HomeScreen(
             }
 
             is HomeSideEffect.NavigateToConnectionDetails -> {
-                onNavigateToConnectionDetails(effect.profileId)
+                onNavigateToConnectionDetails(effect.clientID)
                 viewModel.clearSideEffect()
             }
 
@@ -79,7 +84,7 @@ fun HomeScreen(
 
 @Composable
 fun ConnectionsList(
-    profiles: List<MqttConnectionProfile>,
+    profiles: List<MqttConnectionParamsEntity>,
     onProfileClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -88,9 +93,10 @@ fun ConnectionsList(
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(profiles, key = { it.id }) { profile ->
+        items(profiles, key = { it.id }) { connectionParamsEntity ->
             ConnectionListItem(
-                profile = profile, onClick = { onProfileClick(profile.id) })
+                paramsEntity = connectionParamsEntity,
+                onClick = { onProfileClick(connectionParamsEntity.clientID) })
         }
     }
 }
@@ -98,7 +104,7 @@ fun ConnectionsList(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ConnectionListItem(
-    profile: MqttConnectionProfile, onClick: () -> Unit, modifier: Modifier = Modifier
+    paramsEntity: MqttConnectionParamsEntity, onClick: () -> Unit, modifier: Modifier = Modifier
 ) {
     Card(
         onClick = onClick, modifier = modifier.fillMaxWidth()
@@ -110,14 +116,14 @@ fun ConnectionListItem(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = profile.name,
+                    text = paramsEntity.clientID,
                     style = MaterialTheme.typography.titleMedium,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "${profile.params.brokerHost}:${profile.params.brokerPort}",
+                    text = "${paramsEntity.brokerHost}:${paramsEntity.brokerPort}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
@@ -148,51 +154,3 @@ fun EmptyConnectionsView(modifier: Modifier = Modifier) {
     }
 }
 
-//@Preview(showBackground = true, name = "Home Screen With Items")
-@Composable
-fun HomeScreenPreview_WithItems() {
-    val previewProfiles = listOf(
-        MqttConnectionProfile(
-            "1", "Mahati Local", MqttConnectionParams(
-                brokerHost = "192.168.1.5", brokerPort = 1883, clientId = "client1"
-            )
-        ), MqttConnectionProfile(
-            "2", "Mahati Cloud", MqttConnectionParams(
-                brokerHost = "cloud.mqtt.com", brokerPort = 1883, clientId = "client2"
-            )
-        )
-    )
-    MaterialTheme {
-        Scaffold(
-            topBar = { TopAppBar(title = { Text("MQTT Connections Preview") }) },
-            floatingActionButton = {
-                FloatingActionButton(onClick = {}) {
-                    Icon(
-                        Icons.Filled.Add, ""
-                    )
-                }
-            }) {
-            ConnectionsList(
-                profiles = previewProfiles, onProfileClick = {}, modifier = Modifier.padding(it)
-            )
-        }
-    }
-}
-
-//@Preview(showBackground = true, name = "Home Screen Empty")
-@Composable
-fun HomeScreenPreview_Empty() {
-    MaterialTheme {
-        Scaffold(
-            topBar = { TopAppBar(title = { Text("MQTT Connections Preview") }) },
-            floatingActionButton = {
-                FloatingActionButton(onClick = {}) {
-                    Icon(
-                        Icons.Filled.Add, ""
-                    )
-                }
-            }) {
-            EmptyConnectionsView(modifier = Modifier.padding(it))
-        }
-    }
-}

@@ -13,7 +13,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import `in`.eswarm.mahati.AppComponent
 
 @Composable
-fun ConnectionScreen(
+fun NewConnectionScreen(
     appComponent: AppComponent, connectionViewModel: ConnectionViewModel = viewModel(
         factory = ConnectionViewModel.Factory(
             appComponent.mqttManager,
@@ -33,7 +33,7 @@ fun ConnectionScreen(
         Text("MQTT Connection", style = MaterialTheme.typography.headlineSmall)
 
         OutlinedTextField(
-            value = uiState.clientId,
+            value = uiState.clientID,
             onValueChange = { connectionViewModel.onClientIdChange(it) },
             label = { Text("Client ID") },
             isError = uiState.clientIdError != null,

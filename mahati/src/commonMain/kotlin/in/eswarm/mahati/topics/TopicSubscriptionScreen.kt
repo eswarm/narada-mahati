@@ -17,7 +17,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import `in`.eswarm.mahati.AppComponent
 import `in`.eswarm.mahati.mqtt.common.MqttClientState
-import `in`.eswarm.mahati.mqtt.common.MqttConnectionParams
 import `in`.eswarm.mahati.mqtt.common.MqttMessage
 import `in`.eswarm.mahati.mqtt.core.MqttManager
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -66,7 +65,7 @@ fun TopicSubscriptionScreen(
                     })
             }
 
-            if (uiState.isLoading && uiState.subscribedTopics.isEmpty()) { // Show full screen loader if loading initial list
+            if (uiState.isLoading && uiState.subscribedTopics.isEmpty()) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             }
 
@@ -107,9 +106,7 @@ fun SubscribedTopicItem(
         modifier = modifier.fillMaxWidth()
     ) {
         Row(
-            modifier = Modifier
-                .padding(horizontal = 16.dp, vertical = 12.dp)
-                .fillMaxWidth(),
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp).fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
@@ -211,91 +208,3 @@ fun SubscribeToTopicDialog(
         }
     }
 }
-
-
-// --- Preview Setup ---
-
-// A mock MqttManager for previews
-class PreviewMqttManager : MqttManager {
-    override val connectionState: StateFlow<MqttClientState> =
-        MutableStateFlow(MqttClientState.Disconnected)
-
-    // override val receivedMessages: StateFlow<`in`.eswarm.mahati.mqtt.common.ReceivedMqttMessage?> = MutableStateFlow(null) // Adjusted for preview
-    // Simplified receivedMessages for preview
-    private val _previewReceivedMessages =
-        MutableStateFlow<MqttMessage>(MqttMessage("Hello", ByteArray(0), 0, false))
-    override val receivedMessages: StateFlow<MqttMessage> =
-        _previewReceivedMessages.asStateFlow() // Fixed to use SharedFlow's subtyping with StateFlow for preview simplicity
-
-
-    override fun connect(params: MqttConnectionParams) {}
-    override fun disconnect() {}
-    override suspend fun publish(
-        topic: String, message: String, qos: Int, retain: Boolean
-    ): Boolean = true
-
-    override suspend fun publish(
-        topic: String, payload: ByteArray, qos: Int, retain: Boolean
-    ): Boolean = true
-
-    override suspend fun subscribe(topicFilter: String, qos: Int): Boolean =
-        CompletableDeferred<Boolean>().await() // Simulates suspension
-
-    override suspend fun unsubscribe(topicFilter: String): Boolean = true
-    override fun cleanup() {}
-}
-
-/*
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@Preview(showBackground = true, name = "Topic Subscription Screen - Empty")
-@Composable
-fun TopicSubscriptionScreenPreview_Empty() {
-    val previewMqttManager = PreviewMqttManager()
-    val viewModel = TopicSubscriptionViewModel(previewMqttManager)
-    MaterialTheme {
-        TopicSubscriptionScreen(viewModel = viewModel)
-    }
-}
-
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@Preview(showBackground = true, name = "Topic Subscription Screen - With Items")
-@Composable
-fun TopicSubscriptionScreenPreview_WithItems() {
-    val previewMqttManager = PreviewMqttManager()
-    val viewModel = TopicSubscriptionViewModel(previewMqttManager).apply {
-        // Manually set state for preview
-        val previewTopics = listOf(
-            SubscribedTopic("home/livingroom/temp", 0, Date(System.currentTimeMillis() - 100000)),
-            SubscribedTopic("sensors/+/data", 1, Date(System.currentTimeMillis() - 200000)),
-            SubscribedTopic("alerts/#", 2)
-        )
-        // This direct update is for preview simplicity. In real code, go through events.
-        (this.uiState as MutableStateFlow).value =
-            TopicSubscriptionUiState(subscribedTopics = previewTopics)
-    }
-    MaterialTheme {
-        TopicSubscriptionScreen(viewModel = viewModel)
-    }
-}
-
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@Preview(showBackground = true, name = "Topic Subscription Screen - Dialog Open")
-@Composable
-fun TopicSubscriptionScreenPreview_Dialog() {
-    val previewMqttManager = PreviewMqttManager().apply {
-        // It seems the MqttManager interface's receivedMessages is SharedFlow, not StateFlow.
-        // For preview, we often simplify. If it must be SharedFlow, PreviewMqttManager needs to reflect that.
-        // However, the ViewModel currently expects StateFlow<ReceivedMqttMessage?> which is a bit unusual for a stream of messages.
-        // The MqttManagerImpl uses MutableSharedFlow for receivedMessages.
-        // Let's assume for Preview we can provide a compatible StateFlow for simplicity.
-    }
-    val viewModel = TopicSubscriptionViewModel(previewMqttManager).apply {
-        (this.uiState as MutableStateFlow).value =
-            TopicSubscriptionUiState(showSubscribeDialog = true)
-    }
-    MaterialTheme {
-        TopicSubscriptionScreen(viewModel = viewModel)
-    }
-}
-*/
-
