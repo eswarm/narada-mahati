@@ -4,13 +4,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
+import `in`.eswarm.mahati.connection.ConnectionUiState
 import `in`.eswarm.mahati.db.ConnectionRepository
 import `in`.eswarm.mahati.db.MqttConnectionParamsEntity
+import `in`.eswarm.mahati.mqtt.common.MqttClientState
 import `in`.eswarm.mahati.mqtt.core.MqttManager
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.reflect.KClass
 
@@ -31,15 +34,65 @@ class HomeViewModel(val connectionRepo: ConnectionRepository, val mqttManager: M
 
     private val _sideEffects = MutableStateFlow<HomeSideEffect?>(null)
     val sideEffects: StateFlow<HomeSideEffect?> = _sideEffects.asStateFlow()
+    private val _uiState = MutableStateFlow(ConnectionUiState())
+    val uiState: StateFlow<ConnectionUiState> = _uiState.asStateFlow()
+    private var currentClientID: String? = null
 
     init {
         loadConnectionProfiles()
+
+        viewModelScope.launch {
+            mqttManager.connectionState.collect { state ->
+                _uiState.update { currentUiState ->
+                    when (state) {
+                        MqttClientState.Disconnected -> {
+                            currentUiState.copy(
+                                isConnecting = false,
+                                connectionError = if (currentUiState.isConnecting || currentUiState.connectionSuccess) "Disconnected" else null,
+                                connectionSuccess = false
+                            )
+                        }
+
+                        MqttClientState.Connecting -> {
+                            currentUiState.copy(
+                                isConnecting = true,
+                                connectionSuccess = false,
+                                connectionError = null
+                            )
+                        }
+
+                        is MqttClientState.Connected -> {
+                            _sideEffects.value =
+                                HomeSideEffect.NavigateToConnectionDetails(
+                                    checkNotNull(
+                                        currentClientID
+                                    )
+                                )
+
+                            currentUiState.copy(
+                                isConnecting = false,
+                                connectionSuccess = true,
+                                connectionError = null
+                            )
+                        }
+
+                        is MqttClientState.Error -> {
+                            currentUiState.copy(
+                                isConnecting = false,
+                                connectionSuccess = false,
+                                connectionError = state.message
+                            )
+                        }
+                    }
+                }
+            }
+        }
     }
+
 
     private fun loadConnectionProfiles() {
         viewModelScope.launch {
-            profiles =
-                connectionRepo.getAllConnectionsFlow()
+            profiles = connectionRepo.getAllConnectionsFlow()
         }
     }
 
@@ -51,8 +104,10 @@ class HomeViewModel(val connectionRepo: ConnectionRepository, val mqttManager: M
                 }
 
                 is HomeUiEvent.ConnectionSelected -> {
+                    // TODO :: show progress dialog.
                     val params = connectionRepo.getConnectionByClientId(event.clientID)
                     if (params != null) {
+                        currentClientID = params.clientID
                         mqttManager.connect(params)
                     }
                 }
@@ -66,8 +121,7 @@ class HomeViewModel(val connectionRepo: ConnectionRepository, val mqttManager: M
 
     companion object {
         fun Factory(
-            connectionRepo: ConnectionRepository,
-            mqttManager: MqttManager
+            connectionRepo: ConnectionRepository, mqttManager: MqttManager
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
 

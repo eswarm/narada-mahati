@@ -176,8 +176,9 @@ class HiveMqMqttManagerImpl(
         }
         return try {
             val mqttQos = MqttQos.fromCode(qos) ?: MqttQos.AT_MOST_ONCE
+            val filter = (currentParams?.topicPrefix ?: "") + topicFilter
             currentClient.subscribeWith()
-                .topicFilter(currentParams?.topicPrefix ?: "" + topicFilter).qos(mqttQos).send()
+                .topicFilter(filter).qos(mqttQos).send()
                 .toSuspend().let { subAck ->
                     !subAck.reasonCodes.any { it.isError }
                 }
