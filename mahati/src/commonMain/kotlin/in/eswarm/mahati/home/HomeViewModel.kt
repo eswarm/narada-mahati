@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import `in`.eswarm.mahati.connection.ConnectionUiState
 import `in`.eswarm.mahati.db.ConnectionRepository
-import `in`.eswarm.mahati.db.MqttConnectionParamsEntity
+import `in`.eswarm.mahati.db.MqttConnection
 import `in`.eswarm.mahati.mqtt.common.MqttClientState
 import `in`.eswarm.mahati.mqtt.core.MqttManager
 import kotlinx.coroutines.flow.Flow
@@ -30,7 +30,7 @@ sealed interface HomeSideEffect {
 
 class HomeViewModel(val connectionRepo: ConnectionRepository, val mqttManager: MqttManager) :
     ViewModel() {
-    var profiles: Flow<List<MqttConnectionParamsEntity>> = MutableStateFlow(emptyList())
+    var profiles: Flow<List<MqttConnection>> = MutableStateFlow(emptyList())
 
     private val _sideEffects = MutableStateFlow<HomeSideEffect?>(null)
     val sideEffects: StateFlow<HomeSideEffect?> = _sideEffects.asStateFlow()

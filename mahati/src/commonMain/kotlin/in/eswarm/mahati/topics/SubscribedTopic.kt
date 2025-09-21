@@ -1,7 +1,5 @@
 package `in`.eswarm.mahati.topics
 
-import java.util.Date
-
 /**
  * Represents a topic the user is currently subscribed to.
  *
@@ -10,7 +8,8 @@ import java.util.Date
  * @param subscribedAt Timestamp of when the subscription was made.
  */
 data class SubscribedTopic(
+    val clientID: String,
     val topicFilter: String,
     val qos: Int,
-    val subscribedAt: Date = Date() // Default to current time, can be set explicitly
+    val subscribedAt: Long = System.currentTimeMillis()
 )

@@ -33,23 +33,23 @@ class ConnectionRepository {
         }
     }
 
-    suspend fun getConnectionByClientId(clientID: String): MqttConnectionParamsEntity? {
+    suspend fun getConnectionByClientId(clientID: String): MqttConnection? {
         return withContext(Dispatchers.IO) {
             queries.selectByClientID(clientID).executeAsOneOrNull()
         }
     }
 
-    fun getConnectionByClientIdFlow(clientID: String): Flow<MqttConnectionParamsEntity?> {
+    fun getConnectionByClientIdFlow(clientID: String): Flow<MqttConnection?> {
         return queries.selectByClientID(clientID).asFlow().mapToOneOrNull(Dispatchers.IO)
     }
 
-    suspend fun getAllConnections(): List<MqttConnectionParamsEntity> {
+    suspend fun getAllConnections(): List<MqttConnection> {
         return withContext(Dispatchers.IO) {
             queries.selectAll().executeAsList()
         }
     }
 
-    fun getAllConnectionsFlow(): Flow<List<MqttConnectionParamsEntity>> {
+    fun getAllConnectionsFlow(): Flow<List<MqttConnection>> {
         return queries.selectAll().asFlow().mapToList(Dispatchers.IO)
     }
 

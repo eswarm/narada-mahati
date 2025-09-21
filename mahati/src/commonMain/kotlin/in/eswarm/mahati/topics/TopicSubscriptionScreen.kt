@@ -24,7 +24,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 @Composable
 fun TopicSubscriptionScreen(
     appComponent: AppComponent,
-    viewModel: TopicSubscriptionViewModel = viewModel(factory = TopicViewModelFactory(appComponent))
+    clientID: String,
+    viewModel: TopicSubscriptionViewModel = viewModel(factory = TopicViewModelFactory(appComponent.mqttManager, clientID)),
+    onTopicClick: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -55,7 +57,8 @@ fun TopicSubscriptionScreen(
                 SubscribedTopicsList(
                     topics = uiState.subscribedTopics, onUnsubscribe = { topicFilter ->
                         viewModel.onEvent(TopicSubscriptionEvent.UnsubscribeFromTopic(topicFilter))
-                    })
+                    }, onTopicClick = onTopicClick
+                )
             }
 
             if (uiState.isLoading && uiState.subscribedTopics.isEmpty()) {
@@ -75,7 +78,10 @@ fun TopicSubscriptionScreen(
 
 @Composable
 fun SubscribedTopicsList(
-    topics: List<SubscribedTopic>, onUnsubscribe: (String) -> Unit, modifier: Modifier = Modifier
+    topics: List<SubscribedTopic>,
+    onUnsubscribe: (String) -> Unit,
+    onTopicClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     LazyColumn(
         modifier = modifier.fillMaxSize(),
@@ -84,7 +90,10 @@ fun SubscribedTopicsList(
     ) {
         items(topics, key = { it.topicFilter }) { topic ->
             SubscribedTopicItem(
-                topic = topic, onUnsubscribe = { onUnsubscribe(topic.topicFilter) })
+                topic = topic,
+                onUnsubscribe = { onUnsubscribe(topic.topicFilter) },
+                onTopicClick = onTopicClick
+            )
         }
     }
 }
@@ -92,11 +101,14 @@ fun SubscribedTopicsList(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SubscribedTopicItem(
-    topic: SubscribedTopic, onUnsubscribe: () -> Unit, modifier: Modifier = Modifier
+    topic: SubscribedTopic,
+    onUnsubscribe: () -> Unit,
+    onTopicClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val dateFormatter = remember { SimpleDateFormat("MMM dd, HH:mm", Locale.getDefault()) }
     Card(
-        modifier = modifier.fillMaxWidth()
+        onClick = { onTopicClick() }, modifier = modifier.fillMaxWidth()
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp).fillMaxWidth(),

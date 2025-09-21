@@ -36,7 +36,9 @@ fun AppNavigation(appComponent: AppComponent) {
             val clientID = backStackEntry.arguments?.getString("clientID")
             if (clientID != null) {
                 TopicSubscriptionScreen(
-                    appComponent
+                    appComponent,
+                    clientID,
+                    onTopicClick = { navController.navigate(Screen.Chat.createRoute(clientID)) }
                 )
             }
         }

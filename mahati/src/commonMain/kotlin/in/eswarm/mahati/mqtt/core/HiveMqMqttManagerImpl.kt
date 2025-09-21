@@ -10,7 +10,7 @@ import com.hivemq.client.mqtt.datatypes.MqttQos
 import com.hivemq.client.mqtt.lifecycle.MqttClientConnectedContext
 import com.hivemq.client.mqtt.mqtt5.Mqtt5AsyncClient
 import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish
-import `in`.eswarm.mahati.db.MqttConnectionParamsEntity
+import `in`.eswarm.mahati.db.MqttConnection
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,7 +31,7 @@ class HiveMqMqttManagerImpl(
 ) : MqttManager {
 
     private var client: Mqtt5AsyncClient? = null
-    private var currentParams: MqttConnectionParamsEntity? = null
+    private var currentParams: MqttConnection? = null
 
     private val _connectionState = MutableStateFlow<MqttClientState>(MqttClientState.Disconnected)
     override val connectionState: StateFlow<MqttClientState> = _connectionState.asStateFlow()
@@ -52,7 +52,7 @@ class HiveMqMqttManagerImpl(
         }
     }
 
-    override fun connect(params: MqttConnectionParamsEntity) {
+    override fun connect(params: MqttConnection) {
         if (_connectionState.value is MqttClientState.Connected || _connectionState.value is MqttClientState.Connecting) {
             if (currentParams == params && client?.state?.isConnectedOrReconnect == true) {
                 // Already connected or connecting with the same parameters

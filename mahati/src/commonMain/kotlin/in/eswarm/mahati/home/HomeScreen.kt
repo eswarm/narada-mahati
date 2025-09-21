@@ -27,7 +27,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import `in`.eswarm.mahati.AppComponent
-import `in`.eswarm.mahati.db.MqttConnectionParamsEntity
+import `in`.eswarm.mahati.db.MqttConnection
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -84,7 +84,7 @@ fun HomeScreen(
 
 @Composable
 fun ConnectionsList(
-    profiles: List<MqttConnectionParamsEntity>,
+    profiles: List<MqttConnection>,
     onProfileClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -104,7 +104,7 @@ fun ConnectionsList(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ConnectionListItem(
-    paramsEntity: MqttConnectionParamsEntity, onClick: () -> Unit, modifier: Modifier = Modifier
+    paramsEntity: MqttConnection, onClick: () -> Unit, modifier: Modifier = Modifier
 ) {
     Card(
         onClick = onClick, modifier = modifier.fillMaxWidth()

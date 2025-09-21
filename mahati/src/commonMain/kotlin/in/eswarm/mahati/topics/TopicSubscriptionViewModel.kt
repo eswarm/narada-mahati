@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
-import `in`.eswarm.mahati.AppComponent
 import `in`.eswarm.mahati.mqtt.core.MqttManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -30,26 +29,12 @@ data class TopicSubscriptionUiState(
 )
 
 class TopicSubscriptionViewModel(
-    private val mqttManager: MqttManager
+    private val mqttManager: MqttManager,
+    private val clientID: String
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(TopicSubscriptionUiState())
     val uiState: StateFlow<TopicSubscriptionUiState> = _uiState.asStateFlow()
-
-    init {
-        // In a real app, you might want to load existing subscriptions if MqttManager keeps track
-        // Or, this list is purely ephemeral and reflects what this ViewModel has asked to subscribe to.
-        // For this example, we'll manage the list within the ViewModel based on subscribe/unsubscribe actions.
-
-        // Example: Observe MqttManager's connection state to clear topics on disconnect
-        // viewModelScope.launch {
-        //     mqttManager.connectionState.collect { state ->
-        //         if (state is MqttClientState.Disconnected || state is MqttClientState.Error) {
-        //             _uiState.update { it.copy(subscribedTopics = emptyList(), error = "Disconnected") }
-        //         }
-        //     }
-        // }
-    }
 
     fun onEvent(event: TopicSubscriptionEvent) {
         when (event) {
@@ -84,7 +69,7 @@ class TopicSubscriptionViewModel(
         viewModelScope.launch {
             val success = mqttManager.subscribe(topicFilter, qos)
             if (success) {
-                val newSubscription = SubscribedTopic(topicFilter, qos)
+                val newSubscription = SubscribedTopic(clientID, topicFilter, qos)
                 _uiState.update { currentState ->
                     // Avoid duplicates if already present (though MQTT broker handles actual subscription state)
                     if (currentState.subscribedTopics.any { it.topicFilter == topicFilter }) {
@@ -131,13 +116,14 @@ class TopicSubscriptionViewModel(
     }
 }
 
-class TopicViewModelFactory(val appComponent: AppComponent) : ViewModelProvider.Factory {
+class TopicViewModelFactory(val mqttManager: MqttManager, val clientID: String) :
+    ViewModelProvider.Factory {
 
     override fun <T : ViewModel> create(
         modelClass: KClass<T>,
         extras: CreationExtras
     ): T {
-        return TopicSubscriptionViewModel(appComponent.mqttManager) as T
+        return TopicSubscriptionViewModel(mqttManager, clientID) as T
     }
 
 }
