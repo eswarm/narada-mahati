@@ -7,7 +7,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 
-class ConnectionRepository {
+class ConnectionAdapter {
 
     private val queries = getMahatiDb().mqttConnectionParamsQueries
 
@@ -27,7 +27,7 @@ class ConnectionRepository {
                 clientID = clientId,
                 username = username,
                 password = password,
-                useSsl = if (useSsl) 1 else 0, // Corrected: Pass Boolean directly, adapter handles it
+                useSsl = useSsl, // Corrected: Pass Boolean directly, adapter handles it
                 topicPrefix = topicPrefix
             )
         }

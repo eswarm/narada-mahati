@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
-import `in`.eswarm.mahati.db.ConnectionRepository import `in`.eswarm.mahati.db.MqttConnection
+import `in`.eswarm.mahati.db.ConnectionAdapter import `in`.eswarm.mahati.db.MqttConnection
 import `in`.eswarm.mahati.mqtt.common.MqttClientState
 import `in`.eswarm.mahati.mqtt.core.MqttManager
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,7 +16,7 @@ import kotlin.reflect.KClass
 
 class ConnectionViewModel(
     private val mqttManager: MqttManager,
-    private val repo: ConnectionRepository
+    private val repo: ConnectionAdapter
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ConnectionUiState())
@@ -168,7 +168,7 @@ class ConnectionViewModel(
             clientID = currentState.clientID,
             username = currentState.username.takeIf { it.isNotBlank() },
             password = currentState.password.takeIf { it.isNotBlank() }?.encodeToByteArray(),
-            useSsl = if (currentState.useSsl) 1 else 0,
+            useSsl = currentState.useSsl,
             topicPrefix = "",
             createdAt = System.currentTimeMillis()
         )
@@ -194,7 +194,7 @@ class ConnectionViewModel(
     companion object {
         fun Factory(
             mqttManager: MqttManager,
-            connectionRepo: ConnectionRepository
+            connectionRepo: ConnectionAdapter
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
 

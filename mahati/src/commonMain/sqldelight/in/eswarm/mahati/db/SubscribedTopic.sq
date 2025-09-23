@@ -1,0 +1,44 @@
+-- SubscribedTopic.sq
+-- Stores topics a client is subscribed to.
+
+CREATE TABLE SubscribedTopic (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    clientId TEXT NOT NULL,                -- Identifier for the client/user
+    topicFilter TEXT NOT NULL,             -- The exact topic filter string (e.g., "my/data/#", "sensors/temp")
+    qos INTEGER NOT NULL,                  -- QoS level for the subscription (0, 1, or 2)
+    subscribedAt INTEGER NOT NULL DEFAULT (STRFTIME('%s', 'now')) -- Unix timestamp of subscription
+);
+
+-- Optional: Add an index for faster lookups by clientId and topicFilter
+CREATE INDEX idx_subscribedtopic_client_topic ON SubscribedTopic(clientId, topicFilter);
+
+-- Optional: Add a unique constraint to prevent duplicate subscriptions for the same client and topic
+CREATE UNIQUE INDEX uidx_subscribedtopic_client_topic_unique ON SubscribedTopic(clientId, topicFilter);
+
+
+-- Common Queries for SubscribedTopicEntity
+
+getAllSubscribedTopics:
+SELECT * FROM SubscribedTopic;
+
+getSubscriptionsByClientId:
+SELECT * FROM SubscribedTopic WHERE clientId = ?;
+
+getSubscriptionByClientIdAndTopicFilter:
+SELECT * FROM SubscribedTopic WHERE clientId = ? AND topicFilter = ?;
+
+insertSubscription:
+INSERT OR IGNORE INTO SubscribedTopic(clientId, topicFilter, qos, subscribedAt)
+VALUES (?, ?, ?, ?); -- Using INSERT OR IGNORE due to the unique constraint
+
+deleteSubscriptionById:
+DELETE FROM SubscribedTopic WHERE id = ?;
+
+deleteSubscriptionByClientIdAndTopicFilter:
+DELETE FROM SubscribedTopic WHERE clientId = ? AND topicFilter = ?;
+
+deleteAllSubscriptionsByClientId:
+DELETE FROM SubscribedTopic WHERE clientId = ?;
+
+deleteAllSubscriptions:
+DELETE FROM SubscribedTopic;

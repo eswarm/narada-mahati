@@ -78,7 +78,7 @@ class HiveMqMqttManagerImpl(
                 // For example, if context.userInitiated is true, then MqttClientState.Disconnected
             }
 
-        if (params.useSsl == 1L) {
+        if (params.useSsl) {
             clientBuilder =
                 clientBuilder.sslWithDefaultConfig() // Consider more advanced SSL config if needed
         }

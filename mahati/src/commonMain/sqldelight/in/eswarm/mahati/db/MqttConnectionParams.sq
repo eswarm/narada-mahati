@@ -1,3 +1,5 @@
+import kotlin.Boolean;
+
 CREATE TABLE MqttConnection (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, -- Assuming you want an auto-incrementing ID
     brokerHost TEXT NOT NULL,
@@ -5,7 +7,7 @@ CREATE TABLE MqttConnection (
     clientID TEXT NOT NULL UNIQUE,
     username TEXT,
     password BLOB,
-    useSsl INTEGER NOT NULL DEFAULT 0, -- 0 for false, 1 for true
+    useSsl INTEGER AS Boolean NOT NULL DEFAULT FALSE, -- 0 for false, 1 for true
     topicPrefix TEXT NOT NULL DEFAULT '',
     createdAt INTEGER NOT NULL DEFAULT (STRFTIME('%s', 'now'))
 );

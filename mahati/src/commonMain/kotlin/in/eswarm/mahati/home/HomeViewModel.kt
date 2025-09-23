@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import `in`.eswarm.mahati.connection.ConnectionUiState
-import `in`.eswarm.mahati.db.ConnectionRepository
+import `in`.eswarm.mahati.db.ConnectionAdapter
 import `in`.eswarm.mahati.db.MqttConnection
 import `in`.eswarm.mahati.mqtt.common.MqttClientState
 import `in`.eswarm.mahati.mqtt.core.MqttManager
@@ -28,7 +28,7 @@ sealed interface HomeSideEffect {
     data class NavigateToConnectionDetails(val clientID: String) : HomeSideEffect
 }
 
-class HomeViewModel(val connectionRepo: ConnectionRepository, val mqttManager: MqttManager) :
+class HomeViewModel(val connectionRepo: ConnectionAdapter, val mqttManager: MqttManager) :
     ViewModel() {
     var profiles: Flow<List<MqttConnection>> = MutableStateFlow(emptyList())
 
@@ -121,7 +121,7 @@ class HomeViewModel(val connectionRepo: ConnectionRepository, val mqttManager: M
 
     companion object {
         fun Factory(
-            connectionRepo: ConnectionRepository, mqttManager: MqttManager
+            connectionRepo: ConnectionAdapter, mqttManager: MqttManager
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
 

@@ -18,10 +18,13 @@ fun getMahatiDb(): MahatiDb {
 fun initializeDb(driverFactory: DriverFactory) {
     if (instance == null) {
         val driver = driverFactory.createDriver()
-        // For Android, schema creation is handled by AndroidSqliteDriver's constructor when versions change
-        // For Desktop, we called MahatiDb.Schema.create(driver) in the desktop DriverFactory
+        // For Android, schema creation is handled by AndroidSqliteDriver's constructor when versions change.
+        // For Desktop, we called MahatiDb.Schema.create(driver) in the desktop DriverFactory.
         instance = MahatiDb(
-            driver = driver
+            driver = driver,
+            MqttMessage.Adapter(
+                directionAdapter = messageDirectionAdapter
+            )
         )
     }
 }
