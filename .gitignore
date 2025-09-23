@@ -91,3 +91,5 @@ google-services.json
 *.hprof
 /upload_certificate.pem
 /app/release/*
+/.kotlin/*
+/narada/release/*
