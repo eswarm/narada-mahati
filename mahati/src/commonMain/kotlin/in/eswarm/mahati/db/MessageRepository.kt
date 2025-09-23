@@ -3,7 +3,6 @@ package `in`.eswarm.mahati.db
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO // For Dispatchers.IO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 
@@ -13,8 +12,8 @@ class MessageRepository {
     // and the table name (e.g., MqttMessage or MqttMessageEntity)
     private val queries = getMahatiDb().mqttMessageQueries
 
-    suspend fun storeMessage(
-        clientId: String,
+    suspend fun insertMessage(
+        clientID: String,
         topicName: String,
         payload: ByteArray,
         qos: Long, // Matches INTEGER
@@ -24,7 +23,7 @@ class MessageRepository {
     ) {
         withContext(Dispatchers.IO) {
             queries.insertMessage(
-                clientId = clientId,
+                clientID = clientID,
                 topicName = topicName,
                 payload = payload,
                 qos = qos,
@@ -35,26 +34,26 @@ class MessageRepository {
         }
     }
 
-    suspend fun getMessagesByClientIdAndTopic(clientId: String, topicName: String): List<MqttMessage> {
+    suspend fun getMessagesByClientIdAndTopic(clientID: String, topicName: String): List<MqttMessage> {
         return withContext(Dispatchers.IO) {
-            queries.getMessagesByClientIdAndTopic(clientId, topicName).executeAsList()
+            queries.getMessagesByClientIdAndTopic(clientID, topicName).executeAsList()
         }
     }
 
-    fun getMessagesByClientIdAndTopicFlow(clientId: String, topicName: String): Flow<List<MqttMessage>> {
-        return queries.getMessagesByClientIdAndTopic(clientId, topicName)
+    fun getMessagesByClientIdAndTopicFlow(clientID: String, topicName: String): Flow<List<MqttMessage>> {
+        return queries.getMessagesByClientIdAndTopic(clientID, topicName)
             .asFlow()
             .mapToList(Dispatchers.IO)
     }
 
-    suspend fun getMessagesByClientId(clientId: String): List<MqttMessage> {
+    suspend fun getMessagesByClientId(clientID: String): List<MqttMessage> {
         return withContext(Dispatchers.IO) {
-            queries.getMessagesByClientId(clientId).executeAsList()
+            queries.getMessagesByClientId(clientID).executeAsList()
         }
     }
 
-    fun getMessagesByClientIdFlow(clientId: String): Flow<List<MqttMessage>> {
-        return queries.getMessagesByClientId(clientId).asFlow().mapToList(Dispatchers.IO)
+    fun getMessagesByClientIdFlow(clientID: String): Flow<List<MqttMessage>> {
+        return queries.getMessagesByClientId(clientID).asFlow().mapToList(Dispatchers.IO)
     }
 
     suspend fun deleteMessagesOlderThan(timestamp: Long) {
@@ -63,9 +62,9 @@ class MessageRepository {
         }
     }
 
-    suspend fun deleteAllMessagesByClientId(clientId: String) {
+    suspend fun deleteAllMessagesByClientId(clientID: String) {
         withContext(Dispatchers.IO) {
-            queries.deleteMessagesByClientId(clientId)
+            queries.deleteMessagesByClientId(clientID)
         }
     }
 

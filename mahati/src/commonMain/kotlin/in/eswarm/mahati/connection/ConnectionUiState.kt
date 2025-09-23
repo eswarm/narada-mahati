@@ -2,7 +2,7 @@ package `in`.eswarm.mahati.connection
 
 data class ConnectionUiState(
     val clientID: String = "",
-    val clientIdError: String? = null,
+    val clientIDError: String? = null,
     val hostname: String = "",
     val hostnameError: String? = null,
     val port: String = "", // Keep as String for input, convert to Int in ViewModel

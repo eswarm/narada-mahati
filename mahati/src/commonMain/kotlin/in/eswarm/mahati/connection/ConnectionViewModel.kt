@@ -78,7 +78,7 @@ class ConnectionViewModel(
         _uiState.update {
             it.copy(
                 clientID = clientId,
-                clientIdError = null,
+                clientIDError = null,
                 connectionError = null,
                 connectionSuccess = false
             )
@@ -128,7 +128,7 @@ class ConnectionViewModel(
         // Clear previous validation errors and connection status messages
         _uiState.update {
             it.copy(
-                clientIdError = null,
+                clientIDError = null,
                 hostnameError = null,
                 portError = null,
                 connectionError = null,
@@ -138,7 +138,7 @@ class ConnectionViewModel(
         }
 
         if (currentState.clientID.isBlank()) {
-            _uiState.update { it.copy(clientIdError = "Client ID cannot be empty") }
+            _uiState.update { it.copy(clientIDError = "Client ID cannot be empty") }
             isValid = false
         }
 

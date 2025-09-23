@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
+import `in`.eswarm.mahati.db.SubscribedTopic
+import `in`.eswarm.mahati.db.SubscriptionRepository
 import `in`.eswarm.mahati.mqtt.core.MqttManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -30,11 +32,25 @@ data class TopicSubscriptionUiState(
 
 class TopicSubscriptionViewModel(
     private val mqttManager: MqttManager,
-    private val clientID: String
+    private val clientID: String,
+    private val subscriptionRepository: SubscriptionRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(TopicSubscriptionUiState())
     val uiState: StateFlow<TopicSubscriptionUiState> = _uiState.asStateFlow()
+
+    fun load() {
+        viewModelScope.launch {
+            val subscriptions = subscriptionRepository.getSubscriptionsByClientId(clientID)
+
+            _uiState.update { currentState ->
+                currentState.copy(
+                    subscribedTopics = subscriptions, isLoading = false, error = null
+                )
+            }
+
+        }
+    }
 
     fun onEvent(event: TopicSubscriptionEvent) {
         when (event) {
@@ -69,7 +85,9 @@ class TopicSubscriptionViewModel(
         viewModelScope.launch {
             val success = mqttManager.subscribe(topicFilter, qos)
             if (success) {
-                val newSubscription = SubscribedTopic(clientID, topicFilter, qos)
+                val newSubscription = SubscribedTopic(
+                    0, clientID, topicFilter, qos.toLong(), System.currentTimeMillis()
+                )
                 _uiState.update { currentState ->
                     // Avoid duplicates if already present (though MQTT broker handles actual subscription state)
                     if (currentState.subscribedTopics.any { it.topicFilter == topicFilter }) {
@@ -116,14 +134,16 @@ class TopicSubscriptionViewModel(
     }
 }
 
-class TopicViewModelFactory(val mqttManager: MqttManager, val clientID: String) :
-    ViewModelProvider.Factory {
+class TopicViewModelFactory(
+    val mqttManager: MqttManager,
+    val clientID: String,
+    val subscriptionRepository: SubscriptionRepository
+) : ViewModelProvider.Factory {
 
     override fun <T : ViewModel> create(
-        modelClass: KClass<T>,
-        extras: CreationExtras
+        modelClass: KClass<T>, extras: CreationExtras
     ): T {
-        return TopicSubscriptionViewModel(mqttManager, clientID) as T
+        return TopicSubscriptionViewModel(mqttManager, clientID, subscriptionRepository) as T
     }
 
 }

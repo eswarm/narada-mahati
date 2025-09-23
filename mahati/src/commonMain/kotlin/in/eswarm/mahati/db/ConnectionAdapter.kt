@@ -14,7 +14,7 @@ class ConnectionAdapter {
     suspend fun addConnection(
         brokerHost: String,
         brokerPort: Long,
-        clientId: String,
+        clientID: String,
         username: String?,
         password: ByteArray?,
         useSsl: Boolean,
@@ -24,7 +24,7 @@ class ConnectionAdapter {
             queries.insert(
                 brokerHost = brokerHost,
                 brokerPort = brokerPort,
-                clientID = clientId,
+                clientID = clientID,
                 username = username,
                 password = password,
                 useSsl = useSsl, // Corrected: Pass Boolean directly, adapter handles it

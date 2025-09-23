@@ -3,7 +3,7 @@ import kotlin.Boolean;
 
 CREATE TABLE MqttMessage (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    clientId TEXT NOT NULL,                 -- Identifier for the client/user
+    clientID TEXT NOT NULL,                 -- Identifier for the client/user
     topicName TEXT NOT NULL,                -- The actual topic the message was published to/received on
     payload BLOB NOT NULL,                  -- Message content as ByteArray
     qos INTEGER NOT NULL,                   -- QoS level of the message
@@ -13,7 +13,7 @@ CREATE TABLE MqttMessage (
 );
 
 -- Indexes for common query patterns
-CREATE INDEX idx_topicmessage_client_topic ON MqttMessage(clientId, topicName, timestamp);
+CREATE INDEX idx_topicmessage_client_topic ON MqttMessage(clientID, topicName, timestamp);
 CREATE INDEX idx_topicmessage_timestamp ON MqttMessage(timestamp);
 
 
@@ -24,23 +24,23 @@ SELECT * FROM MqttMessage ORDER BY timestamp DESC;
 
 getMessagesByClientIdAndTopic:
 SELECT * FROM MqttMessage
-WHERE clientId = ? AND topicName = ?
+WHERE clientID = ? AND topicName = ?
 ORDER BY timestamp DESC;
 
 getMessagesByClientId:
 SELECT * FROM MqttMessage
-WHERE clientId = ?
+WHERE clientID = ?
 ORDER BY timestamp DESC;
 
 insertMessage:
-INSERT INTO MqttMessage(clientId, topicName, payload, qos, retained, direction, timestamp)
+INSERT INTO MqttMessage(clientID, topicName, payload, qos, retained, direction, timestamp)
 VALUES (?, ?, ?, ?, ?, ?, ?);
 
 deleteMessagesByClientIdAndTopic:
-DELETE FROM MqttMessage WHERE clientId = ? AND topicName = ?;
+DELETE FROM MqttMessage WHERE clientID = ? AND topicName = ?;
 
 deleteMessagesByClientId:
-DELETE FROM MqttMessage WHERE clientId = ?;
+DELETE FROM MqttMessage WHERE clientID = ?;
 
 deleteAllMessages:
 DELETE FROM MqttMessage;

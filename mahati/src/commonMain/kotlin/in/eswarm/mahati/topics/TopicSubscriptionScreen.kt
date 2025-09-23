@@ -19,13 +19,20 @@ import `in`.eswarm.mahati.AppComponent
 import java.text.SimpleDateFormat
 import java.util.Locale
 import androidx.lifecycle.viewmodel.compose.viewModel
+import `in`.eswarm.mahati.db.SubscribedTopic
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopicSubscriptionScreen(
     appComponent: AppComponent,
     clientID: String,
-    viewModel: TopicSubscriptionViewModel = viewModel(factory = TopicViewModelFactory(appComponent.mqttManager, clientID)),
+    viewModel: TopicSubscriptionViewModel = viewModel(
+        factory = TopicViewModelFactory(
+            appComponent.mqttManager,
+            clientID,
+            appComponent.subscriptionRepo
+        )
+    ),
     onTopicClick: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()

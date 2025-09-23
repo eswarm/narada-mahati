@@ -36,13 +36,13 @@ fun NewConnectionScreen(
             value = uiState.clientID,
             onValueChange = { connectionViewModel.onClientIdChange(it) },
             label = { Text("Client ID") },
-            isError = uiState.clientIdError != null,
+            isError = uiState.clientIDError != null,
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
-        if (uiState.clientIdError != null) {
+        if (uiState.clientIDError != null) {
             Text(
-                text = uiState.clientIdError!!,
+                text = uiState.clientIDError!!,
                 color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.bodySmall
             )
