@@ -88,20 +88,16 @@ class TopicSubscriptionViewModel(
                 val newSubscription = SubscribedTopic(
                     0, clientID, topicFilter, qos.toLong(), System.currentTimeMillis()
                 )
-                _uiState.update { currentState ->
-                    // Avoid duplicates if already present (though MQTT broker handles actual subscription state)
-                    if (currentState.subscribedTopics.any { it.topicFilter == topicFilter }) {
+                if (uiState.value.subscribedTopics.any { it.topicFilter == topicFilter }) {
+                    _uiState.update { currentState ->
                         currentState.copy(
                             isLoading = false,
                             error = "Already subscribed to $topicFilter (or re-subscribed)"
                         )
-                    } else {
-                        currentState.copy(
-                            subscribedTopics = currentState.subscribedTopics + newSubscription,
-                            isLoading = false,
-                            error = null
-                        )
                     }
+                } else {
+                    subscriptionRepository.insertSubscription(newSubscription)
+                    load()
                 }
             } else {
                 _uiState.update {

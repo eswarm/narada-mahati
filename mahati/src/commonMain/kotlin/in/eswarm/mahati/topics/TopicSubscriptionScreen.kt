@@ -47,6 +47,11 @@ fun TopicSubscriptionScreen(
         }
     }
 
+    // TODO :: check if this is ok.
+    LaunchedEffect(key1 = Unit) {
+        viewModel.load()
+    }
+
     Scaffold(snackbarHost = { SnackbarHost(snackbarHostState) }, topBar = {
         TopAppBar(title = { Text("Subscribed MQTT Topics") })
     }, floatingActionButton = {

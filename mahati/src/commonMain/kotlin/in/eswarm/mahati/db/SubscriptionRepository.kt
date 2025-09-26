@@ -28,6 +28,15 @@ class SubscriptionRepository {
         }
     }
 
+    suspend fun insertSubscription(subscription: SubscribedTopic) {
+        insertSubscription(
+            clientID = subscription.clientID,
+            topicFilter = subscription.topicFilter,
+            qos = subscription.qos,
+            subscribedAt = subscription.subscribedAt
+        )
+    }
+
     suspend fun getSubscriptionsByClientId(clientID: String): List<SubscribedTopic> {
         return withContext(Dispatchers.IO) {
             queries.getSubscriptionsByClientId(clientID).executeAsList()

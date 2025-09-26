@@ -19,7 +19,10 @@ fun AppNavigation(appComponent: AppComponent) {
     NavHost(navController = navController, startDestination = Screen.Home.route) {
         composable(Screen.NewConnection.route) {
             NewConnectionScreen(
-                appComponent
+                appComponent,
+                {
+                    navController.popBackStack()
+                }
             )
         }
         composable(Screen.Home.route) {

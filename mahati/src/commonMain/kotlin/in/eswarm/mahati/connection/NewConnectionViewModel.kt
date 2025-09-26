@@ -4,7 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
-import `in`.eswarm.mahati.db.ConnectionAdapter import `in`.eswarm.mahati.db.MqttConnection
+import `in`.eswarm.mahati.db.ConnectionAdapter
+import `in`.eswarm.mahati.db.MqttConnection
 import `in`.eswarm.mahati.mqtt.common.MqttClientState
 import `in`.eswarm.mahati.mqtt.core.MqttManager
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,7 +15,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.reflect.KClass
 
-class ConnectionViewModel(
+class NewConnectionViewModel(
     private val mqttManager: MqttManager,
     private val repo: ConnectionAdapter
 ) : ViewModel() {
@@ -175,22 +176,6 @@ class ConnectionViewModel(
         mqttManager.connect(params)
     }
 
-    fun cancel() {
-        // Reset input fields and any error/status messages, keeping checkbox states
-        _uiState.update { current ->
-            ConnectionUiState(
-                useSsl = current.useSsl, useWebsockets = current.useWebsockets
-            )
-        }
-
-        // Request disconnection
-        val currentMqttState = mqttManager.connectionState.value
-        if (currentMqttState is MqttClientState.Connected || currentMqttState is MqttClientState.Connecting) {
-            mqttManager.disconnect()
-        }
-        // The MqttClientState.Disconnected emission from connectionState will update uiState.
-    }
-
     companion object {
         fun Factory(
             mqttManager: MqttManager,
@@ -201,8 +186,8 @@ class ConnectionViewModel(
             override fun <T : ViewModel> create(
                 modelClass: KClass<T>, extras: CreationExtras
             ): T {
-                if (modelClass.java.isAssignableFrom(ConnectionViewModel::class.java)) {
-                    return ConnectionViewModel(mqttManager, connectionRepo) as T
+                if (modelClass.java.isAssignableFrom(NewConnectionViewModel::class.java)) {
+                    return NewConnectionViewModel(mqttManager, connectionRepo) as T
                 }
                 throw IllegalArgumentException("Unknown ViewModel class")
 
