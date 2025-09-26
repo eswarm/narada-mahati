@@ -31,6 +31,8 @@ kotlin {
                 implementation(compose.material3)
                 implementation(compose.ui)
                 implementation(compose.components.uiToolingPreview)
+                implementation(libs.lifecycle.runtime.compose)
+
 
                 implementation(libs.lifecycle.viewmodel.compose) // KMP lifecycle, ensure this is the JetBrains one
                 implementation(libs.navigation.compose)     // KMP navigation, ensure this is the JetBrains one if for commonMain

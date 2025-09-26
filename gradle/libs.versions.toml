@@ -40,6 +40,7 @@ androidx-datastore = { module = "androidx.datastore:datastore", version.ref = "a
 kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
 
 # KMP Common - Multiplatform Settings
+lifecycle-runtime-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycleViewmodelCompose" }
 lifecycle-viewmodel-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleViewmodelCompose" }
 material-icons-core = { module = "org.jetbrains.compose.material:material-icons-core", version.ref = "materialIconsCore" }
 multiplatform-settings-no-arg = { group = "com.russhwolf", name = "multiplatform-settings-no-arg", version.ref = "multiplatformSettings" }

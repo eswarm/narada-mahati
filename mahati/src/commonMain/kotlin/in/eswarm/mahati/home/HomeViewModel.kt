@@ -2,6 +2,7 @@ package `in`.eswarm.mahati.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import `in`.eswarm.mahati.connection.ConnectionUiState
@@ -31,64 +32,62 @@ sealed interface HomeSideEffect {
 class HomeViewModel(val connectionRepo: ConnectionAdapter, val mqttManager: MqttManager) :
     ViewModel() {
     var profiles: Flow<List<MqttConnection>> = MutableStateFlow(emptyList())
-
     private val _sideEffects = MutableStateFlow<HomeSideEffect?>(null)
     val sideEffects: StateFlow<HomeSideEffect?> = _sideEffects.asStateFlow()
     private val _uiState = MutableStateFlow(ConnectionUiState())
     val uiState: StateFlow<ConnectionUiState> = _uiState.asStateFlow()
+    val mqttConnectionState = mqttManager.connectionState
     private var currentClientID: String? = null
 
     init {
         loadConnectionProfiles()
+    }
 
-        viewModelScope.launch {
-            mqttManager.connectionState.collect { state ->
-                _uiState.update { currentUiState ->
-                    when (state) {
-                        MqttClientState.Disconnected -> {
-                            currentUiState.copy(
-                                isConnecting = false,
-                                connectionError = if (currentUiState.isConnecting || currentUiState.connectionSuccess) "Disconnected" else null,
-                                connectionSuccess = false
+
+    fun onMqttStateUpdate(state: MqttClientState) {
+        _uiState.update { currentUiState ->
+            when (state) {
+                MqttClientState.Disconnected -> {
+                    currentUiState.copy(
+                        isConnecting = false,
+                        connectionError = if (currentUiState.isConnecting || currentUiState.connectionSuccess) "Disconnected" else null,
+                        connectionSuccess = false
+                    )
+                }
+
+                MqttClientState.Connecting -> {
+                    currentUiState.copy(
+                        isConnecting = true,
+                        connectionSuccess = false,
+                        connectionError = null
+                    )
+                }
+
+                is MqttClientState.Connected -> {
+                    _sideEffects.value =
+                        HomeSideEffect.NavigateToConnectionDetails(
+                            checkNotNull(
+                                currentClientID
                             )
-                        }
+                        )
 
-                        MqttClientState.Connecting -> {
-                            currentUiState.copy(
-                                isConnecting = true,
-                                connectionSuccess = false,
-                                connectionError = null
-                            )
-                        }
+                    currentUiState.copy(
+                        isConnecting = false,
+                        connectionSuccess = true,
+                        connectionError = null
+                    )
+                }
 
-                        is MqttClientState.Connected -> {
-                            _sideEffects.value =
-                                HomeSideEffect.NavigateToConnectionDetails(
-                                    checkNotNull(
-                                        currentClientID
-                                    )
-                                )
-
-                            currentUiState.copy(
-                                isConnecting = false,
-                                connectionSuccess = true,
-                                connectionError = null
-                            )
-                        }
-
-                        is MqttClientState.Error -> {
-                            currentUiState.copy(
-                                isConnecting = false,
-                                connectionSuccess = false,
-                                connectionError = state.message
-                            )
-                        }
-                    }
+                is MqttClientState.Error -> {
+                    currentUiState.copy(
+                        isConnecting = false,
+                        connectionSuccess = false,
+                        connectionError = state.message
+                    )
                 }
             }
         }
     }
-
 
     private fun loadConnectionProfiles() {
         viewModelScope.launch {

@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import `in`.eswarm.mahati.AppComponent
 import `in`.eswarm.mahati.db.MqttConnection
@@ -44,6 +45,11 @@ fun HomeScreen(
 ) {
     val profiles by viewModel.profiles.collectAsState(emptyList())
     val sideEffect by viewModel.sideEffects.collectAsState()
+    val connectionState by viewModel.mqttConnectionState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(connectionState) {
+        viewModel.onMqttStateUpdate(connectionState)
+    }
 
     LaunchedEffect(sideEffect) {
         when (val effect = sideEffect) {
