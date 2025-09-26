@@ -49,6 +49,7 @@ class ChatViewModel(
 
     private val _uiState = MutableStateFlow(ChatUiState())
     val uiState: StateFlow<ChatUiState> = _uiState.asStateFlow()
+    val connectionState = mqttManager.connectionState
 
     init {
         viewModelScope.launch {
@@ -60,12 +61,6 @@ class ChatViewModel(
                 mqttManager.subscribe(chatTopic, qos = 1) // Use QoS 1 for more reliability
             if (!subscribed) {
                 _uiState.update { it.copy(error = "Failed to subscribe to chat topic: $chatTopic") }
-            }
-        }
-
-        viewModelScope.launch {
-            mqttManager.connectionState.collect { state ->
-                _uiState.update { it.copy(isConnected = state is MqttClientState.Connected) }
             }
         }
 
@@ -91,6 +86,10 @@ class ChatViewModel(
                 }
             }
         }
+    }
+
+    fun onMqttStateChange(state: MqttClientState) {
+        _uiState.update { it.copy(isConnected = state is MqttClientState.Connected) }
     }
 
     fun onInputChange(newInput: String) {

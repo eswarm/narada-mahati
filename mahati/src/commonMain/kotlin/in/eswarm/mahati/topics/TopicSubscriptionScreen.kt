@@ -33,7 +33,7 @@ fun TopicSubscriptionScreen(
             appComponent.subscriptionRepo
         )
     ),
-    onTopicClick: () -> Unit
+    onTopicClick: (topic: String) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -92,7 +92,7 @@ fun TopicSubscriptionScreen(
 fun SubscribedTopicsList(
     topics: List<SubscribedTopic>,
     onUnsubscribe: (String) -> Unit,
-    onTopicClick: () -> Unit,
+    onTopicClick: (topic: String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
@@ -115,12 +115,12 @@ fun SubscribedTopicsList(
 fun SubscribedTopicItem(
     topic: SubscribedTopic,
     onUnsubscribe: () -> Unit,
-    onTopicClick: () -> Unit,
+    onTopicClick: (topic: String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val dateFormatter = remember { SimpleDateFormat("MMM dd, HH:mm", Locale.getDefault()) }
     Card(
-        onClick = { onTopicClick() }, modifier = modifier.fillMaxWidth()
+        onClick = { onTopicClick(topic.topicFilter) }, modifier = modifier.fillMaxWidth()
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp).fillMaxWidth(),

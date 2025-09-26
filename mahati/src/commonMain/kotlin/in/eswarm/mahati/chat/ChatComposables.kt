@@ -25,13 +25,13 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import `in`.eswarm.mahati.AppComponent
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
-// Main Chat Screen Composable
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatScreen(
@@ -46,11 +46,15 @@ fun ChatScreen(
         )
     )
 ) {
+    val connectionState by viewModel.connectionState.collectAsStateWithLifecycle()
     val uiState by viewModel.uiState.collectAsState()
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
+    LaunchedEffect(connectionState) {
+        viewModel.onMqttStateChange(connectionState)
+    }
 
     LaunchedEffect(uiState.messages.size) {
         if (uiState.messages.isNotEmpty()) {
@@ -129,7 +133,6 @@ fun ChatScreen(
     }
 }
 
-// Message Bubble Composable
 @Composable
 fun MessageBubble(message: ChatMessage) {
     val bubbleColor =
@@ -213,7 +216,6 @@ fun MessageStatusIcon(status: MessageStatus) {
     )
 }
 
-// Chat Input Bar Composable
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatInputBar(

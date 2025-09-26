@@ -159,7 +159,7 @@ class HiveMqMqttManagerImpl(
         return try {
             val mqttQos = MqttQos.fromCode(qos) ?: MqttQos.AT_MOST_ONCE
             currentClient.publish(
-                Mqtt5Publish.builder().topic(currentParams?.topicPrefix ?: ("" + topic))
+                Mqtt5Publish.builder().topic((currentParams?.topicPrefix ?: "")  + topic)
                     .payload(payload).qos(mqttQos).retain(retain).build()
             ).toSuspend().let { true } // toSuspend will throw on error
         } catch (e: Exception) {

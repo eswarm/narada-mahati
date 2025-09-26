@@ -41,7 +41,7 @@ fun AppNavigation(appComponent: AppComponent) {
                 TopicSubscriptionScreen(
                     appComponent,
                     clientID,
-                    onTopicClick = { navController.navigate(Screen.Chat.createRoute(clientID)) }
+                    onTopicClick = { topic -> navController.navigate(Screen.Chat.createRoute(topic)) }
                 )
             }
         }
