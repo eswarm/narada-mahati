@@ -36,13 +36,13 @@ import java.util.*
 @Composable
 fun ChatScreen(
     appComponent: AppComponent,
+    clientID: String,
     topic: String,
-    userID: String,
     viewModel: ChatViewModel = viewModel(
         factory = ChatViewModel.Factory(
             appComponent.mqttManager,
             topic,
-            userID
+            clientID
         )
     )
 ) {

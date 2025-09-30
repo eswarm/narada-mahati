@@ -22,7 +22,7 @@ data class ChatUiState(
 class ChatViewModel(
     private val mqttManager: MqttManager,
     val chatTopic: String, // Topic for this specific chat
-    private val currentUserId: String
+    private val clientID: String
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ChatUiState())
@@ -45,7 +45,7 @@ class ChatViewModel(
         viewModelScope.launch {
             mqttManager.receivedMessages.collect { receivedMqttMessage ->
                 if (receivedMqttMessage.topicName == chatTopic) {
-                    if (receivedMqttMessage.clientID != currentUserId) {
+                    if (receivedMqttMessage.clientID != clientID) {
                         val chatMsg = ChatMessage(
                             text = receivedMqttMessage.payloadAsText,
                             timestamp = System.currentTimeMillis(),
@@ -81,7 +81,7 @@ class ChatViewModel(
         val chatMessage = ChatMessage(
             id = tempMessageId,
             text = inputText,
-            senderId = currentUserId,
+            senderId = clientID,
             isSentByUser = true,
             status = MessageStatus.SENDING
         )
@@ -118,8 +118,8 @@ class ChatViewModel(
     companion object {
         fun Factory(
             mqttManager: MqttManager,
-            chatTopic: String,
-            currentUserId: String
+            clientID: String,
+            chatTopic: String
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
 
@@ -128,7 +128,7 @@ class ChatViewModel(
                 extras: CreationExtras
             ): T {
                 if (modelClass.java.isAssignableFrom(ChatViewModel::class.java)) {
-                    return ChatViewModel(mqttManager, chatTopic, currentUserId) as T
+                    return ChatViewModel(mqttManager, chatTopic, clientID) as T
                 }
                 throw IllegalArgumentException("Unknown ViewModel class")
 

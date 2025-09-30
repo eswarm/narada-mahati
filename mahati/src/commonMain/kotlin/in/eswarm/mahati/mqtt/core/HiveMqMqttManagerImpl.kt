@@ -71,8 +71,6 @@ class HiveMqMqttManagerImpl(
                 _connectionState.value = MqttClientState.Error(
                     "Disconnected: ${context.cause.message ?: "Unknown reason"}", context.cause
                 )
-                // You might want a different state for explicit disconnects vs. errors
-                // For example, if context.userInitiated is true, then MqttClientState.Disconnected
             }
 
         if (params.useSsl) {
@@ -109,11 +107,17 @@ class HiveMqMqttManagerImpl(
                         // _connectionState.value = MqttClientState.Connected (handled by listener)
                         // Setup global publish listener after successful connection
                         client?.publishes(MqttGlobalPublishFilter.ALL) { publish ->
+
+                            val userProps = publish.userProperties
+                            val publisherClientIdFromProps = userProps.asList()
+                                .find { it.name.toString() == "clientID" }
+                                ?.value?.toString() // Convert MqttUtf8String to String
+
                             val message = AppMqttMessage(
                                 topicName = params.topicPrefix + publish.topic.toString(),
                                 payload = publish.payloadAsBytes,
                                 qos = publish.qos.code.toLong(),
-                                clientID = params.clientID,
+                                clientID = publisherClientIdFromProps ?: "-",
                                 retained = publish.isRetain,
                                 id = 0,
                                 direction = MessageDirection.RECEIVED,
@@ -161,6 +165,8 @@ class HiveMqMqttManagerImpl(
             val mqttQos = MqttQos.fromCode(qos) ?: MqttQos.AT_MOST_ONCE
             currentClient.publish(
                 Mqtt5Publish.builder().topic((currentParams?.topicPrefix ?: "") + topic)
+                    .userProperties().add("clientID", currentParams?.clientID ?: "")
+                    .applyUserProperties()
                     .payload(payload).qos(mqttQos).retain(retain).build()
             ).toSuspend().let { true } // toSuspend will throw on error
         } catch (e: Exception) {
@@ -178,11 +184,7 @@ class HiveMqMqttManagerImpl(
         return try {
             val mqttQos = MqttQos.fromCode(qos) ?: MqttQos.AT_MOST_ONCE
             val filter = (currentParams?.topicPrefix ?: "") + topicFilter
-            currentClient.subscribeWith()
-                .topicFilter(filter)
-                .qos(mqttQos)
-                .callback({})
-                .send()
+            currentClient.subscribeWith().topicFilter(filter).qos(mqttQos).callback({}).send()
                 .toSuspend().let { subAck ->
                     !subAck.reasonCodes.any { it.isError }
                 }

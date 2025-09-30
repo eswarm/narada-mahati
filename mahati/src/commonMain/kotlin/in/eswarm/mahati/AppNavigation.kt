@@ -41,18 +41,19 @@ fun AppNavigation(appComponent: AppComponent) {
                 TopicSubscriptionScreen(
                     appComponent,
                     clientID,
-                    onTopicClick = { topic -> navController.navigate(Screen.Chat.createRoute(topic)) }
+                    onTopicClick = { topic -> navController.navigate(Screen.Chat.createRoute(topic, clientID)) }
                 )
             }
         }
         composable(
             route = Screen.Chat.route,
-            arguments = listOf(navArgument("topicName") { type = NavType.StringType })
+            arguments = listOf(navArgument("topicName") { type = NavType.StringType }, navArgument("clientID") { type = NavType.StringType })
         ) { backStackEntry ->
-            val topicName = backStackEntry.arguments?.getString("topicName")
+            val topicName = checkNotNull(backStackEntry.arguments?.getString("topicName"))
+            val clientID = checkNotNull(backStackEntry.arguments?.getString("clientID"))
             if (topicName != null) {
                 ChatScreen(
-                    appComponent, topicName, "" // TODO: Fix this.
+                    appComponent,  clientID, topicName
                     // onNavigateBack = { navController.popBackStack() }
                 )
             } else {
