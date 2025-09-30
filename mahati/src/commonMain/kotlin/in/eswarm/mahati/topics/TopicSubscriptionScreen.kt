@@ -47,8 +47,7 @@ fun TopicSubscriptionScreen(
         }
     }
 
-    // TODO :: check if this is ok.
-    LaunchedEffect(key1 = Unit) {
+    LaunchedEffect(clientID) {
         viewModel.load()
     }
 

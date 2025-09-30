@@ -8,3 +8,5 @@ enum class MessageDirection(val code: Long) {
         fun fromCode(code: Long): MessageDirection? = entries.find { it.code == code }
     }
 }
+
+

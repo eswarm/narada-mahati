@@ -1,8 +1,8 @@
 package `in`.eswarm.mahati.mqtt.core
 
+import `in`.eswarm.mahati.db.AppMqttMessage
 import `in`.eswarm.mahati.db.MqttConnection
 import `in`.eswarm.mahati.mqtt.common.MqttClientState
-import `in`.eswarm.mahati.mqtt.common.MqttMessage
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -22,7 +22,7 @@ interface MqttManager {
      * A shared flow that emits messages received from subscribed topics.
      * Multiple collectors can listen to incoming messages.
      */
-    val receivedMessages: SharedFlow<MqttMessage>
+    val receivedMessages: SharedFlow<AppMqttMessage>
 
     /**
      * Attempts to connect to the MQTT broker with the given parameters.

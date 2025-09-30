@@ -7,10 +7,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 
 class MessageRepository {
-
-    // Assuming SQLDelight generates 'mqttMessageQueries' based on 'MqttMessage.sq'
-    // and the table name (e.g., MqttMessage or MqttMessageEntity)
-    private val queries = getMahatiDb().mqttMessageQueries
+    private val queries = getMahatiDb().appMqttMessageQueries
 
     suspend fun insertMessage(
         clientID: String,
@@ -34,25 +31,31 @@ class MessageRepository {
         }
     }
 
-    suspend fun getMessagesByClientIdAndTopic(clientID: String, topicName: String): List<MqttMessage> {
+    suspend fun getMessagesByClientIdAndTopic(
+        clientID: String,
+        topicName: String
+    ): List<AppMqttMessage> {
         return withContext(Dispatchers.IO) {
             queries.getMessagesByClientIdAndTopic(clientID, topicName).executeAsList()
         }
     }
 
-    fun getMessagesByClientIdAndTopicFlow(clientID: String, topicName: String): Flow<List<MqttMessage>> {
+    fun getMessagesByClientIdAndTopicFlow(
+        clientID: String,
+        topicName: String
+    ): Flow<List<AppMqttMessage>> {
         return queries.getMessagesByClientIdAndTopic(clientID, topicName)
             .asFlow()
             .mapToList(Dispatchers.IO)
     }
 
-    suspend fun getMessagesByClientId(clientID: String): List<MqttMessage> {
+    suspend fun getMessagesByClientId(clientID: String): List<AppMqttMessage> {
         return withContext(Dispatchers.IO) {
             queries.getMessagesByClientId(clientID).executeAsList()
         }
     }
 
-    fun getMessagesByClientIdFlow(clientID: String): Flow<List<MqttMessage>> {
+    fun getMessagesByClientIdFlow(clientID: String): Flow<List<AppMqttMessage>> {
         return queries.getMessagesByClientId(clientID).asFlow().mapToList(Dispatchers.IO)
     }
 

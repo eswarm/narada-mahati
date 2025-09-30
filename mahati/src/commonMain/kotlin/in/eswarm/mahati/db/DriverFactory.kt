@@ -22,7 +22,7 @@ fun initializeDb(driverFactory: DriverFactory) {
         // For Desktop, we called MahatiDb.Schema.create(driver) in the desktop DriverFactory.
         instance = MahatiDb(
             driver = driver,
-            MqttMessage.Adapter(
+            AppMqttMessage.Adapter(
                 directionAdapter = messageDirectionAdapter
             )
         )

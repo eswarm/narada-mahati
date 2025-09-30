@@ -1,7 +1,7 @@
 import in.eswarm.mahati.db.MessageDirection;
 import kotlin.Boolean;
 
-CREATE TABLE MqttMessage (
+CREATE TABLE AppMqttMessage (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     clientID TEXT NOT NULL,                 -- Identifier for the client/user
     topicName TEXT NOT NULL,                -- The actual topic the message was published to/received on
@@ -13,37 +13,37 @@ CREATE TABLE MqttMessage (
 );
 
 -- Indexes for common query patterns
-CREATE INDEX idx_topicmessage_client_topic ON MqttMessage(clientID, topicName, timestamp);
-CREATE INDEX idx_topicmessage_timestamp ON MqttMessage(timestamp);
+CREATE INDEX idx_topicmessage_client_topic ON AppMqttMessage(clientID, topicName, timestamp);
+CREATE INDEX idx_topicmessage_timestamp ON AppMqttMessage(timestamp);
 
 
 -- Common Queries for TopicMessageEntity
 
 getAllMessages:
-SELECT * FROM MqttMessage ORDER BY timestamp DESC;
+SELECT * FROM AppMqttMessage ORDER BY timestamp DESC;
 
 getMessagesByClientIdAndTopic:
-SELECT * FROM MqttMessage
+SELECT * FROM AppMqttMessage
 WHERE clientID = ? AND topicName = ?
 ORDER BY timestamp DESC;
 
 getMessagesByClientId:
-SELECT * FROM MqttMessage
+SELECT * FROM AppMqttMessage
 WHERE clientID = ?
 ORDER BY timestamp DESC;
 
 insertMessage:
-INSERT INTO MqttMessage(clientID, topicName, payload, qos, retained, direction, timestamp)
+INSERT INTO AppMqttMessage(clientID, topicName, payload, qos, retained, direction, timestamp)
 VALUES (?, ?, ?, ?, ?, ?, ?);
 
 deleteMessagesByClientIdAndTopic:
-DELETE FROM MqttMessage WHERE clientID = ? AND topicName = ?;
+DELETE FROM AppMqttMessage WHERE clientID = ? AND topicName = ?;
 
 deleteMessagesByClientId:
-DELETE FROM MqttMessage WHERE clientID = ?;
+DELETE FROM AppMqttMessage WHERE clientID = ?;
 
 deleteAllMessages:
-DELETE FROM MqttMessage;
+DELETE FROM AppMqttMessage;
 
 deleteMessagesOlderThan:
-DELETE FROM MqttMessage WHERE timestamp < ?;
+DELETE FROM AppMqttMessage WHERE timestamp < ?;

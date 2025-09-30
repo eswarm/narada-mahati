@@ -3,13 +3,14 @@ package `in`.eswarm.mahati.mqtt.core
 import com.hivemq.client.internal.mqtt.datatypes.MqttUtf8StringImpl
 import com.hivemq.client.internal.mqtt.message.auth.MqttSimpleAuth
 import `in`.eswarm.mahati.mqtt.common.MqttClientState
-import `in`.eswarm.mahati.mqtt.common.MqttMessage
 import com.hivemq.client.mqtt.MqttClient
 import com.hivemq.client.mqtt.MqttGlobalPublishFilter
 import com.hivemq.client.mqtt.datatypes.MqttQos
 import com.hivemq.client.mqtt.lifecycle.MqttClientConnectedContext
 import com.hivemq.client.mqtt.mqtt5.Mqtt5AsyncClient
 import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish
+import `in`.eswarm.mahati.db.AppMqttMessage
+import `in`.eswarm.mahati.db.MessageDirection
 import `in`.eswarm.mahati.db.MqttConnection
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -29,17 +30,13 @@ import kotlin.coroutines.resumeWithException
 class HiveMqMqttManagerImpl(
     private val coroutineScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 ) : MqttManager {
-
     private var client: Mqtt5AsyncClient? = null
     private var currentParams: MqttConnection? = null
-
     private val _connectionState = MutableStateFlow<MqttClientState>(MqttClientState.Disconnected)
     override val connectionState: StateFlow<MqttClientState> = _connectionState.asStateFlow()
-
     private val _receivedMessages =
-        MutableSharedFlow<MqttMessage>(replay = 0, extraBufferCapacity = 64)
-    override val receivedMessages: SharedFlow<MqttMessage> = _receivedMessages.asSharedFlow()
-
+        MutableSharedFlow<AppMqttMessage>(replay = 0, extraBufferCapacity = 64)
+    override val receivedMessages: SharedFlow<AppMqttMessage> = _receivedMessages.asSharedFlow()
 
     private fun MqttClientConnectedContext.toServerUri(): String {
         return try {
@@ -112,11 +109,15 @@ class HiveMqMqttManagerImpl(
                         // _connectionState.value = MqttClientState.Connected (handled by listener)
                         // Setup global publish listener after successful connection
                         client?.publishes(MqttGlobalPublishFilter.ALL) { publish ->
-                            val message = MqttMessage(
-                                topic = params.topicPrefix + publish.topic.toString(),
+                            val message = AppMqttMessage(
+                                topicName = params.topicPrefix + publish.topic.toString(),
                                 payload = publish.payloadAsBytes,
-                                qos = publish.qos.code,
-                                retained = publish.isRetain
+                                qos = publish.qos.code.toLong(),
+                                clientID = params.clientID,
+                                retained = publish.isRetain,
+                                id = 0,
+                                direction = MessageDirection.RECEIVED,
+                                timestamp = System.currentTimeMillis()
                             )
                             coroutineScope.launch {
                                 _receivedMessages.emit(message)
@@ -159,7 +160,7 @@ class HiveMqMqttManagerImpl(
         return try {
             val mqttQos = MqttQos.fromCode(qos) ?: MqttQos.AT_MOST_ONCE
             currentClient.publish(
-                Mqtt5Publish.builder().topic((currentParams?.topicPrefix ?: "")  + topic)
+                Mqtt5Publish.builder().topic((currentParams?.topicPrefix ?: "") + topic)
                     .payload(payload).qos(mqttQos).retain(retain).build()
             ).toSuspend().let { true } // toSuspend will throw on error
         } catch (e: Exception) {
@@ -178,7 +179,10 @@ class HiveMqMqttManagerImpl(
             val mqttQos = MqttQos.fromCode(qos) ?: MqttQos.AT_MOST_ONCE
             val filter = (currentParams?.topicPrefix ?: "") + topicFilter
             currentClient.subscribeWith()
-                .topicFilter(filter).qos(mqttQos).send()
+                .topicFilter(filter)
+                .qos(mqttQos)
+                .callback({})
+                .send()
                 .toSuspend().let { subAck ->
                     !subAck.reasonCodes.any { it.isError }
                 }

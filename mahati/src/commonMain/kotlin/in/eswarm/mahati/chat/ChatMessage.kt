@@ -1,7 +1,6 @@
 package `in`.eswarm.mahati.chat
 
 import java.util.UUID
-import java.util.Date
 
 /**
  * Represents a single message in the chat UI.
@@ -16,7 +15,7 @@ import java.util.Date
 data class ChatMessage(
     val id: String = UUID.randomUUID().toString(),
     val text: String,
-    val timestamp: Date = Date(),
+    val timestamp: Long = 0,
     val senderId: String, // To identify the sender (could be current user or other user)
     val isSentByUser: Boolean,
     val status: MessageStatus? = if (isSentByUser) MessageStatus.SENDING else null

@@ -5,34 +5,12 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import `in`.eswarm.mahati.mqtt.common.MqttClientState
+import `in`.eswarm.mahati.mqtt.common.payloadAsText
 import `in`.eswarm.mahati.mqtt.core.MqttManager
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import java.util.Date
 import java.util.UUID
 import kotlin.reflect.KClass
-
-// A simple structure for messages on the wire.
-// In a real app, you'd use a robust serialization format like JSON (e.g., with kotlinx.serialization).
-data class WireMessage(
-    val senderId: String,
-    val text: String,
-    val timestamp: Long = System.currentTimeMillis()
-)
-
-// Helper to (de)serialize. Replace with proper JSON library for production.
-fun WireMessage.toJsonString(): String = "${'$'}{senderId}|${'$'}{timestamp}|${'$'}{text}"
-fun String.toWireMessage(): WireMessage? {
-    val parts = this.split("|", limit = 3)
-    return if (parts.size == 3) {
-        try {
-            WireMessage(parts[0], parts[2], parts[1].toLong())
-        } catch (e: Exception) {
-            null // Malformed
-        }
-    } else null
-}
-
 
 data class ChatUiState(
     val messages: List<ChatMessage> = emptyList(),
@@ -66,19 +44,18 @@ class ChatViewModel(
 
         viewModelScope.launch {
             mqttManager.receivedMessages.collect { receivedMqttMessage ->
-                if (receivedMqttMessage.topic == chatTopic) {
-                    val wireMessage = receivedMqttMessage.payloadAsText.toWireMessage()
-                    if (wireMessage != null && wireMessage.senderId != currentUserId) {
+                if (receivedMqttMessage.topicName == chatTopic) {
+                    if (receivedMqttMessage.clientID != currentUserId) {
                         val chatMsg = ChatMessage(
-                            text = wireMessage.text,
-                            timestamp = Date(wireMessage.timestamp),
-                            senderId = wireMessage.senderId,
+                            text = receivedMqttMessage.payloadAsText,
+                            timestamp = System.currentTimeMillis(),
+                            senderId = receivedMqttMessage.clientID,
                             isSentByUser = false
                         )
                         _uiState.update { currentState ->
                             currentState.copy(messages = currentState.messages + chatMsg)
                         }
-                    } else if (wireMessage == null) {
+                    } else if (receivedMqttMessage == null) {
                         // Handle potential non-WireMessage format if topic is shared
                         // For a dedicated chat topic, this might indicate an issue or different message type
                         println("Received malformed message on $chatTopic: ${receivedMqttMessage.payloadAsText}")
@@ -117,9 +94,8 @@ class ChatViewModel(
         }
 
         viewModelScope.launch {
-            val wireMessage = WireMessage(senderId = currentUserId, text = inputText)
             val success =
-                mqttManager.publish(chatTopic, wireMessage.toJsonString(), qos = 1, retain = false)
+                mqttManager.publish(chatTopic, inputText, qos = 1, retain = false)
             val finalStatus = if (success) MessageStatus.SENT else MessageStatus.FAILED
 
             _uiState.update { currentState ->
