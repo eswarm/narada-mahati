@@ -75,7 +75,7 @@ fun ChatScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text("Chatting on topic: ${viewModel.chatTopic}") }, // Access viewModel properties
+                title = { Text("Topic: ${viewModel.chatTopic}") }, // Access viewModel properties
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
