@@ -10,7 +10,7 @@ sealed interface MqttClientState {
         MqttClientState // Client is disconnected or connection attempt was cancelled.
 
     data object Connecting : MqttClientState   // Client is attempting to connect.
-    data class Connected(val serverUri: String) :
+    data class Connected(val serverUri: String, val clientID: String) :
         MqttClientState // Client is successfully connected.
 
     data class Error(val message: String, val cause: Throwable? = null) :

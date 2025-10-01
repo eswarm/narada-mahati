@@ -22,66 +22,70 @@ sealed interface HomeUiEvent {
     data class ConnectionSelected(val clientID: String) : HomeUiEvent
 }
 
-// Define states or one-time actions the ViewModel can send to the UI (for navigation etc.)
 sealed interface HomeSideEffect {
     data object NavigateToNewConnectionScreen : HomeSideEffect
     data class NavigateToConnectionDetails(val clientID: String) : HomeSideEffect
 }
 
-class HomeViewModel(val connectionRepo: ConnectionAdapter, val mqttManager: MqttManager) :
-    ViewModel() {
+class HomeViewModel(
+    private val connectionRepo: ConnectionAdapter, private val mqttManager: MqttManager
+) : ViewModel() {
+
     var profiles: Flow<List<MqttConnection>> = MutableStateFlow(emptyList())
+        private set
+
     private val _sideEffects = MutableStateFlow<HomeSideEffect?>(null)
     val sideEffects: StateFlow<HomeSideEffect?> = _sideEffects.asStateFlow()
+
     private val _uiState = MutableStateFlow(ConnectionUiState())
     val uiState: StateFlow<ConnectionUiState> = _uiState.asStateFlow()
-    val mqttConnectionState = mqttManager.connectionState
-    private var currentClientID: String? = null
+    val mqttConnectionState: StateFlow<MqttClientState> = mqttManager.connectionState
+    private var clientIDForNavigation: String? = null
 
     init {
         loadConnectionProfiles()
     }
 
-
-    fun onMqttStateUpdate(state: MqttClientState) {
+    fun onMqttStateUpdate(newState: MqttClientState) {
         _uiState.update { currentUiState ->
-            when (state) {
+            when (newState) {
                 MqttClientState.Disconnected -> {
+                    // Reset connection progress only if we were actively trying to connect this client
                     currentUiState.copy(
                         isConnecting = false,
-                        connectionError = if (currentUiState.isConnecting || currentUiState.connectionSuccess) "Disconnected" else null,
-                        connectionSuccess = false
+                        connectingClientId = null,
+                        connectionError = "Disconnected",
+                        connectionSuccess = false // Always false on disconnect
                     )
                 }
 
                 MqttClientState.Connecting -> {
                     currentUiState.copy(
-                        isConnecting = true,
-                        connectionSuccess = false,
-                        connectionError = null
+                        isConnecting = true, // Ensure this is true
+                        connectionSuccess = false, connectionError = null
                     )
                 }
 
                 is MqttClientState.Connected -> {
-                    _sideEffects.value =
-                        HomeSideEffect.NavigateToConnectionDetails(
-                            checkNotNull(
-                                currentClientID
-                            )
-                        )
-
+                    // Check if the connected client is the one we intended to connect for navigation
+                    if (clientIDForNavigation == newState.clientID) {
+                        clientIDForNavigation = null
+                        _sideEffects.value =
+                            HomeSideEffect.NavigateToConnectionDetails(newState.clientID)
+                    }
                     currentUiState.copy(
-                        isConnecting = false,
-                        connectionSuccess = true,
-                        connectionError = null
+                        isConnecting = false, // Connection attempt finished
+                        connectingClientId = null, // Clear the specific client ID
+                        connectionSuccess = true, connectionError = null
                     )
                 }
 
                 is MqttClientState.Error -> {
                     currentUiState.copy(
                         isConnecting = false,
+                        connectingClientId = null,
                         connectionSuccess = false,
-                        connectionError = state.message
+                        connectionError = newState.message
                     )
                 }
             }
@@ -102,11 +106,35 @@ class HomeViewModel(val connectionRepo: ConnectionAdapter, val mqttManager: Mqtt
                 }
 
                 is HomeUiEvent.ConnectionSelected -> {
-                    // TODO :: show progress dialog.
+                    // Enforce one connection attempt at a time
+                    if (_uiState.value.isConnecting) {
+                        // Optionally: show a message to the user that another connection is in progress
+                        // For now, we simply ignore the request.
+                        println("HomeViewModel: Connection attempt ignored, another is in progress for ${_uiState.value.connectingClientId}")
+                        return@launch
+                    }
+
                     val params = connectionRepo.getConnectionByClientId(event.clientID)
                     if (params != null) {
-                        currentClientID = params.clientID
+                        clientIDForNavigation =
+                            params.clientID // Set for navigation upon successful connection
+                        _uiState.update {
+                            it.copy(
+                                isConnecting = true,
+                                connectingClientId = params.clientID,
+                                connectionError = null,
+                                connectionSuccess = false
+                            )
+                        }
                         mqttManager.connect(params)
+                    } else {
+                        _uiState.update {
+                            it.copy(
+                                isConnecting = false, // Ensure this is false if params are null
+                                connectingClientId = null,
+                                connectionError = "Connection profile not found for ${event.clientID}"
+                            )
+                        }
                     }
                 }
             }
@@ -122,10 +150,7 @@ class HomeViewModel(val connectionRepo: ConnectionAdapter, val mqttManager: Mqtt
             connectionRepo: ConnectionAdapter, mqttManager: MqttManager
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
-
-            override fun <T : ViewModel> create(
-                modelClass: KClass<T>, extras: CreationExtras
-            ): T {
+            override fun <T : ViewModel> create(modelClass: KClass<T>, extras: CreationExtras): T {
                 if (modelClass.java.isAssignableFrom(HomeViewModel::class.java)) {
                     return HomeViewModel(connectionRepo, mqttManager) as T
                 }
@@ -133,5 +158,4 @@ class HomeViewModel(val connectionRepo: ConnectionAdapter, val mqttManager: Mqtt
             }
         }
     }
-
 }

@@ -63,10 +63,11 @@ class HiveMqMqttManagerImpl(
         _connectionState.value = MqttClientState.Connecting
 
         var clientBuilder = MqttClient.builder().useMqttVersion5()
-            .identifier(params.clientID.ifEmpty { UUID.randomUUID().toString() })
+            .identifier(params.clientID)
             .serverHost(params.brokerHost).serverPort(params.brokerPort.toInt())
             .addConnectedListener { context ->
-                _connectionState.value = MqttClientState.Connected(context.toServerUri())
+                _connectionState.value =
+                    MqttClientState.Connected(context.toServerUri(), params.clientID)
             }.addDisconnectedListener { context ->
                 _connectionState.value = MqttClientState.Error(
                     "Disconnected: ${context.cause.message ?: "Unknown reason"}", context.cause

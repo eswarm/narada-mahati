@@ -9,6 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator // Added import
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -28,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import `in`.eswarm.mahati.AppComponent
+import `in`.eswarm.mahati.connection.ConnectionUiState // Added import
 import `in`.eswarm.mahati.db.MqttConnection
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -46,6 +48,7 @@ fun HomeScreen(
     val profiles by viewModel.profiles.collectAsState(emptyList())
     val sideEffect by viewModel.sideEffects.collectAsState()
     val connectionState by viewModel.mqttConnectionState.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle() // Collect uiState
 
     LaunchedEffect(connectionState) {
         viewModel.onMqttStateUpdate(connectionState)
@@ -80,9 +83,12 @@ fun HomeScreen(
             EmptyConnectionsView(modifier = Modifier.padding(innerPadding))
         } else {
             ConnectionsList(
-                profiles = profiles, onProfileClick = { profileId ->
+                profiles = profiles,
+                uiState = uiState,
+                onProfileClick = { profileId ->
                     viewModel.onEvent(HomeUiEvent.ConnectionSelected(profileId))
-                }, modifier = Modifier.padding(innerPadding)
+                },
+                modifier = Modifier.padding(innerPadding)
             )
         }
     }
@@ -91,6 +97,7 @@ fun HomeScreen(
 @Composable
 fun ConnectionsList(
     profiles: List<MqttConnection>,
+    uiState: ConnectionUiState,
     onProfileClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -102,7 +109,10 @@ fun ConnectionsList(
         items(profiles, key = { it.id }) { connectionParamsEntity ->
             ConnectionListItem(
                 paramsEntity = connectionParamsEntity,
-                onClick = { onProfileClick(connectionParamsEntity.clientID) })
+                // Calculate and pass isConnecting for this specific item
+                isConnecting = uiState.isConnecting && uiState.connectingClientId == connectionParamsEntity.clientID,
+                onClick = { onProfileClick(connectionParamsEntity.clientID) }
+            )
         }
     }
 }
@@ -110,10 +120,14 @@ fun ConnectionsList(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ConnectionListItem(
-    paramsEntity: MqttConnection, onClick: () -> Unit, modifier: Modifier = Modifier
+    paramsEntity: MqttConnection,
+    isConnecting: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Card(
-        onClick = onClick, modifier = modifier.fillMaxWidth()
+        onClick = if (isConnecting) { {} } else onClick,
+        modifier = modifier.fillMaxWidth()
     ) {
         Row(
             modifier = Modifier.padding(16.dp).fillMaxWidth(),
@@ -137,11 +151,19 @@ fun ConnectionListItem(
                 )
             }
             Spacer(modifier = Modifier.width(16.dp))
-            Icon(
-                imageVector = Icons.Default.Face,
-                contentDescription = "Connection status or type",
-                tint = MaterialTheme.colorScheme.primary
-            )
+            if (isConnecting) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp), // Standard icon size
+                    color = MaterialTheme.colorScheme.primary,
+                    strokeWidth = 2.dp
+                )
+            } else {
+                Icon(
+                    imageVector = Icons.Default.Face,
+                    contentDescription = "Connection status or type",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
         }
     }
 }
@@ -159,4 +181,3 @@ fun EmptyConnectionsView(modifier: Modifier = Modifier) {
         )
     }
 }
-
