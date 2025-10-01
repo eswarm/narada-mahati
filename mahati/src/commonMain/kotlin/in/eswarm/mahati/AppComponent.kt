@@ -7,10 +7,8 @@ import `in`.eswarm.mahati.mqtt.core.HiveMqMqttManagerImpl
 import `in`.eswarm.mahati.mqtt.core.MqttManager
 
 class AppComponent {
-
     val mqttManager: MqttManager = HiveMqMqttManagerImpl()
     val connectionRepo: ConnectionAdapter = ConnectionAdapter()
-
     val subscriptionRepo: SubscriptionRepository = SubscriptionRepository()
 
     val messageRepo: MessageRepository = MessageRepository()

@@ -176,7 +176,7 @@ fun SubscribeToTopicDialog(
     onDismiss: () -> Unit, onConfirm: (topicFilter: String, qos: Int) -> Unit
 ) {
     var topicFilter by remember { mutableStateOf("") }
-    var qosString by remember { mutableStateOf("0") } // QoS as string for TextField
+    var qosString by remember { mutableStateOf("1") } // QoS as string for TextField
 
     Dialog(onDismissRequest = onDismiss) {
         Card {
@@ -190,7 +190,7 @@ fun SubscribeToTopicDialog(
                 OutlinedTextField(
                     value = topicFilter,
                     onValueChange = { topicFilter = it },
-                    label = { Text("Topic Filter (e.g., /myhome/lights)") },
+                    label = { Text("Topic e.g /home/hall") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
