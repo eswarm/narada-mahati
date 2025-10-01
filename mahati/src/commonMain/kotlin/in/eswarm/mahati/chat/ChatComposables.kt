@@ -227,6 +227,7 @@ fun ChatInputBar(
     val keyboardController = LocalSoftwareKeyboardController.current
 
     Surface(
+        modifier = Modifier.navigationBarsPadding(),
         tonalElevation = 3.dp, // Adds a slight shadow
     ) {
         Row(
