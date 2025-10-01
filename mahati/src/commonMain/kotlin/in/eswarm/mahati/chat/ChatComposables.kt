@@ -75,7 +75,7 @@ fun ChatScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text("Topic: ${viewModel.topic}") }, // Access viewModel properties
+                title = { Text("Topic: ${viewModel.topic}") }, 
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
@@ -89,8 +89,9 @@ fun ChatScreen(
                 onSendClicked = { viewModel.sendMessage() },
                 isConnected = uiState.isConnected
             )
-        }
-    ) { innerPadding ->
+        },
+        contentWindowInsets = WindowInsets.ime // <-- MODIFIED: Scaffold handles IME insets
+    ) { innerPadding -> // innerPadding now includes IME adjustments
         if (!uiState.isConnected && uiState.messages.isEmpty()) {
             Box(
                 modifier = Modifier
@@ -114,8 +115,9 @@ fun ChatScreen(
                 state = listState,
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(innerPadding)
-                    .padding(horizontal = 8.dp),
+                    .padding(innerPadding) // Apply Scaffold's adjusted padding
+                    .imePadding()       // <-- MODIFIED: Removed explicit IME padding here
+                    .padding(horizontal = 8.dp), // Then other content padding
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 contentPadding = PaddingValues(vertical = 8.dp)
             ) {
