@@ -41,8 +41,8 @@ fun ChatScreen(
     viewModel: ChatViewModel = viewModel(
         factory = ChatViewModel.Factory(
             appComponent.mqttManager,
-            topic,
-            clientID
+            clientID,
+            topic
         )
     )
 ) {
@@ -75,7 +75,7 @@ fun ChatScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text("Topic: ${viewModel.chatTopic}") }, // Access viewModel properties
+                title = { Text("Topic: ${viewModel.topic}") }, // Access viewModel properties
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer

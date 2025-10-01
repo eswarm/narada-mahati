@@ -19,11 +19,9 @@ fun AppNavigation(appComponent: AppComponent) {
     NavHost(navController = navController, startDestination = Screen.Home.route) {
         composable(Screen.NewConnection.route) {
             NewConnectionScreen(
-                appComponent,
-                {
+                appComponent, {
                     navController.popBackStack()
-                }
-            )
+                })
         }
         composable(Screen.Home.route) {
             HomeScreen(
@@ -39,21 +37,26 @@ fun AppNavigation(appComponent: AppComponent) {
             val clientID = backStackEntry.arguments?.getString("clientID")
             if (clientID != null) {
                 TopicSubscriptionScreen(
-                    appComponent,
-                    clientID,
-                    onTopicClick = { topic -> navController.navigate(Screen.Chat.createRoute(clientID, topic)) }
-                )
+                    appComponent, clientID, onTopicClick = { topic ->
+                        navController.navigate(
+                            Screen.Chat.createRoute(
+                                clientID, topic
+                            )
+                        )
+                    })
             }
         }
         composable(
             route = Screen.Chat.route,
-            arguments = listOf(navArgument("topicName") { type = NavType.StringType }, navArgument("clientID") { type = NavType.StringType })
+            arguments = listOf(
+                navArgument("clientID") { type = NavType.StringType },
+                navArgument("topicName") { type = NavType.StringType })
         ) { backStackEntry ->
             val topicName = checkNotNull(backStackEntry.arguments?.getString("topicName"))
             val clientID = checkNotNull(backStackEntry.arguments?.getString("clientID"))
             if (topicName != null) {
                 ChatScreen(
-                    appComponent,  clientID, topicName
+                    appComponent, clientID, topicName
                     // onNavigateBack = { navController.popBackStack() }
                 )
             } else {

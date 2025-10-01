@@ -21,8 +21,8 @@ data class ChatUiState(
 
 class ChatViewModel(
     private val mqttManager: MqttManager,
-    val chatTopic: String, // Topic for this specific chat
-    private val clientID: String
+    private val clientID: String,
+    val topic: String
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ChatUiState())
@@ -36,15 +36,15 @@ class ChatViewModel(
             // or this screen is only active when already subscribed.
             // For robust behavior, ensure subscription happens before trying to receive.
             val subscribed =
-                mqttManager.subscribe(chatTopic, qos = 1) // Use QoS 1 for more reliability
+                mqttManager.subscribe(topic, qos = 1) // Use QoS 1 for more reliability
             if (!subscribed) {
-                _uiState.update { it.copy(error = "Failed to subscribe to chat topic: $chatTopic") }
+                _uiState.update { it.copy(error = "Failed to subscribe to chat topic: $topic") }
             }
         }
 
         viewModelScope.launch {
             mqttManager.receivedMessages.collect { receivedMqttMessage ->
-                if (receivedMqttMessage.topicName == chatTopic) {
+                if (receivedMqttMessage.topicName == topic) {
                     if (receivedMqttMessage.clientID != clientID) {
                         val chatMsg = ChatMessage(
                             text = receivedMqttMessage.payloadAsText,
@@ -58,7 +58,7 @@ class ChatViewModel(
                     } else if (receivedMqttMessage == null) {
                         // Handle potential non-WireMessage format if topic is shared
                         // For a dedicated chat topic, this might indicate an issue or different message type
-                        println("Received malformed message on $chatTopic: ${receivedMqttMessage.payloadAsText}")
+                        println("Received malformed message on $topic: ${receivedMqttMessage.payloadAsText}")
                     }
                 }
             }
@@ -95,7 +95,7 @@ class ChatViewModel(
 
         viewModelScope.launch {
             val success =
-                mqttManager.publish(chatTopic, inputText, qos = 1, retain = false)
+                mqttManager.publish(topic, inputText, qos = 1, retain = false)
             val finalStatus = if (success) MessageStatus.SENT else MessageStatus.FAILED
 
             _uiState.update { currentState ->
@@ -119,7 +119,7 @@ class ChatViewModel(
         fun Factory(
             mqttManager: MqttManager,
             clientID: String,
-            chatTopic: String
+            topic: String
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
 
@@ -128,7 +128,7 @@ class ChatViewModel(
                 extras: CreationExtras
             ): T {
                 if (modelClass.java.isAssignableFrom(ChatViewModel::class.java)) {
-                    return ChatViewModel(mqttManager, chatTopic, clientID) as T
+                    return ChatViewModel(mqttManager, clientID, topic) as T
                 }
                 throw IllegalArgumentException("Unknown ViewModel class")
 
