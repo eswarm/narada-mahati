@@ -2,7 +2,7 @@ package `in`.eswarm.narada.launch
 
 import `in`.eswarm.narada.log.LogStream
 import `in`.eswarm.narada.log.MsgType
-import `in`.eswarm.narada.mqtt.MQTTService
+import `in`.eswarm.narada.mqtt.MQTTServerService
 import `in`.eswarm.narada.mqtt.MQTTWrapper
 import `in`.eswarm.narada.util.NetworkUtil
 import `in`.eswarm.narada.util.getAppComponent
@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 
 class LaunchViewModel(private val logStream: LogStream) : ViewModel() {
 
-    var isServerRunning = mutableStateOf(MQTTService.isMoquetteRunning)
+    var isServerRunning = mutableStateOf(MQTTServerService.isMoquetteRunning)
     var logs = mutableStateListOf<String>()
     var clientsCount = mutableStateOf(MQTTWrapper.clientsConnected)
 
@@ -34,12 +34,12 @@ class LaunchViewModel(private val logStream: LogStream) : ViewModel() {
 
     private fun startServer(context: Context) {
         isServerRunning.value = true
-        MQTTService.start(context)
+        MQTTServerService.start(context)
     }
 
     private fun stopServer(context: Context) {
         isServerRunning.value = false
-        MQTTService.stop(context)
+        MQTTServerService.stop(context)
     }
 
     fun getLocalIpAddress(): String? {
