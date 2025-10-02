@@ -129,17 +129,23 @@ class HomeViewModel(
 
                     val params = connectionRepo.getConnectionByClientId(event.clientID)
                     if (params != null) {
-                        clientID =
-                            params.clientID // Set for navigation upon successful connection
-                        _uiState.update {
-                            it.copy(
-                                isConnecting = true,
-                                connectingClientId = params.clientID,
-                                connectionError = null,
-                                connectionSuccess = false
-                            )
+                        clientID = params.clientID // Set for navigation upon successful connection
+                        val state = mqttController.connectionStatesMap.value[params.clientID]
+                        if (state is MqttClientState.Connected) {
+                            clientID = null
+                            _sideEffects.value =
+                                HomeSideEffect.NavigateToConnectionDetails(params.clientID)
+                        } else {
+                            _uiState.update {
+                                it.copy(
+                                    isConnecting = true,
+                                    connectingClientId = params.clientID,
+                                    connectionError = null,
+                                    connectionSuccess = false
+                                )
+                            }
+                            mqttController.addConnection(params)
                         }
-                        mqttController.addConnection(params)
                     } else {
                         _uiState.update {
                             it.copy(

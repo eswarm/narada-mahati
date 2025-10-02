@@ -55,6 +55,11 @@ class MqttClientService : Service() {
     suspend fun subscribe(connectionId: String, topicFilter: String, qos: Int): Boolean {
         return multiConnectionController.subscribe(connectionId, topicFilter, qos)
     }
+
+    suspend fun unsubscribe(connectionId: String, topicFilter: String): Boolean {
+        return multiConnectionController.unsubscribe(connectionId, topicFilter)
+    }
+
     // --- End Public API ---
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {

@@ -77,38 +77,39 @@ class MqttConnectionController(
     private suspend fun handleAddConnection(config: MqttConnection) {
         mapMutex.withLock {
             if (activeManagers.containsKey(config.clientID)) {
-                // Log or handle re-connection attempt
-                return@withLock
-            }
+                //activeManagers[config.clientID]
+            } else {
+                val managerJob = SupervisorJob(controllerScope.coroutineContext[Job])
+                val newManagerScope =
+                    CoroutineScope(controllerScope.coroutineContext + managerJob + CoroutineName("ManagerScope-${config.clientID}"))
+                managerScopes[config.clientID] = newManagerScope
 
-            val managerJob = SupervisorJob(controllerScope.coroutineContext[Job])
-            val newManagerScope =
-                CoroutineScope(controllerScope.coroutineContext + managerJob + CoroutineName("ManagerScope-${config.clientID}"))
-            managerScopes[config.clientID] = newManagerScope
+                val manager = HiveMqttManagerImpl(newManagerScope)
+                activeManagers[config.clientID] = manager
 
-            val manager = HiveMqttManagerImpl(newManagerScope)
-            activeManagers[config.clientID] = manager
-
-            newManagerScope.launch {
-                manager.connectionState.collect { state ->
-                    _connectionStatesMap.update { currentMap ->
-                        currentMap.toMutableMap().apply { this[config.clientID] = state }
+                newManagerScope.launch {
+                    manager.connectionState.collect { state ->
+                        _connectionStatesMap.update { currentMap ->
+                            currentMap.toMutableMap().apply { this[config.clientID] = state }
+                        }
+                    }
+                }
+                newManagerScope.launch {
+                    manager.receivedMessages.collect { message ->
+                        _allMessages.tryEmit(config.clientID to message)
                     }
                 }
             }
-            newManagerScope.launch {
-                manager.receivedMessages.collect { message ->
-                    _allMessages.tryEmit(config.clientID to message)
+
+            val manager = checkNotNull(activeManagers[config.clientID])
+
+            if (manager.connectionState.value !is MqttClientState.Connected) {
+                _connectionStatesMap.update { currentMap ->
+                    currentMap.toMutableMap()
+                        .apply { this[config.clientID] = MqttClientState.Connecting }
                 }
+                manager.connect(config)
             }
-
-            _connectionStatesMap.update { currentMap ->
-                currentMap.toMutableMap()
-                    .apply { this[config.clientID] = MqttClientState.Connecting }
-            }
-
-
-            manager.connect(config)
         }
     }
 
@@ -179,9 +180,8 @@ class MqttConnectionController(
     }
 
     override suspend fun unsubscribe(
-        clientID: String,
-        topicFilter: String
-    ): Boolean? {
+        clientID: String, topicFilter: String
+    ): Boolean {
         val deferredResult = CompletableDeferred<Boolean>()
         commandChannel.send(
             ControllerCommand.UnsubscribeToTopic(

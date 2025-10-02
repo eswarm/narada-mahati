@@ -60,20 +60,6 @@ private object AndroidMqttControllerProxy : MqttControllerContract, ServiceConne
         val intent = Intent(AppContext.context, MqttClientService::class.java)
         AppContext.context.startService(intent) // Ensure the service is started in the foreground
         AppContext.context.bindService(intent, this, Context.BIND_AUTO_CREATE)
-
-        // 3. Bridge the data from the real controller to the proxy flows.
-        proxyScope.launch {
-            // Wait for the service to connect
-            val controller = service.value?.multiConnectionController
-
-            // Once connected, bridge the flows permanently
-            launch {
-                controller?.connectionStatesMap?.collect { _proxyConnectionStatesMap.value = it }
-            }
-            launch {
-                controller?.allMessages?.collect { _proxyAllMessages.emit(it) }
-            }
-        }
     }
 
     // --- Proxy methods now call the service when available ---
@@ -99,7 +85,7 @@ private object AndroidMqttControllerProxy : MqttControllerContract, ServiceConne
         clientID: String,
         topicFilter: String
     ): Boolean? {
-        TODO("Not yet implemented")
+        return checkNotNull(service.value).unsubscribe(clientID, topicFilter)
     }
 
     override fun shutdownAll() {
@@ -111,6 +97,19 @@ private object AndroidMqttControllerProxy : MqttControllerContract, ServiceConne
     override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
         val localBinder = binder as? MqttClientService.LocalBinder
         service.value = localBinder?.getService()
+
+        // 3. Bridge the data from the real controller to the proxy flows.
+        proxyScope.launch {
+            val controller = service.value?.multiConnectionController
+
+            // Once connected, bridge the flows permanently
+            launch {
+                controller?.connectionStatesMap?.collect { _proxyConnectionStatesMap.value = it }
+            }
+            launch {
+                controller?.allMessages?.collect { _proxyAllMessages.emit(it) }
+            }
+        }
     }
 
     override fun onServiceDisconnected(name: ComponentName?) {
