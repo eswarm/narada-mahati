@@ -9,7 +9,7 @@ import android.os.Build
 
 object NotificationUtil {
 
-    const val FG_SERVICE_CHANNEL = "forground_service_channel"
+    const val FG_SERVICE_CHANNEL = "foreground_service_channel"
 
     fun createNotificationChannel(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

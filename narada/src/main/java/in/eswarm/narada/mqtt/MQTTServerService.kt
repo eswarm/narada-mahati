@@ -19,7 +19,7 @@ import kotlinx.coroutines.runBlocking
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
-class MQTTService : Service() {
+class MQTTServerService : Service() {
 
     lateinit var threadExecutor: ExecutorService
     lateinit var logStream: LogStream
@@ -103,13 +103,13 @@ class MQTTService : Service() {
         var isMoquetteRunning: Boolean = false
 
         fun start(context: Context) {
-            val intent = Intent(context, MQTTService::class.java)
+            val intent = Intent(context, MQTTServerService::class.java)
             intent.action = START
             ContextCompat.startForegroundService(context, intent)
         }
 
         fun stop(context: Context) {
-            val intent = Intent(context, MQTTService::class.java)
+            val intent = Intent(context, MQTTServerService::class.java)
             intent.action = STOP
             ContextCompat.startForegroundService(context, intent)
         }

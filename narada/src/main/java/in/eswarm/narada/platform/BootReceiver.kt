@@ -4,7 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
-import `in`.eswarm.narada.mqtt.MQTTService
+import `in`.eswarm.narada.mqtt.MQTTServerService
 import `in`.eswarm.narada.util.preferences
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -21,7 +21,7 @@ class BootReceiver : BroadcastReceiver() {
             runBlocking {
                 if (preferences.isServerStarted.first()) {
                     Log.i("BootReceiver", "Starting server")
-                    MQTTService.start(context)
+                    MQTTServerService.start(context)
                 }
             }
         }

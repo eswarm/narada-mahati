@@ -18,7 +18,7 @@
         android:theme="@style/Theme.NaradaMQTTBroker">
 
         <service
-            android:name=".mqtt.MQTTService"
+            android:name=".mqtt.MQTTServerService"
             android:enabled="true"
             android:exported="true"
             android:foregroundServiceType="remoteMessaging" />
