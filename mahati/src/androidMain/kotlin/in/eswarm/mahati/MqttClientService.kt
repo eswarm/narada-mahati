@@ -9,6 +9,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import `in`.eswarm.mahati.db.MqttConnection
 import `in`.eswarm.mahati.mqtt.controller.MqttConnectionController
+import `in`.eswarm.mahati.util.NotificationUtil.FG_SERVICE_CHANNEL
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -33,12 +34,10 @@ class MqttClientService : Service() {
 
         // Basic foreground notification - customize as needed
         val notification =
-            NotificationCompat.Builder(this, "MQTT_FOREGROUND_CHANNEL_ID") // Create this channel
-                .setContentTitle("Mahati Mqtt client")
-                .setContentText("Mahati Mqtt client")
+            NotificationCompat.Builder(this, FG_SERVICE_CHANNEL) // Create this channel
+                .setContentTitle("Mahati Mqtt client").setContentText("Mahati Mqtt client")
                 .setSmallIcon(android.R.drawable.ic_dialog_info) // Replace with your app's icon
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .build()
+                .setPriority(NotificationCompat.PRIORITY_HIGH).build()
         startForeground(101, notification) // Unique notification ID
     }
 
@@ -47,17 +46,15 @@ class MqttClientService : Service() {
     fun removeConnection(connectionId: String) =
         multiConnectionController.removeConnection(connectionId)
 
-    fun publish(
-        connectionId: String,
-        topic: String,
-        payload: ByteArray,
-        qos: Int,
-        retain: Boolean
-    ) =
-        multiConnectionController.publish(connectionId, topic, payload, qos, retain)
+    suspend fun publish(
+        connectionId: String, topic: String, payload: ByteArray, qos: Int, retain: Boolean
+    ): Boolean {
+        return multiConnectionController.publish(connectionId, topic, payload, qos, retain)
+    }
 
-    fun subscribe(connectionId: String, topicFilter: String, qos: Int) =
-        multiConnectionController.subscribe(connectionId, topicFilter, qos)
+    suspend fun subscribe(connectionId: String, topicFilter: String, qos: Int): Boolean {
+        return multiConnectionController.subscribe(connectionId, topicFilter, qos)
+    }
     // --- End Public API ---
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {

@@ -40,7 +40,7 @@ fun ChatScreen(
     topic: String,
     viewModel: ChatViewModel = viewModel(
         factory = ChatViewModel.Factory(
-            appComponent.mqttManager,
+            appComponent.mqttController,
             clientID,
             topic
         )
@@ -53,6 +53,7 @@ fun ChatScreen(
     val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(connectionState) {
+        val connectionState = connectionState[clientID] ?: return@LaunchedEffect
         viewModel.onMqttStateChange(connectionState)
     }
 

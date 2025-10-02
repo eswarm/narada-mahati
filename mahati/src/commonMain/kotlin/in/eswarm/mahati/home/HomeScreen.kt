@@ -40,19 +40,13 @@ fun HomeScreen(
     appComponent: AppComponent,
     viewModel: HomeViewModel = viewModel(
         factory = HomeViewModel.Factory(
-            appComponent.connectionRepo,
-            appComponent.mqttManager
+            appComponent.connectionRepo, appComponent.mqttController
         )
     ),
 ) {
     val profiles by viewModel.profiles.collectAsState(emptyList())
     val sideEffect by viewModel.sideEffects.collectAsState()
-    val connectionState by viewModel.mqttConnectionState.collectAsStateWithLifecycle()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle() // Collect uiState
-
-    LaunchedEffect(connectionState) {
-        viewModel.onMqttStateUpdate(connectionState)
-    }
 
     LaunchedEffect(sideEffect) {
         when (val effect = sideEffect) {
@@ -83,12 +77,9 @@ fun HomeScreen(
             EmptyConnectionsView(modifier = Modifier.padding(innerPadding))
         } else {
             ConnectionsList(
-                profiles = profiles,
-                uiState = uiState,
-                onProfileClick = { profileId ->
+                profiles = profiles, uiState = uiState, onProfileClick = { profileId ->
                     viewModel.onEvent(HomeUiEvent.ConnectionSelected(profileId))
-                },
-                modifier = Modifier.padding(innerPadding)
+                }, modifier = Modifier.padding(innerPadding)
             )
         }
     }
@@ -111,8 +102,7 @@ fun ConnectionsList(
                 paramsEntity = connectionParamsEntity,
                 // Calculate and pass isConnecting for this specific item
                 isConnecting = uiState.isConnecting && uiState.connectingClientId == connectionParamsEntity.clientID,
-                onClick = { onProfileClick(connectionParamsEntity.clientID) }
-            )
+                onClick = { onProfileClick(connectionParamsEntity.clientID) })
         }
     }
 }
@@ -126,9 +116,9 @@ fun ConnectionListItem(
     modifier: Modifier = Modifier
 ) {
     Card(
-        onClick = if (isConnecting) { {} } else onClick,
-        modifier = modifier.fillMaxWidth()
-    ) {
+        onClick = if (isConnecting) {
+            {}
+        } else onClick, modifier = modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.padding(16.dp).fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
@@ -154,8 +144,7 @@ fun ConnectionListItem(
             if (isConnecting) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(24.dp), // Standard icon size
-                    color = MaterialTheme.colorScheme.primary,
-                    strokeWidth = 2.dp
+                    color = MaterialTheme.colorScheme.primary, strokeWidth = 2.dp
                 )
             } else {
                 Icon(

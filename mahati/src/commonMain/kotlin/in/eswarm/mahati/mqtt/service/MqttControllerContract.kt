@@ -1,9 +1,9 @@
-
 package `in`.eswarm.mahati.mqtt.service
 
 import `in`.eswarm.mahati.db.AppMqttMessage
 import `in`.eswarm.mahati.db.MqttConnection
 import `in`.eswarm.mahati.mqtt.common.MqttClientState
+import `in`.eswarm.mahati.mqtt.controller.MqttConnectionController
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -34,25 +34,33 @@ interface MqttControllerContract {
     /**
      * Disconnects and removes a previously added MQTT connection.
      *
-     * @param connectionId The unique ID of the connection to remove.
+     * @param clientID The unique ID of the connection to remove.
      */
-    fun removeConnection(connectionId: String)
+    fun removeConnection(clientID: String)
 
     /**
      * Publishes a message to a topic on a specific connection.
+     * This is a suspend function that returns true on success and false on failure.
      */
-    fun publish(
-        connectionId: String,
+    suspend fun publish(
+        clientID: String,
         topic: String,
         payload: ByteArray,
         qos: Int,
         retain: Boolean
-    )
+    ): Boolean?
 
     /**
      * Subscribes to a topic on a specific connection.
+     * This is a suspend function that returns true on success and false on failure.
      */
-    fun subscribe(connectionId: String, topicFilter: String, qos: Int)
+    suspend fun subscribe(clientID: String, topicFilter: String, qos: Int): Boolean?
+
+    /**
+     * Unsubscribes to a topic on a specific connection.
+     * This is a suspend function that returns true on success and false on failure.
+     */
+    suspend fun unsubscribe(clientID: String, topicFilter: String): Boolean?
 
     /**
      * Shuts down all connections and cleans up resources.

@@ -8,7 +8,7 @@ import `in`.eswarm.mahati.connection.ConnectionUiState
 import `in`.eswarm.mahati.db.ConnectionAdapter
 import `in`.eswarm.mahati.db.MqttConnection
 import `in`.eswarm.mahati.mqtt.common.MqttClientState
-import `in`.eswarm.mahati.mqtt.core.MqttManager
+import `in`.eswarm.mahati.mqtt.service.MqttControllerContract
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -28,7 +28,8 @@ sealed interface HomeSideEffect {
 }
 
 class HomeViewModel(
-    private val connectionRepo: ConnectionAdapter, private val mqttManager: MqttManager
+    private val connectionRepo: ConnectionAdapter,
+    private val mqttController: MqttControllerContract
 ) : ViewModel() {
 
     var profiles: Flow<List<MqttConnection>> = MutableStateFlow(emptyList())
@@ -39,11 +40,23 @@ class HomeViewModel(
 
     private val _uiState = MutableStateFlow(ConnectionUiState())
     val uiState: StateFlow<ConnectionUiState> = _uiState.asStateFlow()
-    val mqttConnectionState: StateFlow<MqttClientState> = mqttManager.connectionState
-    private var clientIDForNavigation: String? = null
+    val mqttConnectionState: StateFlow<Map<String, MqttClientState>> =
+        mqttController.connectionStatesMap
+    var clientID: String? = null
 
     init {
         loadConnectionProfiles()
+        viewModelScope.launch {
+            mqttConnectionState.collect { map ->
+
+                // TODO :: fix this all states should be sent.
+
+                val state = map[clientID]
+                if (state != null) {
+                    onMqttStateUpdate(state)
+                }
+            }
+        }
     }
 
     fun onMqttStateUpdate(newState: MqttClientState) {
@@ -68,8 +81,8 @@ class HomeViewModel(
 
                 is MqttClientState.Connected -> {
                     // Check if the connected client is the one we intended to connect for navigation
-                    if (clientIDForNavigation == newState.clientID) {
-                        clientIDForNavigation = null
+                    if (clientID == newState.clientID) {
+                        clientID = null
                         _sideEffects.value =
                             HomeSideEffect.NavigateToConnectionDetails(newState.clientID)
                     }
@@ -116,7 +129,7 @@ class HomeViewModel(
 
                     val params = connectionRepo.getConnectionByClientId(event.clientID)
                     if (params != null) {
-                        clientIDForNavigation =
+                        clientID =
                             params.clientID // Set for navigation upon successful connection
                         _uiState.update {
                             it.copy(
@@ -126,7 +139,7 @@ class HomeViewModel(
                                 connectionSuccess = false
                             )
                         }
-                        mqttManager.connect(params)
+                        mqttController.addConnection(params)
                     } else {
                         _uiState.update {
                             it.copy(
@@ -147,12 +160,12 @@ class HomeViewModel(
 
     companion object {
         fun Factory(
-            connectionRepo: ConnectionAdapter, mqttManager: MqttManager
+            connectionRepo: ConnectionAdapter, mqttController: MqttControllerContract
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: KClass<T>, extras: CreationExtras): T {
                 if (modelClass.java.isAssignableFrom(HomeViewModel::class.java)) {
-                    return HomeViewModel(connectionRepo, mqttManager) as T
+                    return HomeViewModel(connectionRepo, mqttController) as T
                 }
                 throw IllegalArgumentException("Unknown ViewModel class")
             }

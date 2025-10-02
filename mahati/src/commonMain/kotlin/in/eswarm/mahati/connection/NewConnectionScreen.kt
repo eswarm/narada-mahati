@@ -18,7 +18,7 @@ fun NewConnectionScreen(
     onCancel: () -> Unit,
     newConnectionViewModel: NewConnectionViewModel = viewModel(
         factory = NewConnectionViewModel.Factory(
-            appComponent.mqttManager,
+            appComponent.mqttController,
             appComponent.connectionRepo
         )
     )

@@ -28,7 +28,7 @@ fun TopicSubscriptionScreen(
     clientID: String,
     viewModel: TopicSubscriptionViewModel = viewModel(
         factory = TopicViewModelFactory(
-            appComponent.mqttManager,
+            appComponent.mqttController,
             clientID,
             appComponent.subscriptionRepo
         )

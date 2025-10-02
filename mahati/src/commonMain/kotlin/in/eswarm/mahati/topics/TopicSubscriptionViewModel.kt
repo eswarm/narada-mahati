@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import `in`.eswarm.mahati.db.SubscribedTopic
 import `in`.eswarm.mahati.db.SubscriptionRepository
-import `in`.eswarm.mahati.mqtt.core.MqttManager
+import `in`.eswarm.mahati.mqtt.service.MqttControllerContract
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -31,7 +31,7 @@ data class TopicSubscriptionUiState(
 )
 
 class TopicSubscriptionViewModel(
-    private val mqttManager: MqttManager,
+    private val mqttController: MqttControllerContract,
     private val clientID: String,
     private val subscriptionRepository: SubscriptionRepository
 ) : ViewModel() {
@@ -83,8 +83,9 @@ class TopicSubscriptionViewModel(
         }
         _uiState.update { it.copy(isLoading = true, showSubscribeDialog = false) }
         viewModelScope.launch {
-            val success = mqttManager.subscribe(topicFilter, qos)
-            if (success) {
+            val success =
+                mqttController.subscribe(clientID = clientID, topicFilter = topicFilter, qos = qos)
+            if (success == true) {
                 val newSubscription = SubscribedTopic(
                     0, clientID, topicFilter, qos.toLong(), System.currentTimeMillis()
                 )
@@ -112,14 +113,18 @@ class TopicSubscriptionViewModel(
     private fun handleUnsubscribeFromTopic(topicFilter: String) {
         _uiState.update { it.copy(isLoading = true) }
         viewModelScope.launch {
-            val success = mqttManager.unsubscribe(topicFilter)
+            val success = mqttController.unsubscribe(clientID, topicFilter)
             // Even if unsubscribe call fails, we remove it from UI list as intent is to unsubscribe.
             // Broker state is the source of truth.
             _uiState.update { currentState ->
                 currentState.copy(
                     subscribedTopics = currentState.subscribedTopics.filterNot { it.topicFilter == topicFilter },
                     isLoading = false,
-                    error = if (!success) "Failed to send unsubscribe for $topicFilter to broker" else null
+                    error = if (success == false) {
+                        "Failed to send unsubscribe for $topicFilter to broker"
+                    } else {
+                        null
+                    }
                 )
             }
         }
@@ -131,7 +136,7 @@ class TopicSubscriptionViewModel(
 }
 
 class TopicViewModelFactory(
-    val mqttManager: MqttManager,
+    val mqttController: MqttControllerContract,
     val clientID: String,
     val subscriptionRepository: SubscriptionRepository
 ) : ViewModelProvider.Factory {
@@ -139,7 +144,7 @@ class TopicViewModelFactory(
     override fun <T : ViewModel> create(
         modelClass: KClass<T>, extras: CreationExtras
     ): T {
-        return TopicSubscriptionViewModel(mqttManager, clientID, subscriptionRepository) as T
+        return TopicSubscriptionViewModel(mqttController, clientID, subscriptionRepository) as T
     }
 
 }

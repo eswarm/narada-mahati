@@ -7,7 +7,7 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import `in`.eswarm.mahati.db.ConnectionAdapter
 import `in`.eswarm.mahati.db.MqttConnection
 import `in`.eswarm.mahati.mqtt.common.MqttClientState
-import `in`.eswarm.mahati.mqtt.core.MqttManager
+import `in`.eswarm.mahati.mqtt.service.MqttControllerContract
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -16,8 +16,7 @@ import kotlinx.coroutines.launch
 import kotlin.reflect.KClass
 
 class NewConnectionViewModel(
-    private val mqttManager: MqttManager,
-    private val repo: ConnectionAdapter
+    private val mqttController: MqttControllerContract, private val repo: ConnectionAdapter
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ConnectionUiState())
@@ -25,7 +24,8 @@ class NewConnectionViewModel(
 
     init {
         viewModelScope.launch {
-            mqttManager.connectionState.collect { state ->
+            mqttController.connectionStatesMap.collect { stateMap ->
+                val state = stateMap[uiState.value.clientID] ?: MqttClientState.Disconnected
                 _uiState.update { currentUiState ->
                     when (state) {
                         MqttClientState.Disconnected -> {
@@ -173,13 +173,12 @@ class NewConnectionViewModel(
             topicPrefix = "",
             createdAt = System.currentTimeMillis()
         )
-        mqttManager.connect(params)
+        mqttController.addConnection(params)
     }
 
     companion object {
         fun Factory(
-            mqttManager: MqttManager,
-            connectionRepo: ConnectionAdapter
+            mqttController: MqttControllerContract, connectionRepo: ConnectionAdapter
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
 
@@ -187,7 +186,7 @@ class NewConnectionViewModel(
                 modelClass: KClass<T>, extras: CreationExtras
             ): T {
                 if (modelClass.java.isAssignableFrom(NewConnectionViewModel::class.java)) {
-                    return NewConnectionViewModel(mqttManager, connectionRepo) as T
+                    return NewConnectionViewModel(mqttController, connectionRepo) as T
                 }
                 throw IllegalArgumentException("Unknown ViewModel class")
 
