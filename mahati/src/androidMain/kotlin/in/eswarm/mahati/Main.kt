@@ -9,11 +9,18 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import `in`.eswarm.mahati.theme.NaradaMQTTBrokerTheme
+import `in`.eswarm.mahati.util.NotificationUtil
+import kotlinx.coroutines.runBlocking
 
 class Main : ComponentActivity() { // This class now hosts the navigation
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        // TODO: Fix this.
+        runBlocking {
+            NotificationUtil.createNotificationChannel(this@Main)
+        }
+
         setContent {
             NaradaMQTTBrokerTheme {
                 Surface(

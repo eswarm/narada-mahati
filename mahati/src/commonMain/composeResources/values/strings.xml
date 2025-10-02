@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Mahati: MQTT Client</string>
+
+    <string name="notification_mqtt_service_title">MQTT Service</string>
+    <string name="notification_mqtt_service_content">"MQTT service running …"</string>
+    <string name="notification_mqtt_ticker">MQTT service running</string>
+
+    <string name="fg_channel_name">MQTT client</string>
+    <string name="fg_channel_description">Mahati foreground service</string>
+</resources>

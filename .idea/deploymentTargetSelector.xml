@@ -7,7 +7,7 @@
       </SelectionState>
       <SelectionState runConfigName="mahati">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-09-30T15:41:40.953088400Z">
+        <DropdownSelection timestamp="2025-10-01T09:32:21.650799300Z">
           <Target type="DEFAULT_BOOT">
             <handle>
               <DeviceId pluginId="PhysicalDevice" identifier="serial=RZCY21JK2MK" />

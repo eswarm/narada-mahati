@@ -21,13 +21,12 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
-import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 
-class HiveMqMqttManagerImpl(
+class HiveMqttManagerImpl(
     private val coroutineScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 ) : MqttManager {
     private var client: Mqtt5AsyncClient? = null
