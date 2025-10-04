@@ -8,12 +8,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxSize // Added for Surface if needed, and for Scaffold content
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
-// import androidx.compose.foundation.shape.CornerSize // Not directly used in M3 BottomAppBar for cutout
-import androidx.compose.material3.* // Changed from material to material3
+import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.Composable
@@ -30,7 +29,9 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 
-@OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class) // Added ExperimentalMaterial3Api
+@OptIn(
+    ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class
+) // Added ExperimentalMaterial3Api
 @Composable
 fun LaunchScreen(
     launchViewModel: LaunchViewModel, navController: NavController
@@ -61,26 +62,22 @@ fun LaunchScreen(
                 //     Icon(Icons.Filled.Menu, contentDescription = "Menu")
                 // }
             }
-        },
-        topBar = {
-            TopAppBar( // M3 TopAppBar
+        }, topBar = {
+            TopAppBar(
                 title = { Text(stringResource(id = R.string.app_name)) },
                 modifier = Modifier.windowInsetsPadding(WindowInsets.statusBars)
-                // colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.primaryContainer) // Example M3 coloring
             )
-        }
-    ) { innerPadding ->
-
+        }) { innerPadding ->
         Column(
             modifier = Modifier
                 .padding(innerPadding)
-                .fillMaxSize() // Good practice for scrollable content or to ensure background color fills
-                .padding(horizontal = 16.dp) // Added some horizontal padding for content
+                .fillMaxSize()
+                .padding(horizontal = 16.dp)
         ) {
 
             Row(modifier = Modifier.padding(vertical = Dp(4f))) {
                 Text(
-                    "State", style = MaterialTheme.typography.titleMedium // M2 subtitle1 -> M3 titleMedium
+                    "State", style = MaterialTheme.typography.titleMedium
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Text(launchViewModel.serverStatus(), lineHeight = TextUnit(24f, TextUnitType.Sp))
@@ -89,7 +86,7 @@ fun LaunchScreen(
             Row(modifier = Modifier.padding(vertical = Dp(4f))) {
                 Text(
                     stringResource(id = R.string.ip_address),
-                    style = MaterialTheme.typography.titleMedium // M2 subtitle1 -> M3 titleMedium
+                    style = MaterialTheme.typography.titleMedium
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Text(launchViewModel.getLocalIpAddress() ?: "-")
@@ -98,7 +95,7 @@ fun LaunchScreen(
             Row(modifier = Modifier.padding(vertical = Dp(4f))) {
                 Text(
                     stringResource(id = R.string.clients_connected),
-                    style = MaterialTheme.typography.titleMedium // M2 subtitle1 -> M3 titleMedium
+                    style = MaterialTheme.typography.titleMedium
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Text(launchViewModel.clientsCount.value.toString())
@@ -122,8 +119,8 @@ fun LaunchScreen(
 
             Text(
                 stringResource(id = R.string.logs),
-                style = MaterialTheme.typography.headlineSmall, // M2 h5 -> M3 headlineSmall
-                modifier = Modifier.padding(bottom = 8.dp) // Added some space
+                style = MaterialTheme.typography.headlineSmall,
+                modifier = Modifier.padding(bottom = 8.dp)
             )
 
             if (Build.VERSION.SDK_INT < TIRAMISU || notifPermissionState.status.isGranted) {

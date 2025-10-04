@@ -1,5 +1,6 @@
 package `in`.eswarm.mahati
 
+import PermissionState
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -13,7 +14,11 @@ import `in`.eswarm.mahati.navigation.Screen
 import `in`.eswarm.mahati.topics.TopicSubscriptionScreen
 
 @Composable
-fun AppNavigation(appComponent: AppComponent) {
+fun AppNavigation(
+    appComponent: AppComponent,
+    permissionState: PermissionState,
+    requestPermission: () -> Unit
+) {
     val navController = rememberNavController()
 
     NavHost(navController = navController, startDestination = Screen.Home.route) {
@@ -27,7 +32,9 @@ fun AppNavigation(appComponent: AppComponent) {
             HomeScreen(
                 { navController.navigate(Screen.NewConnection.route) },
                 { clientID -> navController.navigate(Screen.TopicSubscription.createRoute(clientID)) },
-                appComponent
+                appComponent,
+                permissionState,
+                requestPermission
             )
         }
         composable(

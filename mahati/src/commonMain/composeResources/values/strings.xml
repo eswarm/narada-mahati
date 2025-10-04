@@ -7,4 +7,8 @@
 
     <string name="fg_channel_name">MQTT client</string>
     <string name="fg_channel_description">Mahati foreground service</string>
+
+    <string name="permission_denied_notification">The app does not work properly without the notification permission. Please go to settings to grant them.</string>
+    <string name="permission_rationale">App needs notification permission to function properly, press below to grant it.</string>
+    <string name="permission_grant">Grant permission</string>
 </resources>
