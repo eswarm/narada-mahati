@@ -8,6 +8,7 @@ import `in`.eswarm.mahati.db.ConnectionAdapter
 import `in`.eswarm.mahati.db.MqttConnection
 import `in`.eswarm.mahati.mqtt.common.MqttClientState
 import `in`.eswarm.mahati.mqtt.service.MqttControllerContract
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -16,7 +17,9 @@ import kotlinx.coroutines.launch
 import kotlin.reflect.KClass
 
 class NewConnectionViewModel(
-    private val mqttController: MqttControllerContract, private val repo: ConnectionAdapter
+    private val mqttController: MqttControllerContract,
+    private val repo: ConnectionAdapter,
+    val onSuccess: () -> Unit
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ConnectionUiState())
@@ -54,6 +57,11 @@ class NewConnectionViewModel(
                                 uiState.value.useSsl,
                                 ""
                             )
+
+                            viewModelScope.launch {
+                                delay(1000)
+                                onSuccess()
+                            }
 
                             currentUiState.copy(
                                 isConnecting = false,
@@ -178,7 +186,9 @@ class NewConnectionViewModel(
 
     companion object {
         fun Factory(
-            mqttController: MqttControllerContract, connectionRepo: ConnectionAdapter
+            mqttController: MqttControllerContract,
+            connectionRepo: ConnectionAdapter,
+            onSuccess: () -> Unit
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
 
@@ -186,10 +196,9 @@ class NewConnectionViewModel(
                 modelClass: KClass<T>, extras: CreationExtras
             ): T {
                 if (modelClass.java.isAssignableFrom(NewConnectionViewModel::class.java)) {
-                    return NewConnectionViewModel(mqttController, connectionRepo) as T
+                    return NewConnectionViewModel(mqttController, connectionRepo, onSuccess) as T
                 }
                 throw IllegalArgumentException("Unknown ViewModel class")
-
             }
         }
     }

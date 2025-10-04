@@ -26,7 +26,11 @@ fun AppNavigation(
             NewConnectionScreen(
                 appComponent, {
                     navController.popBackStack()
-                })
+                },
+                {
+                    navController.popBackStack()
+                }
+            )
         }
         composable(Screen.Home.route) {
             HomeScreen(

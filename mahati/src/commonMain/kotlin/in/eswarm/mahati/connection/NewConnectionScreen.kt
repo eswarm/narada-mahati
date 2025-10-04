@@ -16,10 +16,12 @@ import `in`.eswarm.mahati.AppComponent
 fun NewConnectionScreen(
     appComponent: AppComponent,
     onCancel: () -> Unit,
+    onSuccess: () -> Unit,
     newConnectionViewModel: NewConnectionViewModel = viewModel(
         factory = NewConnectionViewModel.Factory(
             appComponent.mqttController,
-            appComponent.connectionRepo
+            appComponent.connectionRepo,
+            onSuccess
         )
     )
 ) {
