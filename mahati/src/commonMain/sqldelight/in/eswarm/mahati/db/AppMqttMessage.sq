@@ -25,12 +25,12 @@ SELECT * FROM AppMqttMessage ORDER BY timestamp DESC;
 getMessagesByClientIdAndTopic:
 SELECT * FROM AppMqttMessage
 WHERE clientID = ? AND topicName = ?
-ORDER BY timestamp DESC;
+ORDER BY timestamp ASC;
 
 getMessagesByClientId:
 SELECT * FROM AppMqttMessage
 WHERE clientID = ?
-ORDER BY timestamp DESC;
+ORDER BY timestamp ASC;
 
 insertMessage:
 INSERT INTO AppMqttMessage(clientID, topicName, payload, qos, retained, direction, timestamp)
