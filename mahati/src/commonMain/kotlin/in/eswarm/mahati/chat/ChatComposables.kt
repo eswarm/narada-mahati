@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import `in`.eswarm.mahati.AppComponent
+import `in`.eswarm.mahati.db.MessageRepository
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
@@ -38,11 +39,13 @@ fun ChatScreen(
     appComponent: AppComponent,
     clientID: String,
     topic: String,
+    messageRepo: MessageRepository,
     viewModel: ChatViewModel = viewModel(
         factory = ChatViewModel.Factory(
             appComponent.mqttController,
             clientID,
-            topic
+            topic,
+            messageRepo
         )
     )
 ) {

@@ -45,15 +45,16 @@ private object AndroidMqttControllerProxy : MqttControllerContract, ServiceConne
     private val service = MutableStateFlow<MqttClientService?>(null)
     private val proxyScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
-    // --- The Fix: Create persistent proxy flows ---
-
     // 1. The proxy has its own StateFlow that it exposes publicly and consistently.
-    private val _proxyConnectionStatesMap = MutableStateFlow<Map<String, MqttClientState>>(emptyMap())
-    override val connectionStatesMap: StateFlow<Map<String, MqttClientState>> = _proxyConnectionStatesMap.asStateFlow()
+    private val _proxyConnectionStatesMap =
+        MutableStateFlow<Map<String, MqttClientState>>(emptyMap())
+    override val connectionStatesMap: StateFlow<Map<String, MqttClientState>> =
+        _proxyConnectionStatesMap.asStateFlow()
 
     // 2. The proxy also has its own SharedFlow.
     private val _proxyAllMessages = MutableSharedFlow<Pair<String, AppMqttMessage>>()
-    override val allMessages: SharedFlow<Pair<String, AppMqttMessage>> = _proxyAllMessages.asSharedFlow()
+    override val allMessages: SharedFlow<Pair<String, AppMqttMessage>> =
+        _proxyAllMessages.asSharedFlow()
 
     init {
         // Start and bind to the service as soon as this proxy is accessed.
@@ -72,7 +73,13 @@ private object AndroidMqttControllerProxy : MqttControllerContract, ServiceConne
         service.value?.removeConnection(clientID)
     }
 
-    override suspend fun publish(clientID: String, topic: String, payload: ByteArray, qos: Int, retain: Boolean): Boolean {
+    override suspend fun publish(
+        clientID: String,
+        topic: String,
+        payload: ByteArray,
+        qos: Int,
+        retain: Boolean
+    ): Boolean {
         // Use a coroutine to wait for the service if not immediately available.
         return checkNotNull(service.value).publish(clientID, topic, payload, qos, retain)
     }
@@ -107,7 +114,9 @@ private object AndroidMqttControllerProxy : MqttControllerContract, ServiceConne
                 controller?.connectionStatesMap?.collect { _proxyConnectionStatesMap.value = it }
             }
             launch {
-                controller?.allMessages?.collect { _proxyAllMessages.emit(it) }
+                controller?.allMessages?.collect {
+                    _proxyAllMessages.emit(it)
+                }
             }
         }
     }

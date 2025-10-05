@@ -1,6 +1,7 @@
 package `in`.eswarm.mahati.mqtt.controller
 
 import `in`.eswarm.mahati.db.AppMqttMessage
+import `in`.eswarm.mahati.db.MessageRepository
 import `in`.eswarm.mahati.db.MqttConnection // Still needed to create the object for the manager
 import `in`.eswarm.mahati.mqtt.common.MqttClientState
 import `in`.eswarm.mahati.mqtt.core.HiveMqttManagerImpl
@@ -13,21 +14,19 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 class MqttConnectionController(
-    private val controllerScope: CoroutineScope
+    private val controllerScope: CoroutineScope,
+    private val messageRepo: MessageRepository
 ) : MqttControllerContract { // Implements the common interface
 
     private val activeManagers = mutableMapOf<String, MqttManager>()
     private val managerScopes = mutableMapOf<String, CoroutineScope>()
     private val mapMutex = Mutex()
-
     private val _connectionStatesMap = MutableStateFlow<Map<String, MqttClientState>>(emptyMap())
     override val connectionStatesMap: StateFlow<Map<String, MqttClientState>> =
         _connectionStatesMap.asStateFlow()
-
     private val _allMessages =
         MutableSharedFlow<Pair<String, AppMqttMessage>>(replay = 0, extraBufferCapacity = 64)
     override val allMessages: SharedFlow<Pair<String, AppMqttMessage>> = _allMessages.asSharedFlow()
-
     private val commandChannel = Channel<ControllerCommand>(Channel.UNLIMITED)
 
     sealed class ControllerCommand {
@@ -67,13 +66,31 @@ class MqttConnectionController(
                     is ControllerCommand.PublishMessage -> handlePublishMessage(command)
                     is ControllerCommand.SubscribeToTopic -> handleSubscribeToTopic(command)
                     is ControllerCommand.UnsubscribeToTopic -> handleUnsubscribeToTopic(command)
-
                 }
+            }
+        }
+
+        launchPersistMessage()
+    }
+
+    private fun launchPersistMessage() {
+        controllerScope.launch {
+            allMessages.collect { messagePair ->
+                val clientID = messagePair.first
+                val message = messagePair.second
+                messageRepo.insertMessage(
+                    message.clientID,
+                    message.topicName,
+                    message.payload,
+                    message.qos,
+                    message.retained,
+                    message.direction,
+                    message.timestamp
+                )
             }
         }
     }
 
-    // Corrected to use MqttConnectionConfig
     private suspend fun handleAddConnection(config: MqttConnection) {
         mapMutex.withLock {
             if (activeManagers.containsKey(config.clientID)) {
@@ -100,7 +117,6 @@ class MqttConnectionController(
                     }
                 }
             }
-
             val manager = checkNotNull(activeManagers[config.clientID])
 
             if (manager.connectionState.value !is MqttClientState.Connected) {

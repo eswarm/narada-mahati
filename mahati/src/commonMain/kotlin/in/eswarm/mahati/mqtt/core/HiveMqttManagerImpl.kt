@@ -113,14 +113,22 @@ class HiveMqttManagerImpl(
                                 .find { it.name.toString() == "clientID" }
                                 ?.value?.toString() // Convert MqttUtf8String to String
 
+                            val direction =
+                                if (publisherClientIdFromProps != null && publisherClientIdFromProps == currentParams?.clientID) {
+                                    MessageDirection.SENT
+                                } else {
+                                    MessageDirection.RECEIVED
+                                }
+
                             val message = AppMqttMessage(
-                                topicName = params.topicPrefix + publish.topic.toString(),
+                                topicName = (currentParams?.topicPrefix
+                                    ?: "") + publish.topic.toString(),
                                 payload = publish.payloadAsBytes,
                                 qos = publish.qos.code.toLong(),
                                 clientID = publisherClientIdFromProps ?: "-",
                                 retained = publish.isRetain,
                                 id = 0,
-                                direction = MessageDirection.RECEIVED,
+                                direction = direction,
                                 timestamp = System.currentTimeMillis()
                             )
                             coroutineScope.launch {

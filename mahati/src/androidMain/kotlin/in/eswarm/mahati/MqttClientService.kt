@@ -10,6 +10,7 @@ import androidx.core.content.ContextCompat
 import `in`.eswarm.mahati.db.MqttConnection
 import `in`.eswarm.mahati.mqtt.controller.MqttConnectionController
 import `in`.eswarm.mahati.util.NotificationUtil.FG_SERVICE_CHANNEL
+import `in`.eswarm.mahati.util.getAppComponent
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -30,7 +31,10 @@ class MqttClientService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        multiConnectionController = MqttConnectionController(serviceScope)
+        multiConnectionController = MqttConnectionController(
+            serviceScope,
+            this.applicationContext.getAppComponent().messageRepo
+        )
 
         // Basic foreground notification - customize as needed
         val notification =

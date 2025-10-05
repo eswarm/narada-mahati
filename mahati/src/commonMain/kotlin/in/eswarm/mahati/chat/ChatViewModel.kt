@@ -4,9 +4,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
+import `in`.eswarm.mahati.db.MessageDirection
+import `in`.eswarm.mahati.db.MessageRepository
 import `in`.eswarm.mahati.mqtt.common.MqttClientState
 import `in`.eswarm.mahati.mqtt.common.payloadAsText
 import `in`.eswarm.mahati.mqtt.service.MqttControllerContract
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.UUID
@@ -22,7 +25,8 @@ data class ChatUiState(
 class ChatViewModel(
     private val mqttController: MqttControllerContract,
     private val clientID: String,
-    val topic: String
+    val topic: String,
+    val messageRepo: MessageRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ChatUiState())
@@ -35,12 +39,9 @@ class ChatViewModel(
             // This assumes MqttManager handles multiple subscriptions correctly
             // or this screen is only active when already subscribed.
             // For robust behavior, ensure subscription happens before trying to receive.
-            val subscribed =
-                mqttController.subscribe(
-                    clientID = clientID,
-                    topicFilter = topic,
-                    qos = 1
-                ) // Use QoS 1 for more reliability
+            val subscribed = mqttController.subscribe(
+                clientID = clientID, topicFilter = topic, qos = 1
+            ) // Use QoS 1 for more reliability
             if (subscribed != true) {
                 _uiState.update { it.copy(error = "Failed to subscribe to chat topic: $topic") }
             }
@@ -70,6 +71,27 @@ class ChatViewModel(
                 }
             }
         }
+
+        with(Dispatchers.IO) {
+            viewModelScope.launch {
+                val messages = messageRepo.getMessagesByClientId(clientID)
+                val chatMessages = messages.map { message ->
+                    ChatMessage(
+                        text = message.payloadAsText,
+                        senderId = message.clientID,
+                        isSentByUser = message.direction == MessageDirection.SENT,
+                        status = if (message.direction == MessageDirection.SENT) MessageStatus.SENT else null,
+                        timestamp = message.timestamp
+                    )
+                }
+
+                _uiState.update {
+                    it.copy(
+                        messages = it.messages + chatMessages
+                    )
+                }
+            }
+        }
     }
 
     fun onMqttStateChange(state: MqttClientState) {
@@ -95,20 +117,22 @@ class ChatViewModel(
 
         _uiState.update {
             it.copy(
-                messages = it.messages + chatMessage,
-                currentInput = "" // Clear input field
+                messages = it.messages + chatMessage, currentInput = "" // Clear input field
             )
         }
 
         viewModelScope.launch {
-            val success =
-                mqttController.publish(
-                    clientID = clientID,
-                    topic = topic,
-                    payload = inputText.toByteArray(),
-                    qos = 1,
-                    retain = false
-                )
+            val success = mqttController.publish(
+                clientID = clientID,
+                topic = topic,
+                payload = inputText.toByteArray(),
+                qos = 1,
+                retain = false
+            )
+
+            if (success == true) {
+                mqttController.allMessages
+            }
 
             val finalStatus = if (success == true) MessageStatus.SENT else MessageStatus.FAILED
 
@@ -116,8 +140,7 @@ class ChatViewModel(
                 currentState.copy(
                     messages = currentState.messages.map { msg ->
                         if (msg.id == tempMessageId) msg.copy(status = finalStatus) else msg
-                    }
-                )
+                    })
             }
             if (success != true) {
                 _uiState.update { it.copy(error = "Failed to send message.") }
@@ -133,19 +156,18 @@ class ChatViewModel(
         fun Factory(
             mqttController: MqttControllerContract,
             clientID: String,
-            topic: String
+            topic: String,
+            messageRepository: MessageRepository
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
 
             override fun <T : ViewModel> create(
-                modelClass: KClass<T>,
-                extras: CreationExtras
+                modelClass: KClass<T>, extras: CreationExtras
             ): T {
                 if (modelClass.java.isAssignableFrom(ChatViewModel::class.java)) {
-                    return ChatViewModel(mqttController, clientID, topic) as T
+                    return ChatViewModel(mqttController, clientID, topic, messageRepository) as T
                 }
                 throw IllegalArgumentException("Unknown ViewModel class")
-
             }
         }
     }

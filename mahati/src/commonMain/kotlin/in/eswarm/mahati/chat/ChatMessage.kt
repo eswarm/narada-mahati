@@ -16,7 +16,7 @@ data class ChatMessage(
     val id: String = UUID.randomUUID().toString(),
     val text: String,
     val timestamp: Long = 0,
-    val senderId: String, // To identify the sender (could be current user or other user)
+    val senderId: String,
     val isSentByUser: Boolean,
     val status: MessageStatus? = if (isSentByUser) MessageStatus.SENDING else null
 )

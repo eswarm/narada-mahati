@@ -67,8 +67,7 @@ fun AppNavigation(
             val clientID = checkNotNull(backStackEntry.arguments?.getString("clientID"))
             if (topicName != null) {
                 ChatScreen(
-                    appComponent, clientID, topicName
-                    // onNavigateBack = { navController.popBackStack() }
+                    appComponent, clientID, topicName, appComponent.messageRepo
                 )
             } else {
                 // Handle error: topicName not found, perhaps navigate back or show error
