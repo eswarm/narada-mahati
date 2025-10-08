@@ -87,7 +87,7 @@ fun HomeScreen(
 
     Scaffold(topBar = {
         TopAppBar(
-            title = { Text("Mahati : MQTT CLient") })
+            title = { Text("Mahati : MQTT Client") })
     }, floatingActionButton = {
         FloatingActionButton(onClick = { viewModel.onEvent(HomeUiEvent.AddNewConnectionClicked) }) {
             Icon(Icons.Filled.Add, contentDescription = "Add new MQTT connection")
