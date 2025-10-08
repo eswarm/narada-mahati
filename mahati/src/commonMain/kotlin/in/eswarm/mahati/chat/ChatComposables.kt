@@ -79,62 +79,65 @@ fun ChatScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text("Topic: ${viewModel.topic}") }, 
+                title = { Text("Topic: ${viewModel.topic}") },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
                 )
             )
-        },
-        bottomBar = {
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .padding(top = innerPadding.calculateTopPadding())
+                .navigationBarsPadding()
+                .imePadding()
+                .fillMaxSize()
+        ) {
+            if (!uiState.isConnected && uiState.messages.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("Connecting to chat...", style = MaterialTheme.typography.titleMedium)
+                }
+            } else if (uiState.messages.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("No messages yet. Send one!", style = MaterialTheme.typography.titleMedium)
+                }
+            } else {
+                LazyColumn(
+                    state = listState,
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp)
+                ) {
+                    items(uiState.messages, key = { it.id }) { message ->
+                        AnimatedVisibility(
+                            visible = true, // Messages are always visible once added
+                            enter = fadeIn() + slideInVertically(initialOffsetY = { it / 2 }),
+                            exit = fadeOut() + slideOutVertically(targetOffsetY = { it / 2 })
+                        ) {
+                            MessageBubble(message = message)
+                        }
+                    }
+                }
+            }
             ChatInputBar(
                 currentText = uiState.currentInput,
                 onTextChanged = { viewModel.onInputChange(it) },
                 onSendClicked = { viewModel.sendMessage() },
                 isConnected = uiState.isConnected
             )
-        },
-        contentWindowInsets = WindowInsets.ime // <-- MODIFIED: Scaffold handles IME insets
-    ) { innerPadding -> // innerPadding now includes IME adjustments
-        if (!uiState.isConnected && uiState.messages.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("Connecting to chat...", style = MaterialTheme.typography.titleMedium)
-            }
-        } else if (uiState.messages.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("No messages yet. Send one!", style = MaterialTheme.typography.titleMedium)
-            }
-        } else {
-            LazyColumn(
-                state = listState,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding) // Apply Scaffold's adjusted padding
-                    .imePadding()       // <-- MODIFIED: Removed explicit IME padding here
-                    .padding(horizontal = 8.dp), // Then other content padding
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = PaddingValues(vertical = 8.dp)
-            ) {
-                items(uiState.messages, key = { it.id }) { message ->
-                    AnimatedVisibility(
-                        visible = true, // Messages are always visible once added
-                        enter = fadeIn() + slideInVertically(initialOffsetY = { it / 2 }),
-                        exit = fadeOut() + slideOutVertically(targetOffsetY = { it / 2 })
-                    ) {
-                        MessageBubble(message = message)
-                    }
-                }
-            }
         }
     }
 }
@@ -233,7 +236,6 @@ fun ChatInputBar(
     val keyboardController = LocalSoftwareKeyboardController.current
 
     Surface(
-        modifier = Modifier.navigationBarsPadding(),
         tonalElevation = 3.dp, // Adds a slight shadow
     ) {
         Row(
