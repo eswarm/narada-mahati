@@ -167,7 +167,7 @@ class HiveMqttManagerImpl(
         topic: String, payload: ByteArray, qos: Int, retain: Boolean
     ): Boolean {
         val currentClient = client
-        if (currentClient == null || currentClient.state?.isConnected != true) {
+        if (currentClient == null || !currentClient.state.isConnected) {
             return false
         }
         return try {
@@ -187,7 +187,7 @@ class HiveMqttManagerImpl(
 
     override suspend fun subscribe(topicFilter: String, qos: Int): Boolean {
         val currentClient = client
-        if (currentClient == null || currentClient.state?.isConnected != true) {
+        if (currentClient == null || !currentClient.state.isConnected) {
             return false
         }
         return try {
@@ -205,7 +205,7 @@ class HiveMqttManagerImpl(
 
     override suspend fun unsubscribe(topicFilter: String): Boolean {
         val currentClient = client
-        if (currentClient == null || currentClient.state?.isConnected != true) {
+        if (currentClient == null || !currentClient.state.isConnected) {
             return false
         }
         return try {

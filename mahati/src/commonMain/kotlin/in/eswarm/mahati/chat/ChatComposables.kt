@@ -233,8 +233,6 @@ fun ChatInputBar(
     onSendClicked: () -> Unit,
     isConnected: Boolean
 ) {
-    val keyboardController = LocalSoftwareKeyboardController.current
-
     Surface(
         tonalElevation = 3.dp, // Adds a slight shadow
     ) {
