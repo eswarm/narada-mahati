@@ -53,11 +53,11 @@ class ChatViewModel(
                 val message = received.second
 
                 if (message.topicName == topic) {
-                    if (message.clientID != clientID) {
+                    if (message.publisherID != clientID) {
                         val chatMsg = ChatMessage(
                             text = message.payloadAsText,
                             timestamp = System.currentTimeMillis(),
-                            senderId = message.clientID,
+                            senderId = message.publisherID,
                             isSentByUser = false
                         )
                         _uiState.update { currentState ->
@@ -78,7 +78,7 @@ class ChatViewModel(
                 val chatMessages = messages.map { message ->
                     ChatMessage(
                         text = message.payloadAsText,
-                        senderId = message.clientID,
+                        senderId = message.publisherID,
                         isSentByUser = message.direction == MessageDirection.SENT,
                         status = if (message.direction == MessageDirection.SENT) MessageStatus.SENT else null,
                         timestamp = message.timestamp

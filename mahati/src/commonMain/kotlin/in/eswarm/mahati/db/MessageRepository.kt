@@ -8,9 +8,9 @@ import kotlinx.coroutines.withContext
 
 class MessageRepository {
     private val queries = getMahatiDb().appMqttMessageQueries
-
     suspend fun insertMessage(
-        clientID: String,
+        connectionID: String,
+        publisherID: String,
         topicName: String,
         payload: ByteArray,
         qos: Long, // Matches INTEGER
@@ -20,7 +20,8 @@ class MessageRepository {
     ) {
         withContext(Dispatchers.IO) {
             queries.insertMessage(
-                clientID = clientID,
+                connectionID = connectionID,
+                publisherID = publisherID,
                 topicName = topicName,
                 payload = payload,
                 qos = qos,
@@ -36,7 +37,7 @@ class MessageRepository {
         topicName: String
     ): List<AppMqttMessage> {
         return withContext(Dispatchers.IO) {
-            queries.getMessagesByClientIdAndTopic(clientID, topicName).executeAsList()
+            queries.getMessagesByConnectionIdAndTopic(clientID, topicName).executeAsList()
         }
     }
 
@@ -44,19 +45,19 @@ class MessageRepository {
         clientID: String,
         topicName: String
     ): Flow<List<AppMqttMessage>> {
-        return queries.getMessagesByClientIdAndTopic(clientID, topicName)
+        return queries.getMessagesByConnectionIdAndTopic(clientID, topicName)
             .asFlow()
             .mapToList(Dispatchers.IO)
     }
 
     suspend fun getMessagesByClientId(clientID: String): List<AppMqttMessage> {
         return withContext(Dispatchers.IO) {
-            queries.getMessagesByClientId(clientID).executeAsList()
+            queries.getMessagesByConnectionId(clientID).executeAsList()
         }
     }
 
     fun getMessagesByClientIdFlow(clientID: String): Flow<List<AppMqttMessage>> {
-        return queries.getMessagesByClientId(clientID).asFlow().mapToList(Dispatchers.IO)
+        return queries.getMessagesByConnectionId(clientID).asFlow().mapToList(Dispatchers.IO)
     }
 
     suspend fun deleteMessagesOlderThan(timestamp: Long) {
@@ -67,7 +68,7 @@ class MessageRepository {
 
     suspend fun deleteAllMessagesByClientId(clientID: String) {
         withContext(Dispatchers.IO) {
-            queries.deleteMessagesByClientId(clientID)
+            queries.deleteMessagesByConnectionId(clientID)
         }
     }
 

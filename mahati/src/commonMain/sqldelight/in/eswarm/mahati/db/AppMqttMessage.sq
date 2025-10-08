@@ -3,7 +3,8 @@ import kotlin.Boolean;
 
 CREATE TABLE AppMqttMessage (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    clientID TEXT NOT NULL,                 -- Identifier for the client/user
+    connectionID TEXT NOT NULL,             -- The connection profile ID in this app that this message is associated with
+    publisherID TEXT NOT NULL,              -- The client ID of the original publisher of the message
     topicName TEXT NOT NULL,                -- The actual topic the message was published to/received on
     payload BLOB NOT NULL,                  -- Message content as ByteArray
     qos INTEGER NOT NULL,                   -- QoS level of the message
@@ -13,34 +14,36 @@ CREATE TABLE AppMqttMessage (
 );
 
 -- Indexes for common query patterns
-CREATE INDEX idx_topicmessage_client_topic ON AppMqttMessage(clientID, topicName, timestamp);
+CREATE INDEX idx_topicmessage_connection_topic ON AppMqttMessage(connectionID, topicName, timestamp);
 CREATE INDEX idx_topicmessage_timestamp ON AppMqttMessage(timestamp);
 
-
 -- Common Queries for TopicMessageEntity
+
+generateId:
+SELECT 0;
 
 getAllMessages:
 SELECT * FROM AppMqttMessage ORDER BY timestamp DESC;
 
-getMessagesByClientIdAndTopic:
+getMessagesByConnectionIdAndTopic:
 SELECT * FROM AppMqttMessage
-WHERE clientID = ? AND topicName = ?
+WHERE connectionID = ? AND topicName = ?
 ORDER BY timestamp ASC;
 
-getMessagesByClientId:
+getMessagesByConnectionId:
 SELECT * FROM AppMqttMessage
-WHERE clientID = ?
+WHERE connectionID = ?
 ORDER BY timestamp ASC;
 
 insertMessage:
-INSERT INTO AppMqttMessage(clientID, topicName, payload, qos, retained, direction, timestamp)
-VALUES (?, ?, ?, ?, ?, ?, ?);
+INSERT INTO AppMqttMessage(connectionID, publisherID, topicName, payload, qos, retained, direction, timestamp)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
 
-deleteMessagesByClientIdAndTopic:
-DELETE FROM AppMqttMessage WHERE clientID = ? AND topicName = ?;
+deleteMessagesByConnectionIdAndTopic:
+DELETE FROM AppMqttMessage WHERE connectionID = ? AND topicName = ?;
 
-deleteMessagesByClientId:
-DELETE FROM AppMqttMessage WHERE clientID = ?;
+deleteMessagesByConnectionId:
+DELETE FROM AppMqttMessage WHERE connectionID = ?;
 
 deleteAllMessages:
 DELETE FROM AppMqttMessage;

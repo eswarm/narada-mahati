@@ -79,7 +79,8 @@ class MqttConnectionController(
                 val clientID = messagePair.first
                 val message = messagePair.second
                 messageRepo.insertMessage(
-                    message.clientID,
+                    message.connectionID,
+                    message.publisherID,
                     message.topicName,
                     message.payload,
                     message.qos,
