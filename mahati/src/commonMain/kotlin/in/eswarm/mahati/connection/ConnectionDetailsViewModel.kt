@@ -56,8 +56,8 @@ class ConnectionDetailsViewModel(
                     hostname = connection.brokerHost,
                     port = connection.brokerPort.toString(),
                     clientID = connection.clientID,
-                    username = connection.username,
-                    password = connection.password.contentToString(),
+                    username = connection.username ?: "",
+                    password = connection.password?.contentToString() ?: "",
                     useSsl = connection.useSsl,
                     useWebsockets = connection.useSsl
                 )

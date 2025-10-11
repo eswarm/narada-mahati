@@ -88,7 +88,7 @@ fun ConnectionDetailsScreen(
         }
 
         OutlinedTextField(
-            value = uiState.username ?: "",
+            value = uiState.username,
             onValueChange = { connectionDetailsViewModel.onUsernameChange(it) },
             label = { Text("Username (Optional)") },
             singleLine = true,
@@ -96,11 +96,9 @@ fun ConnectionDetailsScreen(
         )
 
         OutlinedTextField(
-            value = uiState.password ?: "",
+            value = uiState.password,
             onValueChange = {
-                if (it.isNotBlank()) {
                     connectionDetailsViewModel.onPasswordChange(it)
-                }
             },
             label = { Text("Password (Optional)") },
             visualTransformation = PasswordVisualTransformation(),

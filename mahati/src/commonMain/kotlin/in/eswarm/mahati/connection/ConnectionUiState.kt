@@ -7,8 +7,8 @@ data class ConnectionUiState(
     val hostnameError: String? = null,
     val port: String = "", // Keep as String for input, convert to Int in ViewModel
     val portError: String? = null,
-    val username: String? = null,
-    val password: String? = null,
+    val username: String = "",
+    val password: String = "",
     val useSsl: Boolean = false,
     val useWebsockets: Boolean = false,
     val isConnecting: Boolean = false, // True if any connection attempt is in progress
