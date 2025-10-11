@@ -1,5 +1,6 @@
 package `in`.eswarm.mahati.mqtt.controller
 
+import `in`.eswarm.mahati.chat.ChatScreenLifecycle
 import `in`.eswarm.mahati.db.AppMqttMessage
 import `in`.eswarm.mahati.db.MessageRepository
 import `in`.eswarm.mahati.db.MqttConnection // Still needed to create the object for the manager
@@ -15,7 +16,8 @@ import kotlinx.coroutines.sync.withLock
 
 class MqttConnectionController(
     private val controllerScope: CoroutineScope,
-    private val messageRepo: MessageRepository
+    private val messageRepo: MessageRepository,
+    private val sendNotification: ((String, String, String, String) -> Unit)? = null
 ) : MqttControllerContract { // Implements the common interface
 
     private val activeManagers = mutableMapOf<String, MqttManager>()
@@ -88,6 +90,15 @@ class MqttConnectionController(
                     message.direction,
                     message.timestamp
                 )
+
+                if (!ChatScreenLifecycle.isChatScreenVisible.value) {
+                    sendNotification?.invoke(
+                        "New message on ${message.topicName}",
+                        String(message.payload),
+                        clientID,
+                        message.topicName
+                    )
+                }
             }
         }
     }

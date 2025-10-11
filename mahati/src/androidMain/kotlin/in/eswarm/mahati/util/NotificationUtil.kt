@@ -8,11 +8,13 @@ import android.content.Context
 import android.content.Context.NOTIFICATION_SERVICE
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import `in`.eswarm.mahati.Main
 import `in`.eswarm.mahati.R
+import `in`.eswarm.mahati.navigation.Screen
 import `in`.eswarm.mahati.resources.Res
 import `in`.eswarm.mahati.resources.fg_channel_description
 import `in`.eswarm.mahati.resources.fg_channel_name
@@ -48,12 +50,19 @@ object NotificationUtil {
         notificationManager.createNotificationChannel(channel)
     }
 
-    fun sendNotification(context: Context, title: String, message: String) {
+    fun sendNotification(
+        context: Context, title: String, message: String, clientID: String, topicName: String
+    ) {
         val intent = Intent(context, Main::class.java).apply {
+            action = Intent.ACTION_VIEW
+            data = Uri.parse(Screen.Chat.createDeepLink(clientID, topicName))
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
+
         val pendingIntent: PendingIntent =
-            PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+            PendingIntent.getActivity(
+                context, 0, intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            )
 
         val builder = NotificationCompat.Builder(context, MESSAGE_CHANNEL)
             .setSmallIcon(R.drawable.notification_icon)

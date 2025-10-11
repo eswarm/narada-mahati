@@ -15,6 +15,14 @@ sealed class Screen(val route: String) {
             val encodedTopic = URLEncoder.encode(topicName, "UTF-8")
             return "chat/$encodedClient/$encodedTopic"
         }
+
+        fun createDeepLink(clientID: String, topicName: String): String {
+            val encodedClient = URLEncoder.encode(clientID, "UTF-8")
+            val encodedTopic = URLEncoder.encode(topicName, "UTF-8")
+            return "mahati://chat/$encodedClient/$encodedTopic"
+        }
+
+        const val uriPattern = "mahati://chat/{clientID}/{topicName}"
     }
 
     data object NewConnection : Screen("new_connection")

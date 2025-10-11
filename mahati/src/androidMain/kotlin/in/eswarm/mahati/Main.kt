@@ -1,7 +1,9 @@
 package `in`.eswarm.mahati
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -13,9 +15,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import `in`.eswarm.mahati.navigation.DeepLinkDestination
 import `in`.eswarm.mahati.theme.NaradaMQTTBrokerTheme
 import `in`.eswarm.mahati.util.NotificationUtil
 import kotlinx.coroutines.runBlocking
@@ -78,6 +84,8 @@ class Main : ComponentActivity() {
         setContent {
             NaradaMQTTBrokerTheme {
                 val permissionState by viewModel.permissionState.collectAsState()
+                var deepLinkDestination by remember { mutableStateOf(parseDeepLink(intent)) }
+
                 Surface(
                     modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background
                 ) {
@@ -88,7 +96,9 @@ class Main : ComponentActivity() {
                         AppNavigation(
                             appComponent = appComponent,
                             permissionState = state,
-                            requestPermission = ::requestPermission
+                            requestPermission = ::requestPermission,
+                            deepLinkDestination = deepLinkDestination,
+                            onDeepLinkHandled = { deepLinkDestination = null }
                         )
                     }
                 }
@@ -99,5 +109,36 @@ class Main : ComponentActivity() {
     override fun onStart() {
         super.onStart()
         checkPermission()
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        val deepLink = parseDeepLink(intent)
+        if (deepLink != null) {
+            val updatedIntent = getIntent()
+            if (updatedIntent != null) {
+                val uri = updatedIntent.data
+                if (uri != null) {
+                    val deepLink = parseDeepLink(updatedIntent)
+                    if (deepLink != null) {
+                        // TODO: This should be handled by a state update, not direct navigation
+                    }
+                }
+            }
+        }
+    }
+
+    private fun parseDeepLink(intent: Intent?): DeepLinkDestination? {
+        if (intent?.action == Intent.ACTION_VIEW && intent.data != null) {
+            val uri: Uri = intent.data!!
+            if (uri.scheme == "mahati" && uri.host == "chat") {
+                val clientId = uri.pathSegments.getOrNull(0)
+                val topicName = uri.pathSegments.getOrNull(1)
+                if (clientId != null && topicName != null) {
+                    return DeepLinkDestination.Chat(clientId, topicName)
+                }
+            }
+        }
+        return null
     }
 }

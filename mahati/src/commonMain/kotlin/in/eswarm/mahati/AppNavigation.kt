@@ -2,6 +2,8 @@ package `in`.eswarm.mahati
 
 import PermissionState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -10,15 +12,23 @@ import androidx.navigation.navArgument
 import `in`.eswarm.mahati.chat.ChatScreen
 import `in`.eswarm.mahati.connection.ConnectionDetailsScreen
 import `in`.eswarm.mahati.home.HomeScreen
+import `in`.eswarm.mahati.navigation.DeepLinkDestination
 import `in`.eswarm.mahati.navigation.Screen
 import `in`.eswarm.mahati.settings.SettingsScreen
 import `in`.eswarm.mahati.topics.TopicSubscriptionScreen
 
 @Composable
 fun AppNavigation(
-    appComponent: AppComponent, permissionState: PermissionState, requestPermission: () -> Unit
+    appComponent: AppComponent,
+    permissionState: PermissionState,
+    requestPermission: () -> Unit,
+    deepLinkDestination: DeepLinkDestination? = null,
+    onDeepLinkHandled: () -> Unit = {}
 ) {
     val navController = rememberNavController()
+
+    HandleDeepLink(navController, deepLinkDestination, onDeepLinkHandled)
+
 
     NavHost(navController = navController, startDestination = Screen.Home.route) {
         composable(Screen.NewConnection.route) {
@@ -93,6 +103,24 @@ fun AppNavigation(
             } else {
                 // Handle error: topicName not found, perhaps navigate back or show error
             }
+        }
+    }
+}
+
+@Composable
+private fun HandleDeepLink(
+    navController: NavHostController,
+    deepLinkDestination: DeepLinkDestination?,
+    onDeepLinkHandled: () -> Unit
+) {
+    LaunchedEffect(deepLinkDestination) {
+        if (deepLinkDestination != null) {
+            when (deepLinkDestination) {
+                is DeepLinkDestination.Chat -> {
+                    navController.navigate(Screen.Chat.createRoute(deepLinkDestination.clientId, deepLinkDestination.topicName))
+                }
+            }
+            onDeepLinkHandled()
         }
     }
 }

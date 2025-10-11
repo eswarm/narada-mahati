@@ -24,6 +24,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import `in`.eswarm.mahati.AppComponent
@@ -53,6 +54,13 @@ fun ChatScreen(
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
+
+    LifecycleStartEffect(Unit) {
+        ChatScreenLifecycle.onChatScreenVisible()
+        onStopOrDispose {
+            ChatScreenLifecycle.onChatScreenHidden()
+        }
+    }
 
     LaunchedEffect(connectionState) {
         val connectionState = connectionState[clientID] ?: return@LaunchedEffect
