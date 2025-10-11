@@ -19,13 +19,15 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Face
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -54,7 +56,9 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun HomeScreen(
     onNavigateToNewConnection: () -> Unit,
+    onNavigateToSettings: () -> Unit,
     onNavigateToConnectionDetails: (clientID: String) -> Unit,
+    onEditConnection: (clientID: String) -> Unit,
     appComponent: AppComponent,
     permissionState: PermissionState,
     permissionRationale: () -> Unit,
@@ -72,17 +76,29 @@ fun HomeScreen(
         when (val effect = sideEffect) {
             is HomeSideEffect.NavigateToNewConnectionScreen -> {
                 onNavigateToNewConnection()
-                viewModel.clearSideEffect()
             }
 
             is HomeSideEffect.NavigateToConnectionDetails -> {
                 onNavigateToConnectionDetails(effect.clientID)
-                viewModel.clearSideEffect()
+            }
+
+            is HomeSideEffect.DeleteConnection -> {
+                viewModel.deleteConnection(effect.clientID)
+            }
+
+            is HomeSideEffect.EditConnection -> {
+                onEditConnection(effect.clientID)
+            }
+
+            HomeSideEffect.NavigateToSettingsScreen -> {
+                onNavigateToSettings()
             }
 
             null -> { /* No-op */
+
             }
         }
+        viewModel.clearSideEffect()
     }
 
     Scaffold(topBar = {
@@ -108,6 +124,12 @@ fun HomeScreen(
                     uiState = uiState,
                     onProfileClick = { profileId ->
                         viewModel.onEvent(HomeUiEvent.ConnectionSelected(profileId))
+                    },
+                    onDeleteAction = { profileId ->
+                        viewModel.onEvent(HomeUiEvent.DeleteConnectionClicked(profileId))
+                    },
+                    onEditAction = { profileId ->
+                        viewModel.onEvent(HomeUiEvent.EditConnectionClicked(profileId))
                     },
                     modifier = Modifier.weight(1f)
                 )
@@ -146,6 +168,8 @@ fun ConnectionsList(
     profiles: List<MqttConnection>,
     uiState: ConnectionUiState,
     onProfileClick: (String) -> Unit,
+    onDeleteAction: (String) -> Unit,
+    onEditAction: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
@@ -155,10 +179,13 @@ fun ConnectionsList(
     ) {
         items(profiles, key = { it.id }) { connectionParamsEntity ->
             ConnectionListItem(
-                paramsEntity = connectionParamsEntity,
-                // Calculate and pass isConnecting for this specific item
+                connectionDetails = connectionParamsEntity,
                 isConnecting = uiState.isConnecting && uiState.connectingClientId == connectionParamsEntity.clientID,
-                onClick = { onProfileClick(connectionParamsEntity.clientID) })
+                clickAction = { onProfileClick(connectionParamsEntity.clientID) },
+                deleteAction = { clientID ->
+                    onDeleteAction(clientID)
+                },
+                editAction = { clientID -> onEditAction(clientID) })
         }
     }
 }
@@ -166,15 +193,17 @@ fun ConnectionsList(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ConnectionListItem(
-    paramsEntity: MqttConnection,
+    connectionDetails: MqttConnection,
     isConnecting: Boolean,
-    onClick: () -> Unit,
+    clickAction: () -> Unit,
+    deleteAction: (clientID: String) -> Unit,
+    editAction: (clientID: String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(
         onClick = if (isConnecting) {
             {}
-        } else onClick, modifier = modifier.fillMaxWidth()) {
+        } else clickAction, modifier = modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.padding(16.dp).fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
@@ -182,14 +211,14 @@ fun ConnectionListItem(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = paramsEntity.clientID,
+                    text = connectionDetails.clientID,
                     style = MaterialTheme.typography.titleMedium,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "${paramsEntity.brokerHost}:${paramsEntity.brokerPort}",
+                    text = "${connectionDetails.brokerHost}:${connectionDetails.brokerPort}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
@@ -203,11 +232,30 @@ fun ConnectionListItem(
                     color = MaterialTheme.colorScheme.primary, strokeWidth = 2.dp
                 )
             } else {
-                Icon(
-                    imageVector = Icons.Default.Face,
-                    contentDescription = "Connection status or type",
-                    tint = MaterialTheme.colorScheme.primary
-                )
+                Row {
+
+                    IconButton(onClick = {
+                        editAction(connectionDetails.clientID)
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Edit connection",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
+                    IconButton(
+                        onClick = {
+                            deleteAction(connectionDetails.clientID)
+                        }) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Delete connection",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
+                }
             }
         }
     }

@@ -15,8 +15,14 @@ sealed class Screen(val route: String) {
             val encodedTopic = URLEncoder.encode(topicName, "UTF-8")
             return "chat/$encodedClient/$encodedTopic"
         }
-
     }
 
     data object NewConnection : Screen("new_connection")
+
+    data object EditConnection : Screen("edit_connection/{clientID}") {
+        fun createRoute(clientID: String) = "edit_connection/$clientID"
+    }
+
+    data object Settings : Screen("settings")
+
 }

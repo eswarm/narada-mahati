@@ -8,38 +8,59 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import `in`.eswarm.mahati.chat.ChatScreen
-import `in`.eswarm.mahati.connection.NewConnectionScreen
+import `in`.eswarm.mahati.connection.ConnectionDetailsScreen
 import `in`.eswarm.mahati.home.HomeScreen
 import `in`.eswarm.mahati.navigation.Screen
+import `in`.eswarm.mahati.settings.SettingsScreen
 import `in`.eswarm.mahati.topics.TopicSubscriptionScreen
 
 @Composable
 fun AppNavigation(
-    appComponent: AppComponent,
-    permissionState: PermissionState,
-    requestPermission: () -> Unit
+    appComponent: AppComponent, permissionState: PermissionState, requestPermission: () -> Unit
 ) {
     val navController = rememberNavController()
 
     NavHost(navController = navController, startDestination = Screen.Home.route) {
         composable(Screen.NewConnection.route) {
-            NewConnectionScreen(
-                appComponent, {
-                    navController.popBackStack()
-                },
-                {
-                    navController.popBackStack()
-                }
-            )
+            ConnectionDetailsScreen(appComponent, {
+                navController.popBackStack()
+            }, {
+                navController.popBackStack()
+            })
         }
         composable(Screen.Home.route) {
             HomeScreen(
                 { navController.navigate(Screen.NewConnection.route) },
+                { navController.navigate(Screen.Settings.route) },
                 { clientID -> navController.navigate(Screen.TopicSubscription.createRoute(clientID)) },
+                { clientID ->
+                    navController.navigate(
+                        Screen.EditConnection.createRoute(
+                            clientID
+                        )
+                    )
+                },
                 appComponent,
                 permissionState,
                 requestPermission
             )
+        }
+        composable(
+            Screen.EditConnection.route,
+            arguments = listOf(navArgument("clientID") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val clientID = backStackEntry.arguments?.getString("clientID")
+
+            ConnectionDetailsScreen(
+                appComponent, {
+                    navController.popBackStack()
+                }, {
+                    navController.popBackStack()
+                }, clientID = clientID
+            )
+        }
+        composable(Screen.Settings.route) {
+            SettingsScreen()
         }
         composable(
             Screen.TopicSubscription.route,

@@ -7,6 +7,7 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import `in`.eswarm.mahati.connection.ConnectionUiState
 import `in`.eswarm.mahati.db.ConnectionAdapter
 import `in`.eswarm.mahati.db.MqttConnection
+import `in`.eswarm.mahati.home.HomeSideEffect.*
 import `in`.eswarm.mahati.mqtt.common.MqttClientState
 import `in`.eswarm.mahati.mqtt.service.MqttControllerContract
 import kotlinx.coroutines.flow.Flow
@@ -20,12 +21,26 @@ import kotlin.reflect.KClass
 sealed interface HomeUiEvent {
     data object AddNewConnectionClicked : HomeUiEvent
     data class ConnectionSelected(val clientID: String) : HomeUiEvent
+    data object SettingsClicked : HomeUiEvent
+    data class EditConnectionClicked(val clientID: String) : HomeUiEvent
+    data class DeleteConnectionClicked(val clientID: String) : HomeUiEvent
 }
 
 sealed interface HomeSideEffect {
     data object NavigateToNewConnectionScreen : HomeSideEffect
     data class NavigateToConnectionDetails(val clientID: String) : HomeSideEffect
+
+    data object NavigateToSettingsScreen : HomeSideEffect
+
+    data class DeleteConnection(val clientID: String) : HomeSideEffect
+
+    data class EditConnection(val clientID: String) : HomeSideEffect
 }
+
+data class HomeUiState(
+    val isConnecting: Boolean = false,
+)
+
 
 class HomeViewModel(
     private val connectionRepo: ConnectionAdapter,
@@ -134,7 +149,7 @@ class HomeViewModel(
                         if (state is MqttClientState.Connected) {
                             clientID = null
                             _sideEffects.value =
-                                HomeSideEffect.NavigateToConnectionDetails(params.clientID)
+                                NavigateToConnectionDetails(params.clientID)
                         } else {
                             _uiState.update {
                                 it.copy(
@@ -156,12 +171,33 @@ class HomeViewModel(
                         }
                     }
                 }
+
+                is HomeUiEvent.DeleteConnectionClicked -> {
+                    deleteConnection(event.clientID)
+                }
+
+                is HomeUiEvent.EditConnectionClicked -> {
+                    _sideEffects.value =
+                        EditConnection(event.clientID)
+                }
+
+                HomeUiEvent.SettingsClicked -> {
+                    _sideEffects.value =
+                        NavigateToSettingsScreen
+                }
             }
         }
     }
 
     fun clearSideEffect() {
         _sideEffects.value = null
+    }
+
+    fun deleteConnection(clientID: String) {
+        viewModelScope.launch {
+            connectionRepo.deleteConnectionByClientId(clientID)
+            loadConnectionProfiles()
+        }
     }
 
     companion object {

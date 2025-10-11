@@ -14,11 +14,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlin.String
 import kotlin.reflect.KClass
 
-class NewConnectionViewModel(
+class ConnectionDetailsViewModel(
     private val mqttController: MqttControllerContract,
     private val repo: ConnectionAdapter,
+    private val clientID: String?,
     val onSuccess: () -> Unit
 ) : ViewModel() {
 
@@ -26,60 +28,12 @@ class NewConnectionViewModel(
     val uiState: StateFlow<ConnectionUiState> = _uiState.asStateFlow()
 
     init {
+        if (clientID != null) {
+            updateDetails(clientID)
+        }
+
         viewModelScope.launch {
-            mqttController.connectionStatesMap.collect { stateMap ->
-                val state = stateMap[uiState.value.clientID] ?: MqttClientState.Disconnected
-                _uiState.update { currentUiState ->
-                    when (state) {
-                        MqttClientState.Disconnected -> {
-                            currentUiState.copy(
-                                isConnecting = false,
-                                connectionError = if (currentUiState.isConnecting || currentUiState.connectionSuccess) "Disconnected" else null,
-                                connectionSuccess = false
-                            )
-                        }
-
-                        MqttClientState.Connecting -> {
-                            currentUiState.copy(
-                                isConnecting = true,
-                                connectionSuccess = false,
-                                connectionError = null
-                            )
-                        }
-
-                        is MqttClientState.Connected -> {
-                            repo.addConnection(
-                                uiState.value.hostname,
-                                uiState.value.port.toLong(),
-                                uiState.value.clientID,
-                                uiState.value.username,
-                                uiState.value.password.toByteArray(),
-                                uiState.value.useSsl,
-                                ""
-                            )
-
-                            viewModelScope.launch {
-                                delay(1000)
-                                onSuccess()
-                            }
-
-                            currentUiState.copy(
-                                isConnecting = false,
-                                connectionSuccess = true,
-                                connectionError = null
-                            )
-                        }
-
-                        is MqttClientState.Error -> {
-                            currentUiState.copy(
-                                isConnecting = false,
-                                connectionSuccess = false,
-                                connectionError = state.message
-                            )
-                        }
-                    }
-                }
-            }
+            collectConnectionState()
         }
     }
 
@@ -91,6 +45,76 @@ class NewConnectionViewModel(
                 connectionError = null,
                 connectionSuccess = false
             )
+        }
+    }
+
+    fun updateDetails(clientID: String) {
+        viewModelScope.launch {
+            val connection = repo.getConnectionByClientId(clientID)
+            if (connection != null) {
+                val details = ConnectionUiState(
+                    hostname = connection.brokerHost,
+                    port = connection.brokerPort.toString(),
+                    clientID = connection.clientID,
+                    username = connection.username,
+                    password = connection.password.contentToString(),
+                    useSsl = connection.useSsl,
+                    useWebsockets = connection.useSsl
+                )
+                _uiState.update { details }
+            }
+        }
+    }
+
+    suspend fun collectConnectionState() {
+        mqttController.connectionStatesMap.collect { stateMap ->
+            val state = stateMap[uiState.value.clientID] ?: MqttClientState.Disconnected
+            _uiState.update { currentUiState ->
+                when (state) {
+                    MqttClientState.Disconnected -> {
+                        currentUiState.copy(
+                            isConnecting = false,
+                            connectionError = if (currentUiState.isConnecting || currentUiState.connectionSuccess) "Disconnected" else null,
+                            connectionSuccess = false
+                        )
+                    }
+
+                    MqttClientState.Connecting -> {
+                        currentUiState.copy(
+                            isConnecting = true, connectionSuccess = false, connectionError = null
+                        )
+                    }
+
+                    is MqttClientState.Connected -> {
+                        repo.addConnection(
+                            uiState.value.hostname,
+                            uiState.value.port.toLong(),
+                            uiState.value.clientID,
+                            uiState.value.username,
+                            uiState.value.password?.toByteArray(),
+                            uiState.value.useSsl,
+                            ""
+                        )
+
+                        viewModelScope.launch {
+                            delay(1000)
+                            onSuccess()
+                        }
+
+                        currentUiState.copy(
+                            isConnecting = false, connectionSuccess = true, connectionError = null
+                        )
+                    }
+
+                    is MqttClientState.Error -> {
+                        currentUiState.copy(
+                            isConnecting = false,
+                            connectionSuccess = false,
+                            connectionError = state.message
+                        )
+                    }
+                }
+            }
         }
     }
 
@@ -175,8 +199,8 @@ class NewConnectionViewModel(
             brokerHost = currentState.hostname,
             brokerPort = portNumber!!.toLong(),
             clientID = currentState.clientID,
-            username = currentState.username.takeIf { it.isNotBlank() },
-            password = currentState.password.takeIf { it.isNotBlank() }?.encodeToByteArray(),
+            username = currentState.username,
+            password = currentState.password?.encodeToByteArray(),
             useSsl = currentState.useSsl,
             topicPrefix = "",
             createdAt = System.currentTimeMillis()
@@ -188,6 +212,7 @@ class NewConnectionViewModel(
         fun Factory(
             mqttController: MqttControllerContract,
             connectionRepo: ConnectionAdapter,
+            clientId: String?,
             onSuccess: () -> Unit
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
@@ -195,8 +220,10 @@ class NewConnectionViewModel(
             override fun <T : ViewModel> create(
                 modelClass: KClass<T>, extras: CreationExtras
             ): T {
-                if (modelClass.java.isAssignableFrom(NewConnectionViewModel::class.java)) {
-                    return NewConnectionViewModel(mqttController, connectionRepo, onSuccess) as T
+                if (modelClass.java.isAssignableFrom(ConnectionDetailsViewModel::class.java)) {
+                    return ConnectionDetailsViewModel(
+                        mqttController, connectionRepo, clientId, onSuccess
+                    ) as T
                 }
                 throw IllegalArgumentException("Unknown ViewModel class")
             }

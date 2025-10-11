@@ -72,6 +72,7 @@ class Main : ComponentActivity() {
         // TODO: Fix this.
         runBlocking {
             NotificationUtil.createNotificationChannel(this@Main)
+            NotificationUtil.createMessageChannel(this@Main)
         }
 
         setContent {

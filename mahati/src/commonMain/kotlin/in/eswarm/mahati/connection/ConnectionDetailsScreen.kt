@@ -13,19 +13,21 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import `in`.eswarm.mahati.AppComponent
 
 @Composable
-fun NewConnectionScreen(
+fun ConnectionDetailsScreen(
     appComponent: AppComponent,
     onCancel: () -> Unit,
     onSuccess: () -> Unit,
-    newConnectionViewModel: NewConnectionViewModel = viewModel(
-        factory = NewConnectionViewModel.Factory(
+    clientID: String? = null,
+    connectionDetailsViewModel: ConnectionDetailsViewModel = viewModel(
+        factory = ConnectionDetailsViewModel.Factory(
             appComponent.mqttController,
             appComponent.connectionRepo,
+            clientID,
             onSuccess
         )
     )
 ) {
-    val uiState by newConnectionViewModel.uiState.collectAsState() // Consider collectAsStateWithLifecycle for better lifecycle management
+    val uiState by connectionDetailsViewModel.uiState.collectAsState() // Consider collectAsStateWithLifecycle for better lifecycle management
 
     Column(
         modifier = Modifier
@@ -38,7 +40,7 @@ fun NewConnectionScreen(
 
         OutlinedTextField(
             value = uiState.clientID,
-            onValueChange = { newConnectionViewModel.onClientIdChange(it) },
+            onValueChange = { connectionDetailsViewModel.onClientIdChange(it) },
             label = { Text("Client ID") },
             isError = uiState.clientIDError != null,
             singleLine = true,
@@ -54,7 +56,7 @@ fun NewConnectionScreen(
 
         OutlinedTextField(
             value = uiState.hostname,
-            onValueChange = { newConnectionViewModel.onHostnameChange(it) },
+            onValueChange = { connectionDetailsViewModel.onHostnameChange(it) },
             label = { Text("Hostname") },
             isError = uiState.hostnameError != null,
             singleLine = true,
@@ -70,7 +72,7 @@ fun NewConnectionScreen(
 
         OutlinedTextField(
             value = uiState.port,
-            onValueChange = { newConnectionViewModel.onPortChange(it) },
+            onValueChange = { connectionDetailsViewModel.onPortChange(it) },
             label = { Text("Port") },
             isError = uiState.portError != null,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -86,16 +88,20 @@ fun NewConnectionScreen(
         }
 
         OutlinedTextField(
-            value = uiState.username,
-            onValueChange = { newConnectionViewModel.onUsernameChange(it) },
+            value = uiState.username ?: "",
+            onValueChange = { connectionDetailsViewModel.onUsernameChange(it) },
             label = { Text("Username (Optional)") },
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
 
         OutlinedTextField(
-            value = uiState.password,
-            onValueChange = { newConnectionViewModel.onPasswordChange(it) },
+            value = uiState.password ?: "",
+            onValueChange = {
+                if (it.isNotBlank()) {
+                    connectionDetailsViewModel.onPasswordChange(it)
+                }
+            },
             label = { Text("Password (Optional)") },
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -108,7 +114,7 @@ fun NewConnectionScreen(
         ) {
             Checkbox(
                 checked = uiState.useSsl,
-                onCheckedChange = { newConnectionViewModel.onUseSslChange(it) })
+                onCheckedChange = { connectionDetailsViewModel.onUseSslChange(it) })
             Text("Enable SSL/TLS")
         }
 
@@ -117,7 +123,7 @@ fun NewConnectionScreen(
         ) {
             Checkbox(
                 checked = uiState.useWebsockets,
-                onCheckedChange = { newConnectionViewModel.onUseWebsocketsChange(it) })
+                onCheckedChange = { connectionDetailsViewModel.onUseWebsocketsChange(it) })
             Text("Use WebSockets")
         }
 
@@ -154,7 +160,7 @@ fun NewConnectionScreen(
                 Text("Cancel")
             }
             Button(
-                onClick = { newConnectionViewModel.connect() }, enabled = !uiState.isConnecting
+                onClick = { connectionDetailsViewModel.connect() }, enabled = !uiState.isConnecting
             ) {
                 Text("Connect")
             }
