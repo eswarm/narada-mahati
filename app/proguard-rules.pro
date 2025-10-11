@@ -65,21 +65,6 @@
 -dontwarn com.oracle.svm.core.annotate.RecomputeFieldValue$Kind
 -dontwarn com.oracle.svm.core.annotate.RecomputeFieldValue
 -dontwarn com.oracle.svm.core.annotate.TargetClass
--dontwarn io.netty.internal.tcnative.AsyncSSLPrivateKeyMethod
--dontwarn io.netty.internal.tcnative.AsyncTask
--dontwarn io.netty.internal.tcnative.Buffer
--dontwarn io.netty.internal.tcnative.CertificateCallback
--dontwarn io.netty.internal.tcnative.CertificateCompressionAlgo
--dontwarn io.netty.internal.tcnative.CertificateVerifier
--dontwarn io.netty.internal.tcnative.Library
--dontwarn io.netty.internal.tcnative.ResultCallback
--dontwarn io.netty.internal.tcnative.SSL
--dontwarn io.netty.internal.tcnative.SSLContext
--dontwarn io.netty.internal.tcnative.SSLPrivateKeyMethod
--dontwarn io.netty.internal.tcnative.SSLSession
--dontwarn io.netty.internal.tcnative.SSLSessionCache
--dontwarn io.netty.internal.tcnative.SessionTicketKey
--dontwarn io.netty.internal.tcnative.SniHostNameMatcher
 -dontwarn io.prometheus.client.Collector$MetricFamilySamples$Sample
 -dontwarn io.prometheus.client.Collector$MetricFamilySamples
 -dontwarn io.prometheus.client.Collector$Type
@@ -301,3 +286,14 @@
 -dontwarn com.github.luben.zstd.ZstdInputStreamNoFinalizer
 -dontwarn com.github.luben.zstd.util.Native
 -dontwarn org.osgi.annotation.bundle.Export
+
+# Moquette
+-keepclassmembernames class io.netty.buffer.AbstractByteBufAllocator { *; }
+-keepclassmembernames class io.netty.buffer.AdvancedLeakAwareByteBuf { *; }
+-keep public class io.netty.util.ReferenceCountUtil { *;}
+-keepnames class * extends io.netty.channel.ChannelInboundHandlerAdapter
+-keepnames class * extends io.netty.channel.ChannelOutboundHandlerAdapter
+-keepnames class * extends io.netty.channel.** { *; }
+-keepnames class io.netty.channel.** { *; }
+-keepclasseswithmembers class io.netty.channel.** { *; }
+-keep class io.netty.bootstrap.** { *; }
