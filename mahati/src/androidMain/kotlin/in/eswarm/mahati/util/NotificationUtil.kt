@@ -21,6 +21,7 @@ import `in`.eswarm.mahati.resources.fg_channel_name
 import `in`.eswarm.mahati.resources.message_channel_description
 import `in`.eswarm.mahati.resources.message_channel_name
 import org.jetbrains.compose.resources.getString
+import androidx.core.net.toUri
 
 object NotificationUtil {
 
@@ -55,13 +56,16 @@ object NotificationUtil {
     ) {
         val intent = Intent(context, Main::class.java).apply {
             action = Intent.ACTION_VIEW
-            data = Uri.parse(Screen.Chat.createDeepLink(clientID, topicName))
+            data = Screen.Chat.createDeepLink(clientID, topicName).toUri()
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
 
         val pendingIntent: PendingIntent =
             PendingIntent.getActivity(
-                context, 0, intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+                context,
+                0,
+                intent,
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
             )
 
         val builder = NotificationCompat.Builder(context, MESSAGE_CHANNEL)

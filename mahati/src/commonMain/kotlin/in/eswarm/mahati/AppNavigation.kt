@@ -16,6 +16,7 @@ import `in`.eswarm.mahati.navigation.DeepLinkDestination
 import `in`.eswarm.mahati.navigation.Screen
 import `in`.eswarm.mahati.settings.SettingsScreen
 import `in`.eswarm.mahati.topics.TopicSubscriptionScreen
+import java.net.URLDecoder
 
 @Composable
 fun AppNavigation(
@@ -94,8 +95,11 @@ fun AppNavigation(
                 navArgument("clientID") { type = NavType.StringType },
                 navArgument("topicName") { type = NavType.StringType })
         ) { backStackEntry ->
-            val topicName = checkNotNull(backStackEntry.arguments?.getString("topicName"))
-            val clientID = checkNotNull(backStackEntry.arguments?.getString("clientID"))
+            val encodedTopicName = checkNotNull(backStackEntry.arguments?.getString("topicName"))
+            val encodedClientID = checkNotNull(backStackEntry.arguments?.getString("clientID"))
+            val clientID = URLDecoder.decode(encodedClientID, "UTF-8")
+            val topicName = URLDecoder.decode(encodedTopicName, "UTF-8")
+
             if (topicName != null) {
                 ChatScreen(
                     appComponent, clientID, topicName, appComponent.messageRepo
