@@ -90,7 +90,8 @@ class HomeViewModel(
                 MqttClientState.Connecting -> {
                     currentUiState.copy(
                         isConnecting = true, // Ensure this is true
-                        connectionSuccess = false, connectionError = null
+                        connectionSuccess = false,
+                        connectionError = null
                     )
                 }
 
@@ -200,6 +201,9 @@ class HomeViewModel(
         }
     }
 
+    fun clearConnectionError() {
+        _uiState.value = _uiState.value.copy(connectionError = null)
+    }
     companion object {
         fun Factory(
             connectionRepo: ConnectionAdapter, mqttController: MqttControllerContract
