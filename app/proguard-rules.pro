@@ -291,9 +291,5 @@
 -keepclassmembernames class io.netty.buffer.AbstractByteBufAllocator { *; }
 -keepclassmembernames class io.netty.buffer.AdvancedLeakAwareByteBuf { *; }
 -keep public class io.netty.util.ReferenceCountUtil { *;}
--keepnames class * extends io.netty.channel.ChannelInboundHandlerAdapter
--keepnames class * extends io.netty.channel.ChannelOutboundHandlerAdapter
--keepnames class * extends io.netty.channel.** { *; }
--keepnames class io.netty.channel.** { *; }
--keepclasseswithmembers class io.netty.channel.** { *; }
+-keep class io.netty.channel.** { *; }
 -keep class io.netty.bootstrap.** { *; }
