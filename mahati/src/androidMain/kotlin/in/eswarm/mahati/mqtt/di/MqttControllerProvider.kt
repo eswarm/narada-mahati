@@ -11,6 +11,7 @@ import `in`.eswarm.mahati.db.AppMqttMessage
 import `in`.eswarm.mahati.db.MqttConnection
 import `in`.eswarm.mahati.mqtt.common.MqttClientState
 import `in`.eswarm.mahati.mqtt.service.MqttControllerContract
+import `in`.eswarm.mahati.util.getAppComponent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -117,6 +118,12 @@ private object AndroidMqttControllerProxy : MqttControllerContract, ServiceConne
                 controller?.allMessages?.collect {
                     _proxyAllMessages.emit(it)
                 }
+            }
+
+            val appComponent = AppContext.context.getAppComponent()
+            val connections = appComponent.connectionRepo.getAllConnections()
+            for (connection in connections) {
+                addConnection(connection)
             }
         }
     }
