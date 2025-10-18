@@ -173,8 +173,6 @@ class MqttConnectionController(
         command.result.complete(success)
     }
 
-    // Implementation of the MqttControllerContract
-    // Corrected to use MqttConnectionConfig
     override fun addConnection(config: MqttConnection) {
         controllerScope.launch { commandChannel.send(ControllerCommand.AddConnection(config)) }
     }
@@ -183,7 +181,6 @@ class MqttConnectionController(
         controllerScope.launch { commandChannel.send(ControllerCommand.RemoveConnection(clientID)) }
     }
 
-    // This is now a suspend function to await the result
     override suspend fun publish(
         clientID: String, topic: String, payload: ByteArray, qos: Int, retain: Boolean
     ): Boolean {
@@ -196,7 +193,6 @@ class MqttConnectionController(
         return deferredResult.await()
     }
 
-    // This is now a suspend function to await the result
     override suspend fun subscribe(clientID: String, topicFilter: String, qos: Int): Boolean {
         val deferredResult = CompletableDeferred<Boolean>()
         commandChannel.send(

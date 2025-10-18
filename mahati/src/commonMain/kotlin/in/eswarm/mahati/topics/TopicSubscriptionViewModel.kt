@@ -114,11 +114,13 @@ class TopicSubscriptionViewModel(
         _uiState.update { it.copy(isLoading = true) }
         viewModelScope.launch {
             val success = mqttController.unsubscribe(clientID, topicFilter)
-            // Even if unsubscribe call fails, we remove it from UI list as intent is to unsubscribe.
-            // Broker state is the source of truth.
+
+            // if unsubscribe call fails, we keep it in UI
             _uiState.update { currentState ->
                 currentState.copy(
-                    subscribedTopics = currentState.subscribedTopics.filterNot { it.topicFilter == topicFilter },
+                    subscribedTopics =
+                        // will be updated in the load below
+                        currentState.subscribedTopics,
                     isLoading = false,
                     error = if (success == false) {
                         "Failed to send unsubscribe for $topicFilter to broker"
@@ -126,6 +128,11 @@ class TopicSubscriptionViewModel(
                         null
                     }
                 )
+            }
+
+            if (success == true) {
+                subscriptionRepository.deleteSubscription(clientID, topicFilter)
+                load()
             }
         }
     }

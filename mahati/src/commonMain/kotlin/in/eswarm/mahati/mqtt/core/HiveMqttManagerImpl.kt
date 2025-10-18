@@ -209,8 +209,9 @@ class HiveMqttManagerImpl(
             return false
         }
         return try {
+            val filter = (currentParams?.topicPrefix ?: "") + topicFilter
             currentClient.unsubscribeWith()
-                .topicFilter(currentParams?.topicPrefix ?: ("" + topicFilter)).send().toSuspend()
+                .topicFilter(filter).send().toSuspend()
                 .let { unsubAck ->
                     !unsubAck.reasonCodes.any { it.isError }
                 }
