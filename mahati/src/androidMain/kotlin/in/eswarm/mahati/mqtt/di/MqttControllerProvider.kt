@@ -46,13 +46,11 @@ private object AndroidMqttControllerProxy : MqttControllerContract, ServiceConne
     private val service = MutableStateFlow<MqttClientService?>(null)
     private val proxyScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
-    // 1. The proxy has its own StateFlow that it exposes publicly and consistently.
     private val _proxyConnectionStatesMap =
         MutableStateFlow<Map<String, MqttClientState>>(emptyMap())
     override val connectionStatesMap: StateFlow<Map<String, MqttClientState>> =
         _proxyConnectionStatesMap.asStateFlow()
 
-    // 2. The proxy also has its own SharedFlow.
     private val _proxyAllMessages = MutableSharedFlow<Pair<String, AppMqttMessage>>()
     override val allMessages: SharedFlow<Pair<String, AppMqttMessage>> =
         _proxyAllMessages.asSharedFlow()
@@ -63,8 +61,6 @@ private object AndroidMqttControllerProxy : MqttControllerContract, ServiceConne
         AppContext.context.startService(intent) // Ensure the service is started in the foreground
         AppContext.context.bindService(intent, this, Context.BIND_AUTO_CREATE)
     }
-
-    // --- Proxy methods now call the service when available ---
 
     override fun addConnection(config: MqttConnection) {
         service.value?.addConnection(config)
@@ -81,7 +77,6 @@ private object AndroidMqttControllerProxy : MqttControllerContract, ServiceConne
         qos: Int,
         retain: Boolean
     ): Boolean {
-        // Use a coroutine to wait for the service if not immediately available.
         return checkNotNull(service.value).publish(clientID, topic, payload, qos, retain)
     }
 

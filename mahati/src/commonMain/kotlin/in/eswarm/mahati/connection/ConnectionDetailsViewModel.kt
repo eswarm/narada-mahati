@@ -57,7 +57,7 @@ class ConnectionDetailsViewModel(
                     port = connection.brokerPort.toString(),
                     clientID = connection.clientID,
                     username = connection.username ?: "",
-                    password = connection.password?.contentToString() ?: "",
+                    password = connection.password?.decodeToString() ?: "",
                     useSsl = connection.useSsl,
                     useWebsockets = connection.useSsl
                 )
@@ -91,13 +91,13 @@ class ConnectionDetailsViewModel(
                             uiState.value.port.toLong(),
                             uiState.value.clientID,
                             uiState.value.username,
-                            uiState.value.password?.toByteArray(),
+                            uiState.value.password.toByteArray(),
                             uiState.value.useSsl,
                             ""
                         )
 
                         viewModelScope.launch {
-                            delay(1000)
+                            delay(750)
                             onSuccess()
                         }
 
@@ -191,6 +191,9 @@ class ConnectionDetailsViewModel(
 
         if (!isValid) return
 
+        if (mqttController.connectionStatesMap.value[clientID] is MqttClientState.Connected) {
+            _uiState.update { it.copy(connectionError = "Already Connected, not reconnecting") }
+        }
         // isConnecting will be updated by the mqttManager.connectionState collector
         // when MqttClientState.Connecting is emitted.
 
@@ -200,7 +203,7 @@ class ConnectionDetailsViewModel(
             brokerPort = portNumber!!.toLong(),
             clientID = currentState.clientID,
             username = currentState.username,
-            password = currentState.password?.encodeToByteArray(),
+            password = currentState.password.toByteArray(),
             useSsl = currentState.useSsl,
             topicPrefix = "",
             createdAt = System.currentTimeMillis()

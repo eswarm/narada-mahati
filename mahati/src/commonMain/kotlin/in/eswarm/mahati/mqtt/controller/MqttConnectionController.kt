@@ -105,39 +105,54 @@ class MqttConnectionController(
 
     private suspend fun handleAddConnection(config: MqttConnection) {
         mapMutex.withLock {
-            if (activeManagers.containsKey(config.clientID)) {
-                //activeManagers[config.clientID]
-            } else {
-                val managerJob = SupervisorJob(controllerScope.coroutineContext[Job])
-                val newManagerScope =
-                    CoroutineScope(controllerScope.coroutineContext + managerJob + CoroutineName("ManagerScope-${config.clientID}"))
-                managerScopes[config.clientID] = newManagerScope
+            val existingManager = activeManagers[config.clientID]
+            if (existingManager != null) {
+                val currentState = existingManager.connectionState.value
 
-                val manager = HiveMqttManagerImpl(newManagerScope)
-                activeManagers[config.clientID] = manager
-
-                newManagerScope.launch {
-                    manager.connectionState.collect { state ->
-                        _connectionStatesMap.update { currentMap ->
-                            currentMap.toMutableMap().apply { this[config.clientID] = state }
-                        }
-                    }
+                _connectionStatesMap.value = _connectionStatesMap.value.toMutableMap().apply {
+                    this[config.clientID] = currentState
                 }
-                newManagerScope.launch {
-                    manager.receivedMessages.collect { message ->
-                        _allMessages.tryEmit(config.clientID to message)
+
+                if (currentState !is MqttClientState.Connected) {
+                    // It's not connected, so let's try connecting again.
+                    _connectionStatesMap.update { currentMap ->
+                        currentMap.toMutableMap()
+                            .apply { this[config.clientID] = MqttClientState.Connecting }
+                    }
+                    existingManager.connect(config)
+                }
+                // If it IS connected, we do nothing more, the state has been emitted.
+                return@withLock
+            }
+
+            // Manager doesn't exist, create it.
+            val managerJob = SupervisorJob(controllerScope.coroutineContext[Job])
+            val newManagerScope =
+                CoroutineScope(controllerScope.coroutineContext + managerJob + CoroutineName("ManagerScope-${config.clientID}"))
+            managerScopes[config.clientID] = newManagerScope
+
+            val manager = HiveMqttManagerImpl(newManagerScope)
+            activeManagers[config.clientID] = manager
+
+            newManagerScope.launch {
+                manager.connectionState.collect { state ->
+                    _connectionStatesMap.update { currentMap ->
+                        currentMap.toMutableMap().apply { this[config.clientID] = state }
                     }
                 }
             }
-            val manager = checkNotNull(activeManagers[config.clientID])
-
-            if (manager.connectionState.value !is MqttClientState.Connected) {
-                _connectionStatesMap.update { currentMap ->
-                    currentMap.toMutableMap()
-                        .apply { this[config.clientID] = MqttClientState.Connecting }
+            newManagerScope.launch {
+                manager.receivedMessages.collect { message ->
+                    _allMessages.tryEmit(config.clientID to message)
                 }
-                manager.connect(config)
             }
+
+            // And connect it for the first time.
+            _connectionStatesMap.update { currentMap ->
+                currentMap.toMutableMap()
+                    .apply { this[config.clientID] = MqttClientState.Connecting }
+            }
+            manager.connect(config)
         }
     }
 

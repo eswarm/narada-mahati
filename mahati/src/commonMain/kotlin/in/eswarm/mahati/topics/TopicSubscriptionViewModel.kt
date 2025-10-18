@@ -14,7 +14,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.reflect.KClass
 
-// UI Events
 sealed interface TopicSubscriptionEvent {
     data object FabClicked : TopicSubscriptionEvent
     data class SubscribeToTopic(val topicFilter: String, val qos: Int) : TopicSubscriptionEvent
@@ -22,7 +21,6 @@ sealed interface TopicSubscriptionEvent {
     data object DismissSubscribeDialog : TopicSubscriptionEvent
 }
 
-// UI State
 data class TopicSubscriptionUiState(
     val subscribedTopics: List<SubscribedTopic> = emptyList(),
     val showSubscribeDialog: Boolean = false,

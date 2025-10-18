@@ -98,7 +98,7 @@ fun ConnectionDetailsScreen(
         OutlinedTextField(
             value = uiState.password,
             onValueChange = {
-                    connectionDetailsViewModel.onPasswordChange(it)
+                connectionDetailsViewModel.onPasswordChange(it)
             },
             label = { Text("Password (Optional)") },
             visualTransformation = PasswordVisualTransformation(),
@@ -106,15 +106,6 @@ fun ConnectionDetailsScreen(
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
-
-        Row(
-            verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()
-        ) {
-            Checkbox(
-                checked = uiState.useSsl,
-                onCheckedChange = { connectionDetailsViewModel.onUseSslChange(it) })
-            Text("Enable SSL/TLS")
-        }
 
         Row(
             verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()
