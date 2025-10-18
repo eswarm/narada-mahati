@@ -37,7 +37,7 @@ kotlin {
                 implementation(libs.lifecycle.viewmodel.compose) // KMP lifecycle, ensure this is the JetBrains one
                 implementation(libs.navigation.compose)     // KMP navigation, ensure this is the JetBrains one if for commonMain
 
-                implementation(libs.material.icons.core)
+                implementation(libs.material.icons.extended)
                 // androidx.datastore and androidx.datastore.preferences are Android-specific.
                 // They should ideally be in androidMain or handled via expect/actual if common functionality is needed.
                 // implementation(libs.androidx.datastore)
