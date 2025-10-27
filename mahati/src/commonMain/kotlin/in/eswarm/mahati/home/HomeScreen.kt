@@ -3,6 +3,7 @@
 package `in`.eswarm.mahati.home
 
 import PermissionState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
@@ -41,14 +43,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import `in`.eswarm.mahati.AppComponent
-import `in`.eswarm.mahati.connection.ConnectionUiState
 import `in`.eswarm.mahati.db.MqttConnection
+import `in`.eswarm.mahati.mqtt.common.MqttClientState
 import `in`.eswarm.mahati.resources.Res
 import `in`.eswarm.mahati.resources.permission_denied_notification
 import `in`.eswarm.mahati.resources.permission_grant
@@ -74,6 +78,7 @@ fun HomeScreen(
     val profiles by viewModel.profiles.collectAsState(emptyList())
     val sideEffect by viewModel.sideEffects.collectAsState()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val connectionStates by viewModel.mqttConnectionStates.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(uiState.connectionError) {
@@ -132,7 +137,7 @@ fun HomeScreen(
             } else {
                 ConnectionsList(
                     profiles = profiles,
-                    uiState = uiState,
+                    connectionStates = connectionStates,
                     onProfileClick = { profileId ->
                         viewModel.onEvent(HomeUiEvent.ConnectionSelected(profileId))
                     },
@@ -177,7 +182,7 @@ fun PermissionView(permissionState: PermissionState, permissionRationale: () -> 
 @Composable
 fun ConnectionsList(
     profiles: List<MqttConnection>,
-    uiState: ConnectionUiState,
+    connectionStates: Map<String, MqttClientState>,
     onProfileClick: (String) -> Unit,
     onDeleteAction: (String) -> Unit,
     onEditAction: (String) -> Unit,
@@ -191,7 +196,7 @@ fun ConnectionsList(
         items(profiles, key = { it.id }) { connectionParamsEntity ->
             ConnectionListItem(
                 connectionDetails = connectionParamsEntity,
-                isConnecting = uiState.isConnecting && uiState.connectingClientId == connectionParamsEntity.clientID,
+                connectionState = connectionStates[connectionParamsEntity.clientID],
                 clickAction = { onProfileClick(connectionParamsEntity.clientID) },
                 deleteAction = { clientID ->
                     onDeleteAction(clientID)
@@ -205,12 +210,13 @@ fun ConnectionsList(
 @Composable
 fun ConnectionListItem(
     connectionDetails: MqttConnection,
-    isConnecting: Boolean,
+    connectionState: MqttClientState?,
     clickAction: () -> Unit,
     deleteAction: (clientID: String) -> Unit,
     editAction: (clientID: String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val isConnecting = connectionState is MqttClientState.Connecting
     Card(
         onClick = if (isConnecting) {
             {}
@@ -220,6 +226,20 @@ fun ConnectionListItem(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
+            val statusColor = when (connectionState) {
+                is MqttClientState.Connected -> Color.Green
+                is MqttClientState.Connecting -> Color.Yellow
+                is MqttClientState.Disconnected -> Color.Gray
+                is MqttClientState.Error -> Color.Red
+                else -> Color.Gray
+            }
+            Box(
+                modifier = Modifier
+                    .size(12.dp)
+                    .clip(CircleShape)
+                    .background(statusColor)
+            )
+            Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = connectionDetails.clientID,

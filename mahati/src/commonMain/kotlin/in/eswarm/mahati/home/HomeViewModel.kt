@@ -55,17 +55,14 @@ class HomeViewModel(
 
     private val _uiState = MutableStateFlow(ConnectionUiState())
     val uiState: StateFlow<ConnectionUiState> = _uiState.asStateFlow()
-    val mqttConnectionState: StateFlow<Map<String, MqttClientState>> =
+    val mqttConnectionStates: StateFlow<Map<String, MqttClientState>> =
         mqttController.connectionStatesMap
     var clientID: String? = null
 
     init {
         loadConnectionProfiles()
         viewModelScope.launch {
-            mqttConnectionState.collect { map ->
-
-                // TODO :: fix this all states should be sent.
-
+            mqttConnectionStates.collect { map ->
                 val state = map[clientID]
                 if (state != null) {
                     onMqttStateUpdate(state)
