@@ -3,7 +3,7 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.composeMultiplatform)
-    alias(libs.plugins.sqldelight) // Added SQLDelight plugin
+    alias(libs.plugins.sqldelight)
 }
 
 sqldelight {
@@ -89,6 +89,7 @@ kotlin {
                 implementation(libs.junit)
             }
         }
+
         val desktopTest by getting {
             dependencies {
                 implementation(kotlin("test-junit"))
