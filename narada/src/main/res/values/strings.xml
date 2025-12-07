@@ -1,35 +1,9 @@
 <resources>
     <string name="app_name">Narada MQTT Broker</string>
+
     <string name="notification_mqtt_service_title">MQTT Service</string>
     <string name="notification_mqtt_service_content">"MQTT service running …"</string>
     <string name="notification_mqtt_ticker">MQTT service running</string>
     <string name="fg_channel_name">MQTT service</string>
     <string name="fg_channel_description">MQTT Foreground service</string>
-
-    <!-- Settings screen -->
-    <string name="settings">Settings</string>
-    <string name="settings_info">"Settings are applied only on server restart"</string>
-    <string name="mqtt_port_title">"MQTT Port"</string>
-    <string name="port">Port</string>
-    <string name="port_warning">"Port should be a number greater than 1023"</string>
-    <string name="empty_warning">Value cannot be empty</string>
-    <string name="username">Username</string>
-    <string name="password">Password</string>
-    <string name="enable_auth">"Enable Authentication"</string>
-    <string name="ws_path_title">Webocket Path</string>
-    <string name="path">Path</string>
-    <string name="ws_port_title">"Websocket Port"</string>
-    <string name="enable_ws_title">"Enable Websocket"</string>
-
-    <!--Launch screen -->
-    <string name="start_server">Start Server</string>
-    <string name="stop_server">Stop Server</string>
-    <string name="ip_address">"IP Address(Local)"</string>
-    <string name="clients_connected">"Clients Connected"</string>
-    <string name="logs">Logs</string>
-
-    <string name="no_notification_permission_title">Warning</string>
-    <string name="no_notification_permission_description">MQTT Broker works by working in the background, this would be broken without the notification permission. Please click below to request the permission. </string>
-    <string name="request_permission">Request permission</string>
-
 </resources>

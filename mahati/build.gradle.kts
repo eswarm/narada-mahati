@@ -24,7 +24,6 @@ kotlin {
                 implementation(libs.sqldelight.runtime)
                 implementation(libs.sqldelight.coroutines.extensions)
 
-                // Dependencies from your existing file (cleaned up slightly)
                 implementation(compose.components.resources)
                 implementation(compose.runtime)
                 implementation(compose.foundation)
@@ -33,15 +32,10 @@ kotlin {
                 implementation(compose.components.uiToolingPreview)
                 implementation(libs.lifecycle.runtime.compose)
 
-
-                implementation(libs.lifecycle.viewmodel.compose) // KMP lifecycle, ensure this is the JetBrains one
-                implementation(libs.navigation.compose)     // KMP navigation, ensure this is the JetBrains one if for commonMain
+                implementation(libs.lifecycle.viewmodel.compose)
+                implementation(libs.navigation.compose)
 
                 implementation(libs.material.icons.extended)
-                // androidx.datastore and androidx.datastore.preferences are Android-specific.
-                // They should ideally be in androidMain or handled via expect/actual if common functionality is needed.
-                // implementation(libs.androidx.datastore)
-                // implementation(libs.androidx.datastore.preferences)
 
                 api(libs.kotlinx.coroutines.core)
                 api(libs.hivemq.mqtt.client)
@@ -57,8 +51,6 @@ kotlin {
                 implementation(libs.androidx.core.ktx)
                 implementation(libs.androidx.activity.compose)
                 implementation(libs.androidx.lifecycle.runtime.ktx)
-                implementation(libs.androidx.lifecycle.viewmodel.compose)
-                implementation(libs.androidx.navigation.compose) 
 
                 // Android DataStore (correct place for these)
                 implementation(libs.androidx.datastore)

@@ -1,0 +1,135 @@
+package `in`.eswarm.narada.launch
+
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.TextUnitType
+import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import `in`.eswarm.narada.resources.Res
+import `in`.eswarm.narada.resources.app_name
+import `in`.eswarm.narada.resources.clients_connected
+import `in`.eswarm.narada.resources.ip_address
+import `in`.eswarm.narada.resources.logs
+import `in`.eswarm.narada.resources.no_notification_permission_description
+import `in`.eswarm.narada.resources.request_permission
+import `in`.eswarm.narada.resources.settings
+import `in`.eswarm.narada.resources.start_server
+import `in`.eswarm.narada.resources.stop_server
+import `in`.eswarm.narada.util.PlatformUtil
+import `in`.eswarm.narada.util.postNotificationPermission
+import `in`.eswarm.narada.util.rememberPermissionState
+import org.jetbrains.compose.resources.stringResource
+
+@OptIn(
+    ExperimentalMaterial3Api::class
+)
+@Composable
+fun LaunchScreen(
+    launchViewModel: LaunchViewModel, navController: NavController
+) {
+    val notifPermissionState = rememberPermissionState(postNotificationPermission)
+
+    Scaffold(
+        floatingActionButton = {
+            FloatingActionButton(onClick = { navController.navigate("settings") }) {
+                Icon(
+                    Icons.Filled.Settings,
+                    contentDescription = stringResource(Res.string.settings),
+                )
+            }
+        },
+        bottomBar = {
+            BottomAppBar(
+            ) {
+            }
+        }, topBar = {
+            TopAppBar(
+                title = { Text(stringResource(Res.string.app_name)) },
+                modifier = Modifier.windowInsetsPadding(WindowInsets.statusBars)
+            )
+        }) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize()
+                .padding(horizontal = 16.dp)
+        ) {
+
+            Row(modifier = Modifier.padding(vertical = Dp(4f))) {
+                Text(
+                    "State", style = MaterialTheme.typography.titleMedium
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Text(launchViewModel.serverStatus(), lineHeight = TextUnit(24f, TextUnitType.Sp))
+            }
+
+            Row(modifier = Modifier.padding(vertical = Dp(4f))) {
+                Text(
+                    stringResource(Res.string.ip_address),
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Text(launchViewModel.getLocalIpAddress() ?: "-")
+            }
+
+            Row(modifier = Modifier.padding(vertical = Dp(4f))) {
+                Text(
+                    stringResource(Res.string.clients_connected),
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Text(launchViewModel.clientsCount.value.toString())
+            }
+
+            Row(modifier = Modifier.padding(vertical = Dp(16f))) {
+                Button(
+                    onClick = {
+                        launchViewModel.toggleServer()
+                    }, modifier = Modifier
+                        .padding(horizontal = Dp(16f))
+                        .weight(1f)
+                ) {
+                    val buttonText =
+                        if (launchViewModel.isServerRunning.value) stringResource(Res.string.stop_server)
+                        else stringResource(Res.string.start_server)
+                    Text(buttonText)
+                }
+            }
+
+            Text(
+                stringResource(Res.string.logs),
+                style = MaterialTheme.typography.headlineSmall,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+
+            if (!PlatformUtil.isNotificationPermissionRequired || notifPermissionState.status.isGranted) {
+                LogView(logs = launchViewModel.logs)
+            } else {
+                Column(modifier = Modifier.padding(vertical = Dp(16f))) {
+                    Text(text = stringResource(Res.string.no_notification_permission_description))
+                    Button(
+                        modifier = Modifier
+                            .padding(all = 16.dp)
+                            .align(Alignment.CenterHorizontally),
+                        onClick = { notifPermissionState.launchPermissionRequest() }) {
+                        Text(text = stringResource(Res.string.request_permission))
+                    }
+                }
+            }
+        }
+    }
+}

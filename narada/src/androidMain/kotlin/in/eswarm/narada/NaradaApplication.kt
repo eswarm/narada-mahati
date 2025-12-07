@@ -1,19 +1,20 @@
 package `in`.eswarm.narada
 
 import android.app.Application
+import `in`.eswarm.narada.util.AppContext
+import `in`.eswarm.narada.util.preferences
 
 class NaradaApplication : Application() {
 
-    lateinit var appComponent: AppComponent
-
     override fun onCreate() {
         super.onCreate()
-        appComponent = AppComponent()
+        AppContext.context = this
+        val appComponent = AppComponent(this.preferences)
+        AppComponent.INSTANCE = appComponent
     }
 
     override fun onTerminate() {
         super.onTerminate()
-        appComponent.clear()
+        AppComponent.INSTANCE.clear()
     }
-
 }
