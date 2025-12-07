@@ -16,6 +16,8 @@ import kotlinx.coroutines.flow.StateFlow
 import java.lang.Boolean
 import java.nio.charset.StandardCharsets
 import java.util.*
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 import kotlin.Exception
 import kotlin.Int
 
@@ -25,6 +27,8 @@ object MQTTWrapper {
     private var mqttBroker: Server? = null
     private val _isRunning = MutableStateFlow(false)
     val isRunning: StateFlow<kotlin.Boolean> = _isRunning
+
+    var threadExecutor: ExecutorService = Executors.newSingleThreadExecutor()
 
     val clientsConnected: Int
         get() {
@@ -44,27 +48,30 @@ object MQTTWrapper {
             return
         }
         _isRunning.value = true
-        mqttBroker = Server()
-        val userHandlers: List<InterceptHandler?> = listOf(listener)
-        logStream.addLog(LogData("Init server."))
-        mqttBroker?.startServer(getMemoryConfig(serverProperties), userHandlers)
-        logStream.addLog(LogData("Starting Server"))
 
-        Thread.sleep(20000)
+        threadExecutor.execute {
+            mqttBroker = Server()
+            val userHandlers: List<InterceptHandler?> = listOf(listener)
+            logStream.addLog(LogData("Init server."))
+            mqttBroker?.startServer(getMemoryConfig(serverProperties), userHandlers)
+            logStream.addLog(LogData("Starting Server"))
 
-        log(TAG, "Before self publish")
-        logStream.addLog(LogData("Before self publish"))
-        val message = MqttMessageBuilders.publish()
-            .topicName("/exit")
-            .retained(true) //        qos(MqttQoS.AT_MOST_ONCE);
-            //        qQos(MqttQoS.AT_LEAST_ONCE);
-            .qos(MqttQoS.EXACTLY_ONCE)
-            .payload(Unpooled.copiedBuffer("Hello World!!".toByteArray(StandardCharsets.UTF_8)))
-            .build()
+            Thread.sleep(20000)
 
-        mqttBroker?.internalPublish(message, "INTRLPUB")
-        log(TAG, "After self publish")
-        logStream.addLog(LogData("After self publish"))
+            log(TAG, "Before self publish")
+            logStream.addLog(LogData("Before self publish"))
+            val message = MqttMessageBuilders.publish()
+                .topicName("/exit")
+                .retained(true) //        qos(MqttQoS.AT_MOST_ONCE);
+                //        qQos(MqttQoS.AT_LEAST_ONCE);
+                .qos(MqttQoS.EXACTLY_ONCE)
+                .payload(Unpooled.copiedBuffer("Hello World!!".toByteArray(StandardCharsets.UTF_8)))
+                .build()
+
+            mqttBroker?.internalPublish(message, "INTRLPUB")
+            log(TAG, "After self publish")
+            logStream.addLog(LogData("After self publish"))
+        }
     }
 
     fun stopMoquette() {
@@ -72,10 +79,13 @@ object MQTTWrapper {
             return
         }
         _isRunning.value = false
-        try {
-            mqttBroker?.stopServer()
-        } catch (e: Exception) {
-            log(TAG, e.message ?: "")
+
+        threadExecutor.execute {
+            try {
+                mqttBroker?.stopServer()
+            } catch (e: Exception) {
+                log(TAG, e.message ?: "")
+            }
         }
     }
 

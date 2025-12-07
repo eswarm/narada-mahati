@@ -12,6 +12,7 @@ import `in`.eswarm.narada.mqtt.MQTTServerListener
 import `in`.eswarm.narada.mqtt.MQTTWrapper
 import `in`.eswarm.narada.mqtt.ServerProperties
 import `in`.eswarm.narada.preferences.AppPreferences
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlin.reflect.KClass
 
@@ -48,10 +49,12 @@ open class LaunchViewModel(
     }
 
     fun toggleServer() {
-        if (isServerRunning.value) {
-            MQTTWrapper.stopMoquette()
-        } else {
-            MQTTWrapper.startMoquette(listener, logStream, serverProperties)
+        viewModelScope.launch(Dispatchers.IO) {
+            if (isServerRunning.value) {
+                MQTTWrapper.stopMoquette()
+            } else {
+                MQTTWrapper.startMoquette(listener, logStream, serverProperties)
+            }
         }
     }
 

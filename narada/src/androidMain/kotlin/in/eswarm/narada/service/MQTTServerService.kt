@@ -16,16 +16,11 @@ import `in`.eswarm.narada.mqtt.MQTTWrapper
 import `in`.eswarm.narada.util.NotificationUtil.FG_SERVICE_CHANNEL
 import `in`.eswarm.narada.util.preferences
 import kotlinx.coroutines.runBlocking
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
 
 class MQTTServerService : Service() {
 
-    lateinit var threadExecutor: ExecutorService
-
     override fun onCreate() {
         super.onCreate()
-        threadExecutor = Executors.newSingleThreadExecutor()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -46,16 +41,15 @@ class MQTTServerService : Service() {
     }
 
     private fun init() {
-        threadExecutor.submit {
-            val serverProperties = runBlocking {
-                application.preferences.getServerProperties()
-            }
-            MQTTWrapper.startMoquette(
-                AppComponent.INSTANCE.mqttServerListener,
-                AppComponent.INSTANCE.logStream,
-                serverProperties
-            )
+        val serverProperties = runBlocking {
+            application.preferences.getServerProperties()
         }
+        MQTTWrapper.startMoquette(
+            AppComponent.INSTANCE.mqttServerListener,
+            AppComponent.INSTANCE.logStream,
+            serverProperties
+        )
+
 
         val pendingIntent: PendingIntent =
             Intent(this, LaunchActivity::class.java).let { notificationIntent ->
@@ -85,7 +79,6 @@ class MQTTServerService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        threadExecutor.shutdownNow()
     }
 
     companion object {
