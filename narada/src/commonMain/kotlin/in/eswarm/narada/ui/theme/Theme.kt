@@ -58,8 +58,8 @@ fun NaradaMQTTBrokerTheme(
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography, // Assuming Typography.kt is M3 compatible or will be updated
-        shapes = Shapes,       // Assuming Shapes.kt is M3 compatible or will be updated
+        typography = appTypography(),
+        shapes = Shapes,
         content = content
     )
 }

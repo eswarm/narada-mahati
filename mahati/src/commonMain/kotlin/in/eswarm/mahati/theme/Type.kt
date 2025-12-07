@@ -19,7 +19,6 @@ fun firaCodeFontFamily(): FontFamily {
     )
 }
 
-
 @Composable
 fun appTypography(): Typography {
     val firaCode = firaCodeFontFamily()
