@@ -1,14 +1,11 @@
 package `in`.eswarm.narada.ui.theme
 
-import android.app.Activity
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalView
-import androidx.core.view.WindowCompat
 
 // Define the Material 3 Dark Color Scheme using the colors from Color.kt
 private val DarkColorScheme = darkColorScheme(
@@ -46,6 +43,8 @@ fun NaradaMQTTBrokerTheme(
     // If a light theme is needed in the future, a lightColorScheme would be defined and chosen here.
     val colorScheme = DarkColorScheme
 
+    /*
+    // TODO :: make this work both for Droid and Desktop.
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
@@ -54,6 +53,8 @@ fun NaradaMQTTBrokerTheme(
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
         }
     }
+
+     */
 
     MaterialTheme(
         colorScheme = colorScheme,
