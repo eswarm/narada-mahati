@@ -12,6 +12,7 @@ import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
@@ -41,6 +42,7 @@ import org.jetbrains.compose.resources.stringResource
 fun LaunchScreen(
     launchViewModel: LaunchViewModel, navController: NavController
 ) {
+    val isServerRunning = launchViewModel.isServerRunning.collectAsState()
     val notifPermissionState = rememberPermissionState(postNotificationPermission)
 
     Scaffold(
@@ -104,8 +106,11 @@ fun LaunchScreen(
                         .weight(1f)
                 ) {
                     val buttonText =
-                        if (launchViewModel.isServerRunning.value) stringResource(Res.string.stop_server)
-                        else stringResource(Res.string.start_server)
+                        if (isServerRunning.value) {
+                            stringResource(Res.string.stop_server)
+                        } else {
+                            stringResource(Res.string.start_server)
+                        }
                     Text(buttonText)
                 }
             }
