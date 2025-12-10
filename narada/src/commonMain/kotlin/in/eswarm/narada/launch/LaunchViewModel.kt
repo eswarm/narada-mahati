@@ -1,7 +1,6 @@
 package `in`.eswarm.narada.launch
 
 import `in`.eswarm.narada.log.LogStream
-import `in`.eswarm.narada.log.MsgType
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel

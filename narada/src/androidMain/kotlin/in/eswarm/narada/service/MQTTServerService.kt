@@ -97,13 +97,13 @@ class MQTTServerService : Service() {
 
         fun start(context: Context) {
             val intent = Intent(context, MQTTServerService::class.java)
-            intent.action = MQTTServerService.START
+            intent.action = START
             ContextCompat.startForegroundService(context, intent)
         }
 
         fun stop(context: Context) {
             val intent = Intent(context, MQTTServerService::class.java)
-            intent.action = MQTTServerService.STOP
+            intent.action = STOP
             ContextCompat.startForegroundService(context, intent)
         }
 

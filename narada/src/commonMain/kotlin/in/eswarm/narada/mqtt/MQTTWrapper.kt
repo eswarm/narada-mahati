@@ -34,7 +34,7 @@ object MQTTWrapper {
         get() {
             return try {
                 mqttBroker?.listConnectedClients()?.size ?: 0
-            } catch (e: IllegalStateException) {
+            } catch (_: IllegalStateException) {
                 0
             }
         }
