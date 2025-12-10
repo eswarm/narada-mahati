@@ -56,7 +56,7 @@ object MQTTWrapper {
             mqttBroker?.startServer(getMemoryConfig(serverProperties), userHandlers)
             logStream.addLog(LogData("Starting Server"))
 
-            Thread.sleep(20000)
+            Thread.sleep(2000)
 
             log(TAG, "Before self publish")
             logStream.addLog(LogData("Before self publish"))

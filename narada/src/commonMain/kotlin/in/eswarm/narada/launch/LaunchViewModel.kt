@@ -30,29 +30,29 @@ open class LaunchViewModel(
 
     init {
         viewModelScope.launch {
+            // Concurrently load server properties
             serverProperties = appPreferences.getServerProperties()
-            logStream.logFlow.collect { logData ->
-                if (logData.msgType == MsgType.CONNECTION) {
-                    clientsCount.value = MQTTWrapper.clientsConnected
-                }
-                logs.add(logData.msg + "\n")
-            }
-        }
-    }
 
-    fun serverStatus(): String {
-        return if (isServerRunning.value) {
-            "Running"
-        } else {
-            "Stopped"
+            // Collect the logs from the persistent DataStore
+            logStream.logFlow.collect { logDataList ->
+                logs.clear()
+                logs.addAll(logDataList.map { it.msg + "\n" })
+                clientsCount.value = MQTTWrapper.clientsConnected
+            }
         }
     }
 
     fun toggleServer() {
         viewModelScope.launch(Dispatchers.IO) {
             if (isServerRunning.value) {
+                appPreferences.setServerStopped()
                 MQTTWrapper.stopMoquette()
             } else {
+                // Ensure properties are loaded before starting
+                if (!::serverProperties.isInitialized) {
+                    serverProperties = appPreferences.getServerProperties()
+                }
+                appPreferences.setServerStarted()
                 MQTTWrapper.startMoquette(listener, logStream, serverProperties)
             }
         }

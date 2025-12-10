@@ -12,8 +12,6 @@ class AppPreferences(
     private val dataStore: DataStore<Preferences>,
 ) {
 
-    private var preferences: Preferences? = null
-
     val mqttPort: Flow<Int>
         get() {
             return dataStore.data.map { it[MQTT_PORT] ?: MQTT_PORT_DEFAULT }
@@ -54,6 +52,11 @@ class AppPreferences(
             return dataStore.data.map { it[SERVER_STARTED] ?: false }
         }
 
+    val logs: Flow<Set<String>>
+        get() {
+            return dataStore.data.map { it[LOGS] ?: emptySet() }
+        }
+
     suspend fun getServerProperties(): ServerProperties {
         return dataStore.data.map { preferences ->
             val mqttPort = preferences[MQTT_PORT] ?: MQTT_PORT_DEFAULT
@@ -73,6 +76,21 @@ class AppPreferences(
                 password
             )
         }.first()
+    }
+
+    suspend fun addLog(log: String) {
+        dataStore.edit { prefs ->
+            val currentLogs = prefs[LOGS] ?: emptySet()
+            // To prevent unbounded growth, let's keep only the last 1000 logs
+            val sortedLogs = currentLogs.sortedDescending()
+            val newLogs = sortedLogs.take(999).toMutableSet()
+            newLogs.add("${System.currentTimeMillis()}-$log")
+            prefs[LOGS] = newLogs
+        }
+    }
+
+    suspend fun clearLogs() {
+        dataStore.edit { it[LOGS] = emptySet() }
     }
 
     suspend fun setMqttPort(value: Int) {
@@ -111,13 +129,6 @@ class AppPreferences(
         dataStore.edit { it[SERVER_STARTED] = false }
     }
 
-    init {
-        dataStore.data
-            .map { prefs ->
-                preferences = prefs
-            }
-    }
-
     suspend fun setPassword() {
         val randomNum: Int = Random.nextInt(100000, 1000000)
         dataStore.edit { preferences ->
@@ -136,6 +147,7 @@ class AppPreferences(
         val UNAME = stringPreferencesKey("username")
         val PWD = stringPreferencesKey("password")
         val SERVER_STARTED = booleanPreferencesKey("server_started")
+        val LOGS = stringSetPreferencesKey("logs")
 
         const val MQTT_PORT_DEFAULT = 1883
         const val WS_ENABLED_DEFAULT = true

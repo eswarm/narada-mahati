@@ -15,21 +15,27 @@ import `in`.eswarm.narada.launch.LaunchActivity
 import `in`.eswarm.narada.mqtt.MQTTWrapper
 import `in`.eswarm.narada.util.NotificationUtil.FG_SERVICE_CHANNEL
 import `in`.eswarm.narada.util.preferences
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MQTTServerService : Service() {
 
-    override fun onCreate() {
-        super.onCreate()
-    }
+    private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (intent?.action == START) {
-            init()
-            return START_STICKY
-        } else if (intent?.action == STOP) {
-            stopService()
-            return START_NOT_STICKY
+        when (intent?.action) {
+            START -> {
+                init()
+                return START_STICKY
+            }
+            STOP -> {
+                stopService()
+                return START_NOT_STICKY
+            }
         }
         return START_STICKY
     }
@@ -41,36 +47,37 @@ class MQTTServerService : Service() {
     }
 
     private fun init() {
-        val serverProperties = runBlocking {
-            application.preferences.getServerProperties()
-        }
-        MQTTWrapper.startMoquette(
-            AppComponent.INSTANCE.mqttServerListener,
-            AppComponent.INSTANCE.logStream,
-            serverProperties
-        )
+        serviceScope.launch {
+            val serverProperties = application.preferences.getServerProperties()
+            MQTTWrapper.startMoquette(
+                AppComponent.INSTANCE.mqttServerListener,
+                AppComponent.INSTANCE.logStream,
+                serverProperties
+            )
 
+            withContext(Dispatchers.Main) {
+                val pendingIntent: PendingIntent =
+                    Intent(this@MQTTServerService, LaunchActivity::class.java).let { notificationIntent ->
+                        PendingIntent.getActivity(
+                            this@MQTTServerService,
+                            0,
+                            notificationIntent,
+                            PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                        )
+                    }
 
-        val pendingIntent: PendingIntent =
-            Intent(this, LaunchActivity::class.java).let { notificationIntent ->
-                PendingIntent.getActivity(
-                    this,
-                    0,
-                    notificationIntent,
-                    PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
-                )
+                val notification: Notification = NotificationCompat.Builder(this@MQTTServerService, FG_SERVICE_CHANNEL)
+                    .setContentTitle(getText(R.string.notification_mqtt_service_title))
+                    .setContentText(getText(R.string.notification_mqtt_service_content))
+                    .setSmallIcon(R.mipmap.ic_launcher_foreground)
+                    .setContentIntent(pendingIntent)
+                    .setTicker(getText(R.string.notification_mqtt_ticker))
+                    .setForegroundServiceBehavior(FOREGROUND_SERVICE_IMMEDIATE)
+                    .build()
+
+                startForeground(NOT_SERVICE_ID, notification)
             }
-
-        val notification: Notification = NotificationCompat.Builder(this, FG_SERVICE_CHANNEL)
-            .setContentTitle(getText(R.string.notification_mqtt_service_title))
-            .setContentText(getText(R.string.notification_mqtt_service_content))
-            .setSmallIcon(R.mipmap.ic_launcher_foreground)
-            .setContentIntent(pendingIntent)
-            .setTicker(getText(R.string.notification_mqtt_ticker))
-            .setForegroundServiceBehavior(FOREGROUND_SERVICE_IMMEDIATE)
-            .build()
-
-        startForeground(NOT_SERVICE_ID, notification)
+        }
     }
 
     override fun onBind(intent: Intent): IBinder? {
@@ -79,6 +86,8 @@ class MQTTServerService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        serviceScope.cancel()
+        stopService()
     }
 
     companion object {

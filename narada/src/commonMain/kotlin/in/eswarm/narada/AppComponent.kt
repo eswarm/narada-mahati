@@ -6,13 +6,8 @@ import `in`.eswarm.narada.preferences.AppPreferences
 
 class AppComponent(val appPreferences: AppPreferences) {
 
-    val logStream: LogStream
-    val mqttServerListener: MQTTServerListener
-
-    init {
-        logStream = LogStream()
-        mqttServerListener = MQTTServerListener(logStream)
-    }
+    val logStream: LogStream = LogStream(appPreferences)
+    val mqttServerListener: MQTTServerListener = MQTTServerListener(logStream)
 
     fun clear() {
         logStream.clear()

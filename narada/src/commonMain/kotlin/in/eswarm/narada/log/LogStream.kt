@@ -1,35 +1,33 @@
 package `in`.eswarm.narada.log
 
-import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharedFlow
+import `in`.eswarm.narada.preferences.AppPreferences
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 
-class LogStream {
-
-    private val _logFlow = MutableSharedFlow<LogData>(
-        extraBufferCapacity = 1000,
-        onBufferOverflow = BufferOverflow.DROP_OLDEST
-    )
+class LogStream(private val appPreferences: AppPreferences) {
 
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
-    val logFlow: SharedFlow<LogData>
+    val logFlow: Flow<List<LogData>>
         get() {
-            return _logFlow
+            return appPreferences.logs.map {
+                it.map { logString -> LogData(logString) }.sortedBy { it.msg }
+            }
         }
 
     fun addLog(logData: LogData) {
         scope.launch {
-            _logFlow.emit(logData)
+            appPreferences.addLog(logData.msg)
         }
     }
 
-    fun getAllLogs(): List<LogData> {
-        return logFlow.replayCache
-    }
-
     fun clear() {
-        scope.coroutineContext.cancelChildren()
+        scope.launch {
+            appPreferences.clearLogs()
+        }
     }
 }

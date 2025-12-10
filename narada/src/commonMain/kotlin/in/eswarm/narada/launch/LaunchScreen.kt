@@ -76,7 +76,13 @@ fun LaunchScreen(
                     "State", style = MaterialTheme.typography.titleMedium
                 )
                 Spacer(modifier = Modifier.weight(1f))
-                Text(launchViewModel.serverStatus(), lineHeight = TextUnit(24f, TextUnitType.Sp))
+                Text(
+                    if (isServerRunning.value) {
+                        "Running"
+                    } else {
+                        "Stopped"
+                    }, lineHeight = TextUnit(24f, TextUnitType.Sp)
+                )
             }
 
             Row(modifier = Modifier.padding(vertical = Dp(4f))) {
