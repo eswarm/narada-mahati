@@ -1,11 +1,14 @@
 package `in`.eswarm.narada.preferences
 
+import androidx.compose.runtime.remember
 import `in`.eswarm.narada.mqtt.ServerProperties
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import java.text.SimpleDateFormat
+import java.util.Locale
 import kotlin.random.Random
 
 class AppPreferences(
@@ -67,24 +70,19 @@ class AppPreferences(
             val userName = preferences[UNAME] ?: UNAME_DEFAULT
             val password = preferences[PWD] ?: PWD_DEFAULT
             return@map ServerProperties(
-                mqttPort,
-                wsEnabled,
-                wsPort,
-                wsPath,
-                authEnabled,
-                userName,
-                password
+                mqttPort, wsEnabled, wsPort, wsPath, authEnabled, userName, password
             )
         }.first()
     }
 
     suspend fun addLog(log: String) {
+        val simpleDateFormat = SimpleDateFormat("hh:mm::ss", Locale.getDefault())
         dataStore.edit { prefs ->
             val currentLogs = prefs[LOGS] ?: emptySet()
             // To prevent unbounded growth, let's keep only the last 1000 logs
             val sortedLogs = currentLogs.sortedDescending()
             val newLogs = sortedLogs.take(999).toMutableSet()
-            newLogs.add("${System.currentTimeMillis()}-$log")
+            newLogs.add("${simpleDateFormat.format(System.currentTimeMillis())}-$log")
             prefs[LOGS] = newLogs
         }
     }

@@ -54,11 +54,7 @@ fun LaunchScreen(
                 )
             }
         },
-        bottomBar = {
-            BottomAppBar(
-            ) {
-            }
-        }, topBar = {
+        topBar = {
             TopAppBar(
                 title = { Text(stringResource(Res.string.app_name)) },
                 modifier = Modifier.windowInsetsPadding(WindowInsets.statusBars)
