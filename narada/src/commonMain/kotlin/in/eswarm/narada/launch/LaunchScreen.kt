@@ -10,9 +10,10 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.QrCode
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
@@ -30,7 +31,9 @@ import `in`.eswarm.narada.resources.request_permission
 import `in`.eswarm.narada.resources.settings
 import `in`.eswarm.narada.resources.start_server
 import `in`.eswarm.narada.resources.stop_server
+import `in`.eswarm.narada.share.ShareQrCodeDialog
 import `in`.eswarm.narada.util.PlatformUtil
+import `in`.eswarm.narada.util.isAndroid
 import `in`.eswarm.narada.util.postNotificationPermission
 import `in`.eswarm.narada.util.rememberPermissionState
 import org.jetbrains.compose.resources.stringResource
@@ -44,6 +47,17 @@ fun LaunchScreen(
 ) {
     val isServerRunning = launchViewModel.isServerRunning.collectAsState()
     val notifPermissionState = rememberPermissionState(postNotificationPermission)
+    val showQrDialog = rememberSaveable { mutableStateOf(false) }
+
+    if (showQrDialog.value) {
+        val connectionString = launchViewModel.getConnectionString()
+        if (connectionString != null) {
+            ShareQrCodeDialog(
+                onDismissRequest = { showQrDialog.value = false },
+                connectionDetailsJson = connectionString
+            )
+        }
+    }
 
     Scaffold(
         floatingActionButton = {
@@ -57,6 +71,16 @@ fun LaunchScreen(
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(Res.string.app_name)) },
+                actions = {
+                    if (isAndroid() && false) { // Disable for now.
+                        IconButton(onClick = { showQrDialog.value = true }) {
+                            Icon(
+                                Icons.Filled.QrCode,
+                                contentDescription = "Share Credentials"
+                            )
+                        }
+                    }
+                },
                 modifier = Modifier.windowInsetsPadding(WindowInsets.statusBars)
             )
         }) { innerPadding ->

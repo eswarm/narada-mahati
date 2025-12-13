@@ -75,13 +75,13 @@ class AppPreferences(
     }
 
     suspend fun addLog(log: String) {
-        val simpleDateFormat = SimpleDateFormat("hh:mm::ss", Locale.getDefault())
+        val simpleDateFormat = SimpleDateFormat("hh::mm::ss", Locale.getDefault())
         dataStore.edit { prefs ->
             val currentLogs = prefs[LOGS] ?: emptySet()
             // To prevent unbounded growth, let's keep only the last 1000 logs
             val sortedLogs = currentLogs.sortedDescending()
             val newLogs = sortedLogs.take(999).toMutableSet()
-            newLogs.add("${simpleDateFormat.format(System.currentTimeMillis())}-$log")
+            newLogs.add("${simpleDateFormat.format(System.currentTimeMillis())} $log")
             prefs[LOGS] = newLogs
         }
     }

@@ -23,6 +23,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
@@ -57,6 +58,7 @@ import `in`.eswarm.mahati.resources.Res
 import `in`.eswarm.mahati.resources.permission_denied_notification
 import `in`.eswarm.mahati.resources.permission_grant
 import `in`.eswarm.mahati.resources.permission_rationale
+import `in`.eswarm.mahati.util.isAndroid
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -66,6 +68,7 @@ fun HomeScreen(
     onNavigateToSettings: () -> Unit,
     onNavigateToConnectionDetails: (clientID: String) -> Unit,
     onEditConnection: (clientID: String) -> Unit,
+    onNavigateToScanQr: () -> Unit, // Added this
     appComponent: AppComponent,
     permissionState: PermissionState,
     permissionRationale: () -> Unit,
@@ -119,7 +122,15 @@ fun HomeScreen(
 
     Scaffold(snackbarHost = { SnackbarHost(snackbarHostState) }, topBar = {
         TopAppBar(
-            title = { Text("Mahati : MQTT Client") })
+            title = { Text("Mahati : MQTT Client") },
+            actions = {
+                if (isAndroid() && false) { // Disable for now.
+                    IconButton(onClick = { onNavigateToScanQr() }) {
+                        Icon(Icons.Default.QrCodeScanner, contentDescription = "Scan QR Code")
+                    }
+                }
+            }
+        )
     }, floatingActionButton = {
         FloatingActionButton(onClick = { viewModel.onEvent(HomeUiEvent.AddNewConnectionClicked) }) {
             Icon(Icons.Filled.Add, contentDescription = "Add new MQTT connection")

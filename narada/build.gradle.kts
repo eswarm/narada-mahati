@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.kotlinxSerialization)
 }
 
 
@@ -34,6 +35,10 @@ kotlin {
                 implementation(libs.androidx.navigation.compose)
                 implementation(libs.androidx.datastore.preferences)
                 api(libs.kotlinx.coroutines.core)
+
+                // For QR Code generation
+                implementation(libs.custom.qr.generator)
+                implementation(libs.kotlinx.serialization.json)
             }
         }
 
@@ -53,6 +58,11 @@ kotlin {
                 implementation(libs.androidx.datastore.preferences)
 
                 implementation(libs.accompanist.permissions)
+
+                // For QR Code scanning
+                implementation(libs.androidx.camera.camera2)
+                implementation(libs.androidx.camera.view)
+                implementation(libs.androidx.camera.lifecycle)
             }
         }
 

@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.sqldelight)
+    alias(libs.plugins.kotlinxSerialization)
 }
 
 sqldelight {
@@ -39,6 +40,8 @@ kotlin {
 
                 api(libs.kotlinx.coroutines.core)
                 api(libs.hivemq.mqtt.client)
+
+                implementation(libs.kotlinx.serialization.json)
             }
         }
 
@@ -55,6 +58,12 @@ kotlin {
                 // Android DataStore (correct place for these)
                 implementation(libs.androidx.datastore)
                 implementation(libs.androidx.datastore.preferences)
+
+                // QR Code Scanning
+                implementation(libs.google.mlkit.barcode.scanning)
+                implementation(libs.androidx.camera.camera2)
+                implementation(libs.androidx.camera.view)
+                implementation(libs.androidx.camera.lifecycle)
             }
         }
 

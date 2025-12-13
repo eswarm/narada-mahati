@@ -55,7 +55,6 @@ class MQTTServerListener(private val logStream: LogStream) : AbstractInterceptHa
     }
 
     private fun log(logMsg: String, msgType: MsgType) {
-        log(logMsg, msgType)
         logStream.addLog(LogData(logMsg, msgType, LogType.INFO))
     }
 

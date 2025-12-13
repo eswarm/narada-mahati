@@ -33,6 +33,11 @@ androidxTestExtJunitMahati = "1.3.0"
 desugar_jdk_libs = "2.1.5"
 navigationCompose = "2.9.0"
 
+kotlinxSerializationJson = "1.6.3"
+customQrGenerator = "1.0.1"
+camera = "1.3.3"
+googleMlkitBarcodeScanning = "17.2.0"
+
 [libraries]
 # KMP Common - Coroutines
 androidx-datastore = { module = "androidx.datastore:datastore", version.ref = "androidxDatastorePreferences" }
@@ -83,6 +88,13 @@ androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version
 androidx-test-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "androidxTestEspressoCore" } # For app module android tests
 
 navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
+
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
+custom-qr-generator = { module = "io.github.alexzhirkevich:qrose", version.ref = "customQrGenerator" }
+androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "camera" }
+androidx-camera-view = { module = "androidx.camera:camera-view", version.ref = "camera" }
+androidx-camera-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "camera" }
+google-mlkit-barcode-scanning = { module = "com.google.mlkit:barcode-scanning", version.ref = "googleMlkitBarcodeScanning" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "androidGradlePlugin" }

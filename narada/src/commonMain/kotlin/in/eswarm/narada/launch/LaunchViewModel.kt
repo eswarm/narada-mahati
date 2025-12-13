@@ -1,6 +1,8 @@
 package `in`.eswarm.narada.launch
 
 import `in`.eswarm.narada.log.LogStream
+import `in`.eswarm.narada.share.ConnectionDetails
+import `in`.eswarm.narada.util.getLocalIpAddress
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -13,6 +15,8 @@ import `in`.eswarm.narada.mqtt.ServerProperties
 import `in`.eswarm.narada.preferences.AppPreferences
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import kotlin.reflect.KClass
 
 open class LaunchViewModel(
@@ -41,6 +45,23 @@ open class LaunchViewModel(
         }
     }
 
+    fun getConnectionString(): String? {
+        val host = getLocalIpAddress() ?: return null
+        if (!::serverProperties.isInitialized) return null
+
+        val details = ConnectionDetails(
+            host = host,
+            port = serverProperties.mqttPort,
+            wsEnabled = serverProperties.wsEnabled,
+            wsPort = serverProperties.wsPort,
+            wsPath = serverProperties.wsPath,
+            authEnabled = serverProperties.authEnabled,
+            username = serverProperties.userName,
+            password = serverProperties.password
+        )
+        return Json.encodeToString(details)
+    }
+
     fun toggleServer() {
         viewModelScope.launch(Dispatchers.IO) {
             if (isServerRunning.value) {
@@ -57,7 +78,7 @@ open class LaunchViewModel(
         }
     }
 
-    open fun getLocalIpAddress(): String? = null
+    open fun getLocalIpAddress(): String? = `in`.eswarm.narada.util.getLocalIpAddress()
 
     companion object {
         fun Factory(
