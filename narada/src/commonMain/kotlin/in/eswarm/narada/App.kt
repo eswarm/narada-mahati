@@ -14,7 +14,9 @@ import `in`.eswarm.narada.launch.LaunchViewModel
 import `in`.eswarm.narada.settings.SettingsScreen
 import `in`.eswarm.narada.settings.SettingsViewModelFactory
 import `in`.eswarm.narada.ui.theme.NaradaMQTTBrokerTheme
+import `in`.eswarm.narada.util.Logger
 
+val logger = Logger()
 @Composable
 fun App(appComponent: AppComponent) {
     NaradaMQTTBrokerTheme {

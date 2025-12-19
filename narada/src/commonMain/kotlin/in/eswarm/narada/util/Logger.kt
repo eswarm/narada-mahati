@@ -1,6 +1,6 @@
-package `in`.eswarm.mahati.util
+package `in`.eswarm.narada.util
 
-expect class Logger {
+expect class Logger() {
     fun d(tag: String, message: String)
     fun i(tag: String, message: String)
     fun w(tag: String, message: String)

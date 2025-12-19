@@ -3,6 +3,7 @@ package `in`.eswarm.narada
 import `in`.eswarm.narada.log.LogStream
 import `in`.eswarm.narada.mqtt.MQTTServerListener
 import `in`.eswarm.narada.preferences.AppPreferences
+import `in`.eswarm.narada.util.Logger
 
 class AppComponent(val appPreferences: AppPreferences) {
 
