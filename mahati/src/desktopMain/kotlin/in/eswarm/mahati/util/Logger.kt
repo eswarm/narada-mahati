@@ -1,5 +1,6 @@
 package `in`.eswarm.mahati.util
 
+/*
 actual class Logger {
     actual fun d(tag: String, message: String) {
         println("D/$tag: $message")
@@ -18,3 +19,5 @@ actual class Logger {
         throwable?.printStackTrace()
     }
 }
+
+ */

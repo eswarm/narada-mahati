@@ -2,7 +2,8 @@ package `in`.eswarm.mahati.util
 
 import android.util.Log
 
-actual class Logger(val tag: String) {
+/*
+actual class Logger {
     actual fun d(tag: String, message: String) {
         Log.d(tag, message)
     }
@@ -19,3 +20,4 @@ actual class Logger(val tag: String) {
         Log.e(tag, message, throwable)
     }
 }
+*/

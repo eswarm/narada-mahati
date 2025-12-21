@@ -41,8 +41,14 @@ kotlin {
                 api(libs.kotlinx.coroutines.core)
                 api(libs.hivemq.mqtt.client)
 
+                implementation(libs.androidx.datastore.preferences)
+
+
                 implementation(libs.kotlinx.serialization.json)
-            }
+
+                implementation("org.slf4j:slf4j-api:2.0.13")
+                runtimeOnly("org.apache.logging.log4j:log4j-core:2.23.1")
+                runtimeOnly("org.apache.logging.log4j:log4j-slf4j2-impl:2.23.1")            }
         }
 
         val androidMain by getting {
@@ -56,8 +62,8 @@ kotlin {
                 implementation(libs.androidx.lifecycle.runtime.ktx)
 
                 // Android DataStore (correct place for these)
-                implementation(libs.androidx.datastore)
-                implementation(libs.androidx.datastore.preferences)
+                //implementation(libs.androidx.datastore)
+                //implementation(libs.androidx.datastore.preferences)
 
                 // QR Code Scanning
                 implementation(libs.google.mlkit.barcode.scanning)
@@ -129,6 +135,7 @@ android {
         resources {
             excludes += "/META-INF/INDEX.LIST"
             excludes += "/META-INF/io.netty.versions.properties"
+            excludes += "META-INF/DEPENDENCIES"
         }
     }
     buildFeatures {

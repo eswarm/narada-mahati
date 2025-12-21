@@ -20,10 +20,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.QrCodeScanner
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
@@ -69,6 +66,7 @@ fun HomeScreen(
     onNavigateToConnectionDetails: (clientID: String) -> Unit,
     onEditConnection: (clientID: String) -> Unit,
     onNavigateToScanQr: () -> Unit, // Added this
+    onNavigateToLog: () -> Unit,
     appComponent: AppComponent,
     permissionState: PermissionState,
     permissionRationale: () -> Unit,
@@ -124,10 +122,13 @@ fun HomeScreen(
         TopAppBar(
             title = { Text("Mahati : MQTT Client") },
             actions = {
-                if (isAndroid() && false) { // Disable for now.
+                if (isAndroid() && false) {
                     IconButton(onClick = { onNavigateToScanQr() }) {
                         Icon(Icons.Default.QrCodeScanner, contentDescription = "Scan QR Code")
                     }
+                }
+                IconButton(onClick = { onNavigateToLog() }) {
+                    Icon(Icons.Default.Article, contentDescription = "View Logs")
                 }
             }
         )

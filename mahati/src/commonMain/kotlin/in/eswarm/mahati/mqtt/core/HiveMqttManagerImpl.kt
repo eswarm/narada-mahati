@@ -6,8 +6,10 @@ import `in`.eswarm.mahati.mqtt.common.MqttClientState
 import com.hivemq.client.mqtt.MqttClient
 import com.hivemq.client.mqtt.MqttGlobalPublishFilter
 import com.hivemq.client.mqtt.datatypes.MqttQos
+import com.hivemq.client.mqtt.lifecycle.MqttClientAutoReconnect
 import com.hivemq.client.mqtt.lifecycle.MqttClientConnectedContext
 import com.hivemq.client.mqtt.mqtt5.Mqtt5AsyncClient
+import com.hivemq.client.mqtt.mqtt5.message.connect.Mqtt5Connect
 import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish
 import `in`.eswarm.mahati.db.AppMqttMessage
 import `in`.eswarm.mahati.db.MessageDirection
@@ -19,9 +21,11 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import org.slf4j.LoggerFactory
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.TimeUnit
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
@@ -36,6 +40,8 @@ class HiveMqttManagerImpl(
     private val _receivedMessages =
         MutableSharedFlow<AppMqttMessage>(replay = 0, extraBufferCapacity = 64)
     override val receivedMessages: SharedFlow<AppMqttMessage> = _receivedMessages.asSharedFlow()
+
+    private val logger = LoggerFactory.getLogger(HiveMqttManagerImpl::class.java)
 
     private fun MqttClientConnectedContext.toServerUri(): String {
         return try {
@@ -61,13 +67,22 @@ class HiveMqttManagerImpl(
         currentParams = params
         _connectionState.value = MqttClientState.Connecting
 
-        var clientBuilder = MqttClient.builder().useMqttVersion5()
+        var clientBuilder = MqttClient
+            .builder()
+            .useMqttVersion5()
+            .automaticReconnect(
+                MqttClientAutoReconnect.builder().initialDelay(2, TimeUnit.SECONDS).build()
+            )
             .identifier(params.clientID)
-            .serverHost(params.brokerHost).serverPort(params.brokerPort.toInt())
+            .serverHost(params.brokerHost)
+            .serverPort(params.brokerPort.toInt())
             .addConnectedListener { context ->
+                logger.info("Connected to ${context.toServerUri()}")
                 _connectionState.value =
                     MqttClientState.Connected(context.toServerUri(), params.clientID)
-            }.addDisconnectedListener { context ->
+            }
+            .addDisconnectedListener { context ->
+                logger.info("Disconnected: ${context.cause.message ?: "Unknown reason"}")
                 _connectionState.value = MqttClientState.Error(
                     "Disconnected: ${context.cause.message ?: "Unknown reason"}", context.cause
                 )
@@ -89,57 +104,58 @@ class HiveMqttManagerImpl(
 
         client = clientBuilder.buildAsync()
 
-        client?.connect()?.whenComplete { connAck, throwable ->
-            coroutineScope.launch {
-                if (throwable != null) {
-                    _connectionState.value = MqttClientState.Error(
-                        "Connection failed: ${throwable.message}", throwable
-                    )
-                } else {
-                    if (connAck != null && connAck.reasonCode.isError) {
+        client?.connect(Mqtt5Connect.builder().keepAlive(15).build())
+            ?.whenComplete { connAck, throwable ->
+                coroutineScope.launch {
+                    if (throwable != null) {
                         _connectionState.value = MqttClientState.Error(
-                            "Connection refused: ${connAck.reasonCode} - ${
-                                connAck.reasonString.orElse(MqttUtf8StringImpl.of(""))
-                            }", null
+                            "Connection failed: ${throwable.message}", throwable
                         )
                     } else {
-                        // State already set by listener, this is more of a confirmation
-                        // _connectionState.value = MqttClientState.Connected (handled by listener)
-                        // Setup global publish listener after successful connection
-                        client?.publishes(MqttGlobalPublishFilter.ALL) { publish ->
-
-                            val userProps = publish.userProperties
-                            val publisherClientIdFromProps = userProps.asList()
-                                .find { it.name.toString() == "clientID" }
-                                ?.value?.toString() // Convert MqttUtf8String to String
-
-                            val direction =
-                                if (publisherClientIdFromProps != null && publisherClientIdFromProps == currentParams?.clientID) {
-                                    MessageDirection.SENT
-                                } else {
-                                    MessageDirection.RECEIVED
-                                }
-
-                            val message = AppMqttMessage(
-                                topicName = (currentParams?.topicPrefix
-                                    ?: "") + publish.topic.toString(),
-                                payload = publish.payloadAsBytes,
-                                qos = publish.qos.code.toLong(),
-                                publisherID = publisherClientIdFromProps ?: "-",
-                                connectionID = currentParams?.clientID ?: "-",
-                                retained = publish.isRetain,
-                                id = 0,
-                                direction = direction,
-                                timestamp = System.currentTimeMillis()
+                        if (connAck != null && connAck.reasonCode.isError) {
+                            _connectionState.value = MqttClientState.Error(
+                                "Connection refused: ${connAck.reasonCode} - ${
+                                    connAck.reasonString.orElse(MqttUtf8StringImpl.of(""))
+                                }", null
                             )
-                            coroutineScope.launch {
-                                _receivedMessages.emit(message)
+                        } else {
+                            // State already set by listener, this is more of a confirmation
+                            // _connectionState.value = MqttClientState.Connected (handled by listener)
+                            // Setup global publish listener after successful connection
+                            client?.publishes(MqttGlobalPublishFilter.ALL) { publish ->
+
+                                val userProps = publish.userProperties
+                                val publisherClientIdFromProps = userProps.asList()
+                                    .find { it.name.toString() == "clientID" }
+                                    ?.value?.toString() // Convert MqttUtf8String to String
+
+                                val direction =
+                                    if (publisherClientIdFromProps != null && publisherClientIdFromProps == currentParams?.clientID) {
+                                        MessageDirection.SENT
+                                    } else {
+                                        MessageDirection.RECEIVED
+                                    }
+
+                                val message = AppMqttMessage(
+                                    topicName = (currentParams?.topicPrefix
+                                        ?: "") + publish.topic.toString(),
+                                    payload = publish.payloadAsBytes,
+                                    qos = publish.qos.code.toLong(),
+                                    publisherID = publisherClientIdFromProps ?: "-",
+                                    connectionID = currentParams?.clientID ?: "-",
+                                    retained = publish.isRetain,
+                                    id = 0,
+                                    direction = direction,
+                                    timestamp = System.currentTimeMillis()
+                                )
+                                coroutineScope.launch {
+                                    _receivedMessages.emit(message)
+                                }
                             }
                         }
                     }
                 }
             }
-        }
     }
 
     override fun disconnect() {
@@ -148,7 +164,7 @@ class HiveMqttManagerImpl(
                 _connectionState.value = MqttClientState.Disconnected
                 if (throwable != null) {
                     // Log error if disconnect itself failed, though state is Disconnected
-                    println("Error during disconnect: ${throwable.message}")
+                    logger.error("Error during disconnect: ${throwable.message}")
                 }
             }
         } ?: run {

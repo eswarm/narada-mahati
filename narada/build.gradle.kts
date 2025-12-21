@@ -31,7 +31,9 @@ kotlin {
 
                 implementation(libs.material.icons.extended)
 
-                implementation(libs.moquette.broker)
+                implementation("com.github.moquette-io:moquette:0.18.0") {
+                    exclude(group = "org.slf4j", module = "slf4j-log4j12")
+                }
                 implementation(libs.androidx.navigation.compose)
                 implementation(libs.androidx.datastore.preferences)
                 api(libs.kotlinx.coroutines.core)
@@ -39,6 +41,8 @@ kotlin {
                 // For QR Code generation
                 implementation(libs.custom.qr.generator)
                 implementation(libs.kotlinx.serialization.json)
+
+                runtimeOnly("org.apache.logging.log4j:log4j-core:2.25.3")
             }
         }
 
@@ -104,7 +108,7 @@ android {
 
     defaultConfig {
         applicationId = "in.eswarm.narada"
-        minSdk = 23
+        minSdk = 26
         targetSdk = 36
         versionCode = 2
         versionName = "1.1"
@@ -136,6 +140,7 @@ android {
             excludes += "META-INF/license/*"
             excludes += "META-INF/INDEX.LIST"
             excludes += "META-INF/io.netty.versions.properties"
+            excludes += "META-INF/DEPENDENCIES"
         }
     }
 }

@@ -56,14 +56,13 @@ object MQTTWrapper {
             mqttBroker?.startServer(getMemoryConfig(serverProperties), userHandlers)
             logStream.addLog(LogData("Starting Server"))
 
-            Thread.sleep(2000)
+            Thread.sleep(5000)
 
             log(TAG, "Before self publish")
             logStream.addLog(LogData("Before self publish"))
             val message = MqttMessageBuilders.publish()
                 .topicName("/exit")
-                .retained(true) //        qos(MqttQoS.AT_MOST_ONCE);
-                //        qQos(MqttQoS.AT_LEAST_ONCE);
+                .retained(true)
                 .qos(MqttQoS.EXACTLY_ONCE)
                 .payload(Unpooled.copiedBuffer("Hello World!!".toByteArray(StandardCharsets.UTF_8)))
                 .build()

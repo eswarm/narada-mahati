@@ -13,6 +13,7 @@ import androidx.navigation.navArgument
 import `in`.eswarm.mahati.chat.ChatScreen
 import `in`.eswarm.mahati.connection.ConnectionDetailsScreen
 import `in`.eswarm.mahati.home.HomeScreen
+import `in`.eswarm.mahati.log.LogScreen
 import `in`.eswarm.mahati.navigation.DeepLinkDestination
 import `in`.eswarm.mahati.navigation.Screen
 import `in`.eswarm.mahati.settings.SettingsScreen
@@ -55,10 +56,14 @@ fun AppNavigation(
                     )
                 },
                 { navController.navigate(Screen.ScanQr.route) },
+                { navController.navigate(Screen.Log.route) },
                 appComponent,
                 permissionState,
                 requestPermission
             )
+        }
+        composable(Screen.Log.route) {
+            LogScreen(appComponent)
         }
         composable(Screen.ScanQr.route) {
             val viewModel: QrScannerViewModel =

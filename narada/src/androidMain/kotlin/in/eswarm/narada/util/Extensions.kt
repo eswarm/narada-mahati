@@ -13,6 +13,7 @@ val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "se
 
 val Context.preferences: AppPreferences
     get() {
+        // TODO :: check if multiple objects are created here.
         return AppPreferences(dataStore)
     }
 
