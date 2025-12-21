@@ -1,6 +1,5 @@
 package `in`.eswarm.narada.log
 
-import `in`.eswarm.narada.logger
 import org.slf4j.Logger
 import org.slf4j.Marker
 
@@ -10,7 +9,6 @@ import org.slf4j.Marker
 class NaradaLogger(private val logStream: LogStream, private val name: String) : Logger {
 
     private fun log(level: String, msg: String) {
-        logger.i(level, msg)
         logStream.addLog(LogData("[$name] $level: $msg"))
     }
 

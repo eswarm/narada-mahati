@@ -14,14 +14,29 @@ class LogStream(private val appPreferences: AppPreferences) {
 
     val logFlow: Flow<List<LogData>>
         get() {
-            return appPreferences.logs.map {
-                it.map { logString -> LogData(logString) }.sortedBy { it.msg }
+            return appPreferences.logs.map { logSet ->
+                logSet.mapNotNull { logString ->
+                    // Safely parse the string, splitting it into timestamp and message
+                    val parts = logString.split("-", limit = 2)
+                    if (parts.size == 2) {
+                        val timestamp = parts[0].toLongOrNull()
+                        val message = parts[1]
+                        if (timestamp != null) {
+                            LogData(message, timestamp = timestamp)
+                        } else {
+                            null // Or handle legacy logs without timestamps
+                        }
+                    } else {
+                        null
+                    }
+                }.sortedBy { it.timestamp } // Sort by the parsed timestamp
             }
         }
 
     fun addLog(logData: LogData) {
         scope.launch {
-            appPreferences.addLog(logData.msg)
+            // Pass the formatted string to be stored by AppPreferences
+            appPreferences.addLog("${logData.timestamp}-${logData.msg}")
         }
     }
 

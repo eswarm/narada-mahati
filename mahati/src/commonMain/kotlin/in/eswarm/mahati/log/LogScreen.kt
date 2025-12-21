@@ -31,7 +31,7 @@ fun LogScreen(appComponent: AppComponent) {
             reverseLayout = true
         ) {
             items(logs) { log ->
-                Text(text = log.msg)
+                Text(text = "\n" + log.msg)
             }
         }
     }

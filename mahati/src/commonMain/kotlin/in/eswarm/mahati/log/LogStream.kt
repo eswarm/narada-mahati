@@ -14,14 +14,28 @@ class LogStream(private val settingsDataStore: SettingsDataStore) {
 
     val logFlow: Flow<List<LogData>>
         get() {
-            return settingsDataStore.logs.map {
-                it.map { logString -> LogData(logString) }.sortedBy { it.msg }
+            return settingsDataStore.logs.map { logSet ->
+                logSet.mapNotNull { logString ->
+                    // Safely parse the string, splitting it into timestamp and message
+                    val parts = logString.split("-", limit = 2)
+                    if (parts.size == 2) {
+                        val timestamp = parts[0].toLongOrNull()
+                        val message = parts[1]
+                        if (timestamp != null) {
+                            LogData(message, timestamp = timestamp)
+                        } else {
+                            null
+                        }
+                    } else {
+                        null
+                    }
+                }.sortedBy { it.timestamp } // Sort by the parsed timestamp
             }
         }
 
     fun addLog(logData: LogData) {
         scope.launch {
-            settingsDataStore.addLog(logData.msg)
+            settingsDataStore.addLog("${logData.timestamp}-${logData.msg}")
         }
     }
 

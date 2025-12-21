@@ -6,8 +6,6 @@ import androidx.datastore.preferences.core.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
-import java.text.SimpleDateFormat
-import java.util.Locale
 import kotlin.random.Random
 
 class AppPreferences(
@@ -75,13 +73,12 @@ class AppPreferences(
     }
 
     suspend fun addLog(log: String) {
-        val simpleDateFormat = SimpleDateFormat("hh::mm::ss", Locale.getDefault())
         dataStore.edit { prefs ->
             val currentLogs = prefs[LOGS] ?: emptySet()
             // To prevent unbounded growth, let's keep only the last 1000 logs
             val sortedLogs = currentLogs.sortedDescending()
             val newLogs = sortedLogs.take(999).toMutableSet()
-            newLogs.add("${simpleDateFormat.format(System.currentTimeMillis())} $log")
+            newLogs.add(log)
             prefs[LOGS] = newLogs
         }
     }

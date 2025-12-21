@@ -30,7 +30,7 @@ class SettingsDataStore(private val dataStore: DataStore<Preferences>) {
             // To prevent unbounded growth, let's keep only the last 1000 logs
             val sortedLogs = currentLogs.sortedDescending()
             val newLogs = sortedLogs.take(999).toMutableSet()
-            newLogs.add("${System.currentTimeMillis()}-$log")
+            newLogs.add(log)
             prefs[LOGS] = newLogs
         }
     }

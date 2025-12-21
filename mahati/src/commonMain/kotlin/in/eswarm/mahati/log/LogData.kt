@@ -1,6 +1,14 @@
 package `in`.eswarm.mahati.log
 
 /**
- * Represents a single log entry.
+ * Represents a single log entry with a message and a timestamp.
  */
-data class LogData(val msg: String)
+data class LogData(
+    val msg: String,
+    val level: MsgLevel = MsgLevel.INFO,
+    val timestamp: Long = System.currentTimeMillis()
+)
+
+enum class MsgLevel {
+    VERBOSE, INFO, DEBUG, WARN, ERROR
+}

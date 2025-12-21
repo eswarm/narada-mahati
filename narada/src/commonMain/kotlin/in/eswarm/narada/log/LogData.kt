@@ -1,19 +1,14 @@
 package `in`.eswarm.narada.log
 
+/**
+ * Represents a single log entry with a message and a timestamp.
+ */
 data class LogData(
     val msg: String,
-    val msgType: MsgType = MsgType.INTERNAL,
-    val logType: LogType = LogType.INFO
+    val level: MsgLevel = MsgLevel.INFO,
+    val timestamp: Long = System.currentTimeMillis()
 )
 
-enum class LogType {
-    INFO,
-    WARNING,
-    ERROR
-}
-
-enum class MsgType {
-    CONNECTION,
-    MESSAGE,
-    INTERNAL
+enum class MsgLevel {
+    VERBOSE, INFO, DEBUG, WARN, ERROR
 }
