@@ -21,9 +21,9 @@ import java.util.concurrent.Executors
 import kotlin.Exception
 import kotlin.Int
 
-object MQTTWrapper {
+class MQTTWrapper(private val listener: MQTTServerListener, private val logStream: LogStream) {
 
-    const val TAG = "MQTTInitializer"
+    val TAG = "MQTTWrapper"
     private var mqttBroker: Server? = null
     private val _isRunning = MutableStateFlow(false)
     val isRunning: StateFlow<kotlin.Boolean> = _isRunning
@@ -40,8 +40,6 @@ object MQTTWrapper {
         }
 
     fun startMoquette(
-        listener: MQTTServerListener,
-        logStream: LogStream,
         serverProperties: ServerProperties
     ) {
         if (_isRunning.value) {

@@ -43,7 +43,8 @@ import org.jetbrains.compose.resources.stringResource
 )
 @Composable
 fun LaunchScreen(
-    launchViewModel: LaunchViewModel, navController: NavController
+    launchViewModel: LaunchViewModel, navController: NavController,
+    logView: @Composable (List<String>) -> Unit
 ) {
     val isServerRunning = launchViewModel.isServerRunning.collectAsState()
     val notifPermissionState = rememberPermissionState(postNotificationPermission)
@@ -148,7 +149,7 @@ fun LaunchScreen(
             )
 
             if (!PlatformUtil.isNotificationPermissionRequired || notifPermissionState.status.isGranted) {
-                LogView(logs = launchViewModel.logs)
+                logView(launchViewModel.logs)
             } else {
                 Column(modifier = Modifier.padding(vertical = Dp(16f))) {
                     Text(text = stringResource(Res.string.no_notification_permission_description))

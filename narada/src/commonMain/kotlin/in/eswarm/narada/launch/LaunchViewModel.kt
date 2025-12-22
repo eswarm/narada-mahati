@@ -9,11 +9,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
-import `in`.eswarm.narada.mqtt.MQTTServerListener
 import `in`.eswarm.narada.mqtt.MQTTWrapper
 import `in`.eswarm.narada.mqtt.ServerProperties
 import `in`.eswarm.narada.preferences.AppPreferences
-import kotlinx.coroutines.Dispatchers
+import `in`.eswarm.narada.service.ServerManager
 import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -21,12 +20,12 @@ import kotlin.reflect.KClass
 
 open class LaunchViewModel(
     private val logStream: LogStream,
-    private val listener: MQTTServerListener,
-    private val appPreferences: AppPreferences
+    private val appPreferences: AppPreferences,
+    private val serverManager: ServerManager
 ) :
     ViewModel() {
 
-    val isServerRunning = MQTTWrapper.isRunning
+    val isServerRunning = serverManager.isRunning
     var logs = mutableStateListOf<String>()
     var clientsCount = mutableStateOf(0)
     lateinit var serverProperties: ServerProperties
@@ -40,7 +39,7 @@ open class LaunchViewModel(
             logStream.logFlow.collect { logDataList ->
                 logs.clear()
                 logs.addAll(logDataList.map { it.msg + "\n" })
-                clientsCount.value = MQTTWrapper.clientsConnected
+                clientsCount.value = serverManager.clientsConnected
             }
         }
     }
@@ -63,18 +62,10 @@ open class LaunchViewModel(
     }
 
     fun toggleServer() {
-        viewModelScope.launch(Dispatchers.IO) {
-            if (isServerRunning.value) {
-                appPreferences.setServerStopped()
-                MQTTWrapper.stopMoquette()
-            } else {
-                // Ensure properties are loaded before starting
-                if (!::serverProperties.isInitialized) {
-                    serverProperties = appPreferences.getServerProperties()
-                }
-                appPreferences.setServerStarted()
-                MQTTWrapper.startMoquette(listener, logStream, serverProperties)
-            }
+        if (isServerRunning.value) {
+            serverManager.stop()
+        } else {
+            serverManager.start()
         }
     }
 
@@ -83,8 +74,8 @@ open class LaunchViewModel(
     companion object {
         fun Factory(
             logStream: LogStream,
-            mqttListener: MQTTServerListener,
-            appPreferences: AppPreferences
+            appPreferences: AppPreferences,
+            serverManager: ServerManager
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(
@@ -93,8 +84,8 @@ open class LaunchViewModel(
                 if (modelClass.java.isAssignableFrom(LaunchViewModel::class.java)) {
                     return LaunchViewModel(
                         logStream,
-                        mqttListener,
-                        appPreferences
+                        appPreferences,
+                        serverManager
                     ) as T
                 }
                 throw IllegalArgumentException("Unknown ViewModel class")

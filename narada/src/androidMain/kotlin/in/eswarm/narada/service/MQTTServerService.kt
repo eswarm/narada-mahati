@@ -32,6 +32,7 @@ class MQTTServerService : Service() {
                 init()
                 return START_STICKY
             }
+
             STOP -> {
                 stopService()
                 return START_NOT_STICKY
@@ -41,39 +42,44 @@ class MQTTServerService : Service() {
     }
 
     private fun stopService() {
-        MQTTWrapper.stopMoquette()
-        stopForeground(true)
-        stopSelf()
+        serviceScope.launch {
+            application.preferences.setServerStopped()
+            AppComponent.INSTANCE.mqttWrapper.stopMoquette()
+            withContext(Dispatchers.Main) {
+                stopForeground(true)
+                stopSelf()
+            }
+        }
     }
 
     private fun init() {
         serviceScope.launch {
+            application.preferences.setServerStarted()
             val serverProperties = application.preferences.getServerProperties()
-            MQTTWrapper.startMoquette(
-                AppComponent.INSTANCE.mqttServerListener,
-                AppComponent.INSTANCE.logStream,
+            AppComponent.INSTANCE.mqttWrapper.startMoquette(
                 serverProperties
             )
 
             withContext(Dispatchers.Main) {
-                val pendingIntent: PendingIntent =
-                    Intent(this@MQTTServerService, LaunchActivity::class.java).let { notificationIntent ->
-                        PendingIntent.getActivity(
-                            this@MQTTServerService,
-                            0,
-                            notificationIntent,
-                            PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
-                        )
-                    }
+                val pendingIntent: PendingIntent = Intent(
+                    this@MQTTServerService, LaunchActivity::class.java
+                ).let { notificationIntent ->
+                    PendingIntent.getActivity(
+                        this@MQTTServerService,
+                        0,
+                        notificationIntent,
+                        PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                    )
+                }
 
-                val notification: Notification = NotificationCompat.Builder(this@MQTTServerService, FG_SERVICE_CHANNEL)
-                    .setContentTitle(getText(R.string.notification_mqtt_service_title))
-                    .setContentText(getText(R.string.notification_mqtt_service_content))
-                    .setSmallIcon(R.mipmap.ic_launcher_foreground)
-                    .setContentIntent(pendingIntent)
-                    .setTicker(getText(R.string.notification_mqtt_ticker))
-                    .setForegroundServiceBehavior(FOREGROUND_SERVICE_IMMEDIATE)
-                    .build()
+                val notification: Notification =
+                    NotificationCompat.Builder(this@MQTTServerService, FG_SERVICE_CHANNEL)
+                        .setContentTitle(getText(R.string.notification_mqtt_service_title))
+                        .setContentText(getText(R.string.notification_mqtt_service_content))
+                        .setSmallIcon(R.mipmap.ic_launcher_foreground)
+                        .setContentIntent(pendingIntent)
+                        .setTicker(getText(R.string.notification_mqtt_ticker))
+                        .setForegroundServiceBehavior(FOREGROUND_SERVICE_IMMEDIATE).build()
 
                 startForeground(NOT_SERVICE_ID, notification)
             }
