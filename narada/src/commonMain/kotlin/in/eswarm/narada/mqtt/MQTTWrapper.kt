@@ -33,6 +33,7 @@ class MQTTWrapper(private val listener: MQTTServerListener, private val logStrea
     val clientsConnected: Int
         get() {
             return try {
+                if(!_isRunning.value) return 0
                 mqttBroker?.listConnectedClients()?.size ?: 0
             } catch (_: IllegalStateException) {
                 0
