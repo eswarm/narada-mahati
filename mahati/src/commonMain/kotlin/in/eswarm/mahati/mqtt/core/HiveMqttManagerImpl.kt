@@ -104,7 +104,7 @@ class HiveMqttManagerImpl(
 
         client = clientBuilder.buildAsync()
 
-        client?.connect(Mqtt5Connect.builder().keepAlive(15).build())
+        client?.connect(Mqtt5Connect.builder().cleanStart(false).keepAlive(15).build())
             ?.whenComplete { connAck, throwable ->
                 coroutineScope.launch {
                     if (throwable != null) {
