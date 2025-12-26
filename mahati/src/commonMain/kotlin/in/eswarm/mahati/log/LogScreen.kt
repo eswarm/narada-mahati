@@ -4,7 +4,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -23,12 +27,14 @@ fun LogScreen(appComponent: AppComponent) {
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Logs") })
-        }
-    ) { innerPadding ->
+            TopAppBar(title = { Text("Logs") }, actions = {
+                IconButton(
+                    onClick = { viewModel.clearLogs() },
+                    content = { Icon(Icons.Filled.Delete, contentDescription = "Delete") })
+            })
+        }) { innerPadding ->
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(innerPadding),
-            reverseLayout = true
         ) {
             items(logs) { log ->
                 Text(text = "\n" + log.msg)

@@ -70,6 +70,9 @@ open class LaunchViewModel(
     }
 
     open fun getLocalIpAddress(): String? = `in`.eswarm.narada.util.getLocalIpAddress()
+    fun clearLogs() {
+        logStream.clear()
+    }
 
     companion object {
         fun Factory(

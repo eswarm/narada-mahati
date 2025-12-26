@@ -12,7 +12,6 @@ import androidx.core.content.ContextCompat
 import `in`.eswarm.narada.AppComponent
 import `in`.eswarm.narada.R
 import `in`.eswarm.narada.launch.LaunchActivity
-import `in`.eswarm.narada.mqtt.MQTTWrapper
 import `in`.eswarm.narada.util.NotificationUtil.FG_SERVICE_CHANNEL
 import `in`.eswarm.narada.util.preferences
 import kotlinx.coroutines.CoroutineScope
@@ -112,6 +111,5 @@ class MQTTServerService : Service() {
             intent.action = STOP
             ContextCompat.startForegroundService(context, intent)
         }
-
     }
 }

@@ -70,9 +70,7 @@ class HiveMqttManagerImpl(
         var clientBuilder = MqttClient
             .builder()
             .useMqttVersion5()
-            .automaticReconnect(
-                MqttClientAutoReconnect.builder().initialDelay(2, TimeUnit.SECONDS).build()
-            )
+            .automaticReconnectWithDefaultConfig()
             .identifier(params.clientID)
             .serverHost(params.brokerHost)
             .serverPort(params.brokerPort.toInt())
@@ -104,7 +102,7 @@ class HiveMqttManagerImpl(
 
         client = clientBuilder.buildAsync()
 
-        client?.connect(Mqtt5Connect.builder().cleanStart(false).keepAlive(15).build())
+        client?.connect(Mqtt5Connect.builder().keepAlive(15).build())
             ?.whenComplete { connAck, throwable ->
                 coroutineScope.launch {
                     if (throwable != null) {

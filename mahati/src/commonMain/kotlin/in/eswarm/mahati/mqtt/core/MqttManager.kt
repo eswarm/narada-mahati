@@ -49,7 +49,7 @@ interface MqttManager {
      * @return True if publishing was initiated successfully, false otherwise (e.g., not connected).
      *         Note: Successful initiation doesn't guarantee delivery for QoS 0.
      */
-    suspend fun publish(topic: String, message: String, qos: Int = 0, retain: Boolean = false): Boolean
+    suspend fun publish(topic: String, message: String, qos: Int = 1, retain: Boolean = true): Boolean
 
     /**
      * Publishes a message to a given topic.
@@ -60,7 +60,7 @@ interface MqttManager {
      * @param retain Whether the message should be retained by the broker.
      * @return True if publishing was initiated successfully, false otherwise (e.g., not connected).
      */
-    suspend fun publish(topic: String, payload: ByteArray, qos: Int = 0, retain: Boolean = false): Boolean
+    suspend fun publish(topic: String, payload: ByteArray, qos: Int = 1, retain: Boolean = true): Boolean
 
     /**
      * Subscribes to a given topic filter.
@@ -70,7 +70,7 @@ interface MqttManager {
      * @param qos The maximum Quality of Service level for messages on this subscription.
      * @return True if subscription was initiated successfully, false otherwise (e.g., not connected).
      */
-    suspend fun subscribe(topicFilter: String, qos: Int = 0): Boolean
+    suspend fun subscribe(topicFilter: String, qos: Int = 1): Boolean
 
     /**
      * Unsubscribes from a given topic filter.

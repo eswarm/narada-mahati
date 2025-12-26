@@ -18,3 +18,4 @@ dependencyResolutionManagement {
 rootProject.name = "Narada & Mahati"
 include(":narada")
 include(":mahati")
+include(":shared")

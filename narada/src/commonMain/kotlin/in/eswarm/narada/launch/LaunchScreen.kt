@@ -1,5 +1,6 @@
 package `in`.eswarm.narada.launch
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.QrCode
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.*
@@ -43,7 +45,8 @@ import org.jetbrains.compose.resources.stringResource
 )
 @Composable
 fun LaunchScreen(
-    launchViewModel: LaunchViewModel, navController: NavController,
+    launchViewModel: LaunchViewModel,
+    navController: NavController,
     logView: @Composable (List<String>) -> Unit
 ) {
     val isServerRunning = launchViewModel.isServerRunning.collectAsState()
@@ -60,36 +63,28 @@ fun LaunchScreen(
         }
     }
 
-    Scaffold(
-        floatingActionButton = {
-            FloatingActionButton(onClick = { navController.navigate("settings") }) {
-                Icon(
-                    Icons.Filled.Settings,
-                    contentDescription = stringResource(Res.string.settings),
-                )
-            }
-        },
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(Res.string.app_name)) },
-                actions = {
-                    if (isAndroid() && false) { // Disable for now.
-                        IconButton(onClick = { showQrDialog.value = true }) {
-                            Icon(
-                                Icons.Filled.QrCode,
-                                contentDescription = "Share Credentials"
-                            )
-                        }
-                    }
-                },
-                modifier = Modifier.windowInsetsPadding(WindowInsets.statusBars)
+    Scaffold(floatingActionButton = {
+        FloatingActionButton(onClick = { navController.navigate("settings") }) {
+            Icon(
+                Icons.Filled.Settings,
+                contentDescription = stringResource(Res.string.settings),
             )
-        }) { innerPadding ->
+        }
+    }, topBar = {
+        TopAppBar(
+            title = { Text(stringResource(Res.string.app_name)) }, actions = {
+                if (isAndroid() && false) { // Disable for now.
+                    IconButton(onClick = { showQrDialog.value = true }) {
+                        Icon(
+                            Icons.Filled.QrCode, contentDescription = "Share Credentials"
+                        )
+                    }
+                }
+            }, modifier = Modifier.windowInsetsPadding(WindowInsets.statusBars)
+        )
+    }) { innerPadding ->
         Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize()
-                .padding(horizontal = 16.dp)
+            modifier = Modifier.padding(innerPadding).fillMaxSize().padding(horizontal = 16.dp)
         ) {
 
             Row(modifier = Modifier.padding(vertical = Dp(4f))) {
@@ -128,25 +123,31 @@ fun LaunchScreen(
                 Button(
                     onClick = {
                         launchViewModel.toggleServer()
-                    }, modifier = Modifier
-                        .padding(horizontal = Dp(16f))
-                        .weight(1f)
+                    }, modifier = Modifier.padding(horizontal = Dp(16f)).weight(1f)
                 ) {
-                    val buttonText =
-                        if (isServerRunning.value) {
-                            stringResource(Res.string.stop_server)
-                        } else {
-                            stringResource(Res.string.start_server)
-                        }
+                    val buttonText = if (isServerRunning.value) {
+                        stringResource(Res.string.stop_server)
+                    } else {
+                        stringResource(Res.string.start_server)
+                    }
                     Text(buttonText)
                 }
             }
 
-            Text(
-                stringResource(Res.string.logs),
-                style = MaterialTheme.typography.headlineSmall,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
+            Row(
+                modifier = Modifier.padding(bottom = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    stringResource(Res.string.logs),
+                    style = MaterialTheme.typography.headlineSmall,
+                )
+
+                IconButton(
+                    content = { Icon(Icons.Filled.Delete, "Delete") },
+                    onClick = { launchViewModel.clearLogs() })
+            }
 
             if (!PlatformUtil.isNotificationPermissionRequired || notifPermissionState.status.isGranted) {
                 logView(launchViewModel.logs)
@@ -154,8 +155,7 @@ fun LaunchScreen(
                 Column(modifier = Modifier.padding(vertical = Dp(16f))) {
                     Text(text = stringResource(Res.string.no_notification_permission_description))
                     Button(
-                        modifier = Modifier
-                            .padding(all = 16.dp)
+                        modifier = Modifier.padding(all = 16.dp)
                             .align(Alignment.CenterHorizontally),
                         onClick = { notifPermissionState.launchPermissionRequest() }) {
                         Text(text = stringResource(Res.string.request_permission))

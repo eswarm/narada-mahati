@@ -1,12 +1,11 @@
 package `in`.eswarm.mahati
 
+import android.app.PendingIntent
 import android.app.Service
-import android.content.Context
 import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
-import androidx.core.content.ContextCompat
 import `in`.eswarm.mahati.db.MqttConnection
 import `in`.eswarm.mahati.mqtt.controller.MqttConnectionController
 import `in`.eswarm.mahati.util.NotificationUtil
@@ -39,12 +38,24 @@ class MqttClientService : Service() {
             NotificationUtil.sendNotification(this, title, message, clientID, topicName)
         }
 
-        // Basic foreground notification - customize as needed
+        // Create the intent that will be sent when the user clicks the "Stop" button
+        val stopSelfIntent = Intent(this, MqttClientService::class.java).apply {
+            action = ACTION_STOP
+        }
+        val stopSelfPendingIntent: PendingIntent = PendingIntent.getService(
+            this, 0, stopSelfIntent, PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        // Build the foreground notification with the stop action
         val notification =
             NotificationCompat.Builder(this, FG_SERVICE_CHANNEL) // Create this channel
-                .setContentTitle("Mahati Mqtt client").setContentText("Mahati Mqtt client")
+                .setContentTitle("Mahati Mqtt client")
+                .setContentText("Mahati Mqtt client is running")
                 .setSmallIcon(android.R.drawable.ic_dialog_info) // Replace with your app's icon
-                .setPriority(NotificationCompat.PRIORITY_HIGH).build()
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .addAction(android.R.drawable.ic_menu_close_clear_cancel, "Stop", stopSelfPendingIntent)
+                .build()
+
         startForeground(101, notification) // Unique notification ID
     }
 
@@ -70,7 +81,13 @@ class MqttClientService : Service() {
     // --- End Public API ---
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        // Handle specific actions from intents if needed, e.g., auto-connecting
+        // Handle the stop action from the notification
+        if (intent?.action == ACTION_STOP) {
+            // Calling stopSelf() will trigger onDestroy(), which handles the cleanup.
+            stopSelf()
+            return START_NOT_STICKY // Do not restart the service automatically.
+        }
+        // Handle other specific actions from intents if needed, e.g., auto-connecting
         return START_STICKY
     }
 
@@ -83,14 +100,6 @@ class MqttClientService : Service() {
     override fun onBind(intent: Intent): IBinder = binder
 
     companion object {
-        fun start(context: Context) {
-            val intent = Intent(context, MqttClientService::class.java)
-            ContextCompat.startForegroundService(context, intent) // If API 26+
-        }
-
-        fun stop(context: Context) {
-            val intent = Intent(context, MqttClientService::class.java)
-            context.stopService(intent)
-        }
+        const val ACTION_STOP = "in.eswarm.mahati.service.action.STOP"
     }
 }

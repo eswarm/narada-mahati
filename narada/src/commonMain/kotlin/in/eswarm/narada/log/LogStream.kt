@@ -17,12 +17,14 @@ class LogStream(private val appPreferences: AppPreferences) {
             return appPreferences.logs.map { logSet ->
                 logSet.mapNotNull { logString ->
                     // Safely parse the string, splitting it into timestamp and message
-                    val parts = logString.split("-", limit = 2)
-                    if (parts.size == 2) {
+                    val parts = logString.split("-", limit = 4)
+                    if (parts.size == 4) {
                         val timestamp = parts[0].toLongOrNull()
-                        val message = parts[1]
+                        val level = LogLevel.fromString(parts[1]) ?: LogLevel.INFO
+                        val tag = parts[2]
+                        val message = parts[3]
                         if (timestamp != null) {
-                            LogData(message, timestamp = timestamp)
+                            LogData(msg = message, level = level, tag = tag, timestamp = timestamp)
                         } else {
                             null // Or handle legacy logs without timestamps
                         }
@@ -35,8 +37,8 @@ class LogStream(private val appPreferences: AppPreferences) {
 
     fun addLog(logData: LogData) {
         scope.launch {
-            // Pass the formatted string to be stored by AppPreferences
-            appPreferences.addLog("${logData.timestamp}-${logData.msg}")
+            console(logData.level, logData.tag, logData.msg)
+            appPreferences.addLog("${logData.timestamp}-${logData.level}-${logData.tag}-${logData.msg}")
         }
     }
 
@@ -46,3 +48,5 @@ class LogStream(private val appPreferences: AppPreferences) {
         }
     }
 }
+
+expect fun console(level: LogLevel, tag: String, msg: String)

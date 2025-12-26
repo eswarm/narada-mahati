@@ -6,7 +6,7 @@ plugins {
     alias(libs.plugins.sqldelight)
     alias(libs.plugins.kotlinxSerialization)
 }
-
+ 
 sqldelight {
     databases {
         create("MahatiDb") {
@@ -101,6 +101,16 @@ kotlin {
 }
 
 android {
+    signingConfigs {
+        create("release") {
+            if (project.hasProperty("MAHATI_STORE_FILE")) {
+                storeFile = file(project.property("MAHATI_STORE_FILE") as String)
+                storePassword = project.property("MAHATI_STORE_PASSWORD") as String
+                keyAlias = project.property("MAHATI_KEY_ALIAS") as String
+                keyPassword = project.property("MAHATI_KEY_PASSWORD") as String
+            }
+        }
+    }
     namespace = "in.eswarm.mahati"
     compileSdk = 36
 
@@ -116,6 +126,7 @@ android {
         release {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            signingConfig = signingConfigs.getByName("release")
         }
     }
     compileOptions {

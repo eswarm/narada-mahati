@@ -22,7 +22,7 @@ class LogStream(private val settingsDataStore: SettingsDataStore) {
                         val timestamp = parts[0].toLongOrNull()
                         val message = parts[1]
                         if (timestamp != null) {
-                            LogData(message, timestamp = timestamp)
+                            LogData(msg = message, tag = "", timestamp = timestamp)
                         } else {
                             null
                         }
@@ -35,7 +35,7 @@ class LogStream(private val settingsDataStore: SettingsDataStore) {
 
     fun addLog(logData: LogData) {
         scope.launch {
-            settingsDataStore.addLog("${logData.timestamp}-${logData.msg}")
+            settingsDataStore.addLog("${logData.timestamp}-${logData.level}-${logData.tag}-${logData.msg}")
         }
     }
 

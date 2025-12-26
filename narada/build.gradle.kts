@@ -33,6 +33,7 @@ kotlin {
 
                 implementation("com.github.moquette-io:moquette:0.18.0") {
                     exclude(group = "org.slf4j", module = "slf4j-log4j12")
+                    exclude(group = "org.slf4j", module = "slf4j-reload4j")
                 }
                 implementation(libs.androidx.navigation.compose)
                 implementation(libs.androidx.datastore.preferences)
@@ -103,6 +104,16 @@ kotlin {
 }
 
 android {
+    signingConfigs {
+        create("release") {
+            if (project.hasProperty("NARADA_STORE_FILE")) {
+                storeFile = file(project.property("NARADA_STORE_FILE") as String)
+                storePassword = project.property("NARADA_STORE_PASSWORD") as String
+                keyAlias = project.property("NARADA_KEY_ALIAS") as String
+                keyPassword = project.property("NARADA_KEY_PASSWORD") as String
+            }
+        }
+    }
     namespace = "in.eswarm.narada"
     compileSdk = 36
 
@@ -121,8 +132,9 @@ android {
 
     buildTypes {
         getByName("release") {
-            isMinifyEnabled = true
+            isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            signingConfig = signingConfigs.getByName("release")
         }
     }
     compileOptions {

@@ -11,15 +11,16 @@ import io.moquette.interception.InterceptHandler
 import io.netty.buffer.Unpooled
 import io.netty.handler.codec.mqtt.MqttMessageBuilders
 import io.netty.handler.codec.mqtt.MqttQoS
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 import java.lang.Boolean
 import java.nio.charset.StandardCharsets
 import java.util.*
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
 import kotlin.Exception
-import kotlin.Int
 
 class MQTTWrapper(private val listener: MQTTServerListener, private val logStream: LogStream) {
 
@@ -28,47 +29,60 @@ class MQTTWrapper(private val listener: MQTTServerListener, private val logStrea
     private val _isRunning = MutableStateFlow(false)
     val isRunning: StateFlow<kotlin.Boolean> = _isRunning
 
-    var threadExecutor: ExecutorService = Executors.newSingleThreadExecutor()
+    // Use a CoroutineScope for structured concurrency, which is safer and more idiomatic in KMP.
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     val clientsConnected: Int
         get() {
             return try {
-                if(!_isRunning.value) return 0
+                if (!_isRunning.value) return 0
                 mqttBroker?.listConnectedClients()?.size ?: 0
             } catch (_: IllegalStateException) {
                 0
             }
         }
 
-    fun startMoquette(
-        serverProperties: ServerProperties
-    ) {
+    fun startMoquette(serverProperties: ServerProperties) {
         if (_isRunning.value) {
             return
         }
-        _isRunning.value = true
 
-        threadExecutor.execute {
-            mqttBroker = Server()
-            val userHandlers: List<InterceptHandler?> = listOf(listener)
-            logStream.addLog(LogData("Init server."))
-            mqttBroker?.startServer(getMemoryConfig(serverProperties), userHandlers)
-            logStream.addLog(LogData("Starting Server"))
+        scope.launch {
+            try {
+                _isRunning.value = true
+                logStream.addLog(LogData("Initializing MQTT server..."))
 
-            Thread.sleep(5000)
+                mqttBroker = Server()
+                val userHandlers: List<InterceptHandler> = listOf(listener)
+                val memoryConfig = getMemoryConfig(serverProperties)
 
-            log(TAG, "Before self publish")
-            logStream.addLog(LogData("Before self publish"))
-            val message = MqttMessageBuilders.publish()
-                .topicName("/exit")
-                .retained(true)
-                .qos(MqttQoS.EXACTLY_ONCE)
-                .payload(Unpooled.copiedBuffer("Hello World!!".toByteArray(StandardCharsets.UTF_8)))
-                .build()
+                // startServer is a blocking call, perfect for Dispatchers.IO
+                mqttBroker?.startServer(memoryConfig, userHandlers)
 
-            mqttBroker?.internalPublish(message, "INTRLPUB")
-            log(TAG, "After self publish")
-            logStream.addLog(LogData("After self publish"))
+                logStream.addLog(LogData("Server started successfully on port ${serverProperties.mqttPort}."))
+
+                Thread.sleep(5000)
+
+                log(TAG, "Before self publish")
+                logStream.addLog(LogData("Before self publish"))
+                val message = MqttMessageBuilders.publish()
+                    .topicName("/exit")
+                    .retained(true)
+                    .qos(MqttQoS.EXACTLY_ONCE)
+                    .payload(Unpooled.copiedBuffer("Hello World!!".toByteArray(StandardCharsets.UTF_8)))
+                    .build()
+
+                mqttBroker?.internalPublish(message, "INTRLPUB")
+                log(TAG, "After self publish")
+                logStream.addLog(LogData("After self publish"))
+
+            } catch (e: Exception) {
+                // If startup fails, reset the state and log the error.
+                _isRunning.value = false
+                val errorMessage = "Failed to start MQTT server: ${e.message}"
+                log(TAG, errorMessage)
+                logStream.addLog(LogData(errorMessage))
+            }
         }
     }
 
@@ -76,13 +90,19 @@ class MQTTWrapper(private val listener: MQTTServerListener, private val logStrea
         if (!_isRunning.value) {
             return
         }
-        _isRunning.value = false
 
-        threadExecutor.execute {
+        scope.launch {
             try {
+                logStream.addLog(LogData("Stopping MQTT server..."))
                 mqttBroker?.stopServer()
+                _isRunning.value = false
+                logStream.addLog(LogData("Server stopped."))
             } catch (e: Exception) {
-                log(TAG, e.message ?: "")
+                val errorMessage = "Error while stopping MQTT server: ${e.message}"
+                log(TAG, errorMessage)
+                logStream.addLog(LogData(errorMessage))
+                // Even if stop fails, we consider it stopped from the app's perspective.
+                _isRunning.value = false
             }
         }
     }
