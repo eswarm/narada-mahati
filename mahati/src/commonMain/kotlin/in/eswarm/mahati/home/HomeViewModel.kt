@@ -194,6 +194,7 @@ class HomeViewModel(
     fun deleteConnection(clientID: String) {
         viewModelScope.launch {
             connectionRepo.deleteConnectionByClientId(clientID)
+            mqttController.removeConnection(clientID)
             loadConnectionProfiles()
         }
     }
@@ -201,6 +202,7 @@ class HomeViewModel(
     fun clearConnectionError() {
         _uiState.value = _uiState.value.copy(connectionError = null)
     }
+
     companion object {
         fun Factory(
             connectionRepo: ConnectionAdapter, mqttController: MqttControllerContract

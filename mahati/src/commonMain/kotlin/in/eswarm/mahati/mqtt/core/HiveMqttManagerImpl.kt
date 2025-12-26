@@ -7,6 +7,7 @@ import com.hivemq.client.mqtt.MqttClient
 import com.hivemq.client.mqtt.MqttGlobalPublishFilter
 import com.hivemq.client.mqtt.datatypes.MqttQos
 import com.hivemq.client.mqtt.lifecycle.MqttClientAutoReconnect
+import com.hivemq.client.mqtt.lifecycle.MqttClientAutoReconnectBuilder
 import com.hivemq.client.mqtt.lifecycle.MqttClientConnectedContext
 import com.hivemq.client.mqtt.mqtt5.Mqtt5AsyncClient
 import com.hivemq.client.mqtt.mqtt5.message.connect.Mqtt5Connect
@@ -30,9 +31,7 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 
-class HiveMqttManagerImpl(
-    private val coroutineScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-) : MqttManager {
+class HiveMqttManagerImpl(private val coroutineScope: CoroutineScope) : MqttManager {
     private var client: Mqtt5AsyncClient? = null
     private var currentParams: MqttConnection? = null
     private val _connectionState = MutableStateFlow<MqttClientState>(MqttClientState.Disconnected)
@@ -67,19 +66,15 @@ class HiveMqttManagerImpl(
         currentParams = params
         _connectionState.value = MqttClientState.Connecting
 
-        var clientBuilder = MqttClient
-            .builder()
-            .useMqttVersion5()
-            .automaticReconnectWithDefaultConfig()
-            .identifier(params.clientID)
-            .serverHost(params.brokerHost)
-            .serverPort(params.brokerPort.toInt())
-            .addConnectedListener { context ->
+        var clientBuilder = MqttClient.builder().useMqttVersion5().automaticReconnect(
+            MqttClientAutoReconnect.builder().initialDelay(10, TimeUnit.SECONDS)
+                .maxDelay(600, TimeUnit.SECONDS).build()
+        ).identifier(params.clientID).serverHost(params.brokerHost)
+            .serverPort(params.brokerPort.toInt()).addConnectedListener { context ->
                 logger.info("Connected to ${context.toServerUri()}")
                 _connectionState.value =
                     MqttClientState.Connected(context.toServerUri(), params.clientID)
-            }
-            .addDisconnectedListener { context ->
+            }.addDisconnectedListener { context ->
                 logger.info("Disconnected: ${context.cause.message ?: "Unknown reason"}")
                 _connectionState.value = MqttClientState.Error(
                     "Disconnected: ${context.cause.message ?: "Unknown reason"}", context.cause
@@ -102,7 +97,7 @@ class HiveMqttManagerImpl(
 
         client = clientBuilder.buildAsync()
 
-        client?.connect(Mqtt5Connect.builder().keepAlive(15).build())
+        client?.connect(Mqtt5Connect.builder().keepAlive(300).build())
             ?.whenComplete { connAck, throwable ->
                 coroutineScope.launch {
                     if (throwable != null) {
@@ -124,8 +119,7 @@ class HiveMqttManagerImpl(
 
                                 val userProps = publish.userProperties
                                 val publisherClientIdFromProps = userProps.asList()
-                                    .find { it.name.toString() == "clientID" }
-                                    ?.value?.toString() // Convert MqttUtf8String to String
+                                    .find { it.name.toString() == "clientID" }?.value?.toString() // Convert MqttUtf8String to String
 
                                 val direction =
                                     if (publisherClientIdFromProps != null && publisherClientIdFromProps == currentParams?.clientID) {
@@ -189,8 +183,7 @@ class HiveMqttManagerImpl(
             currentClient.publish(
                 Mqtt5Publish.builder().topic((currentParams?.topicPrefix ?: "") + topic)
                     .userProperties().add("clientID", currentParams?.clientID ?: "")
-                    .applyUserProperties()
-                    .payload(payload).qos(mqttQos).retain(retain).build()
+                    .applyUserProperties().payload(payload).qos(mqttQos).retain(retain).build()
             ).toSuspend().let { true } // toSuspend will throw on error
         } catch (e: Exception) {
             // Log error
@@ -224,11 +217,9 @@ class HiveMqttManagerImpl(
         }
         return try {
             val filter = (currentParams?.topicPrefix ?: "") + topicFilter
-            currentClient.unsubscribeWith()
-                .topicFilter(filter).send().toSuspend()
-                .let { unsubAck ->
-                    !unsubAck.reasonCodes.any { it.isError }
-                }
+            currentClient.unsubscribeWith().topicFilter(filter).send().toSuspend().let { unsubAck ->
+                !unsubAck.reasonCodes.any { it.isError }
+            }
         } catch (e: Exception) {
             _connectionState.value = MqttClientState.Error("Unsubscribe failed: ${e.message}", e)
             false
