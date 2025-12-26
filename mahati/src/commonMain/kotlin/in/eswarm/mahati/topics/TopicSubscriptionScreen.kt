@@ -62,7 +62,7 @@ fun TopicSubscriptionScreen(
             if (uiState.subscribedTopics.isEmpty() && !uiState.isLoading) {
                 EmptySubscriptionView(
                     onSubscribeClick = { viewModel.onEvent(TopicSubscriptionEvent.FabClicked) },
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize().padding(16.dp)
                 )
             } else {
                 SubscribedTopicsList(

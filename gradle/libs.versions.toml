@@ -2,6 +2,7 @@
 # Root build.gradle versions
 androidGradlePlugin = "8.13.0"
 kotlin = "2.2.20" # Also for KMP
+composeCompiler = "1.5.13" # Kotlin Compose Compiler version for composeOptions
 composeMultiplatform = "1.9.0" # JetBrains Compose Multiplatform plugin and libraries
 lifecycleViewmodelCompose = "2.9.4"
 materialIconsExtended = "1.7.3"

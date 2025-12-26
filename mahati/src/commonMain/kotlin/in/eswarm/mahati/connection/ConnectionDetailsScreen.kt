@@ -16,11 +16,14 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -36,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import `in`.eswarm.mahati.AppComponent
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ConnectionDetailsScreen(
     appComponent: AppComponent,
@@ -54,142 +58,153 @@ fun ConnectionDetailsScreen(
     val uiState by connectionDetailsViewModel.uiState.collectAsState()
     var passwordVisible by remember { mutableStateOf(false) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+    Scaffold(topBar = {
+        TopAppBar(title = {
+            Text(
+                "MQTT Connection",
+                style = MaterialTheme.typography.headlineSmall
+            )
+        })
+    }
     ) {
-        Text("MQTT Connection", style = MaterialTheme.typography.headlineSmall)
-
-        OutlinedTextField(
-            value = uiState.clientID,
-            onValueChange = { connectionDetailsViewModel.onClientIdChange(it) },
-            label = { Text("Client ID") },
-            isError = uiState.clientIDError != null,
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth()
-        )
-        if (uiState.clientIDError != null) {
-            Text(
-                text = uiState.clientIDError!!,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall
-            )
-        }
-
-        OutlinedTextField(
-            value = uiState.hostname,
-            onValueChange = { connectionDetailsViewModel.onHostnameChange(it) },
-            label = { Text("Hostname") },
-            isError = uiState.hostnameError != null,
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth()
-        )
-        if (uiState.hostnameError != null) {
-            Text(
-                text = uiState.hostnameError!!,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall
-            )
-        }
-
-        OutlinedTextField(
-            value = uiState.port,
-            onValueChange = { connectionDetailsViewModel.onPortChange(it) },
-            label = { Text("Port") },
-            isError = uiState.portError != null,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth()
-        )
-        if (uiState.portError != null) {
-            Text(
-                text = uiState.portError!!,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall
-            )
-        }
-
-        OutlinedTextField(
-            value = uiState.username,
-            onValueChange = { connectionDetailsViewModel.onUsernameChange(it) },
-            label = { Text("Username (Optional)") },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        OutlinedTextField(
-            value = uiState.password,
-            onValueChange = {
-                connectionDetailsViewModel.onPasswordChange(it)
-            },
-            label = { Text("Password (Optional)") },
-            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
-            trailingIcon = {
-                val image = if (passwordVisible) {
-                    Icons.Filled.Visibility
-                } else {
-                    Icons.Filled.VisibilityOff
-                }
-
-                val description = if (passwordVisible) "Hide password" else "Show password"
-
-                IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                    Icon(imageVector = image, contentDescription = description)
-                }
-            }
-        )
-
-        Row(
-            verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Checkbox(
-                checked = uiState.useWebsockets,
-                onCheckedChange = { connectionDetailsViewModel.onUseWebsocketsChange(it) })
-            Text("Use WebSockets")
-        }
 
-        Spacer(modifier = Modifier.height(16.dp))
 
-        if (uiState.isConnecting) {
-            CircularProgressIndicator()
-        }
-
-        if (uiState.connectionError != null) {
-            Text(
-                text = uiState.connectionError!!,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodyLarge
+            OutlinedTextField(
+                value = uiState.clientID,
+                onValueChange = { connectionDetailsViewModel.onClientIdChange(it) },
+                label = { Text("Client ID") },
+                isError = uiState.clientIDError != null,
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
             )
-        }
-
-        if (uiState.connectionSuccess) {
-            Text(
-                "Connection Successful!",
-                color = MaterialTheme.colorScheme.primary,
-                style = MaterialTheme.typography.bodyLarge
-            )
-        }
-
-
-        Row(
-            modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            Button(
-                onClick = { onCancel() },
-                colors = ButtonDefaults.outlinedButtonColors()
-            ) {
-                Text("Cancel")
+            if (uiState.clientIDError != null) {
+                Text(
+                    text = uiState.clientIDError!!,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall
+                )
             }
-            Button(
-                onClick = { connectionDetailsViewModel.connect() }, enabled = !uiState.isConnecting
+
+            OutlinedTextField(
+                value = uiState.hostname,
+                onValueChange = { connectionDetailsViewModel.onHostnameChange(it) },
+                label = { Text("Hostname") },
+                isError = uiState.hostnameError != null,
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+            if (uiState.hostnameError != null) {
+                Text(
+                    text = uiState.hostnameError!!,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+
+            OutlinedTextField(
+                value = uiState.port,
+                onValueChange = { connectionDetailsViewModel.onPortChange(it) },
+                label = { Text("Port") },
+                isError = uiState.portError != null,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+            if (uiState.portError != null) {
+                Text(
+                    text = uiState.portError!!,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+
+            OutlinedTextField(
+                value = uiState.username,
+                onValueChange = { connectionDetailsViewModel.onUsernameChange(it) },
+                label = { Text("Username (Optional)") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            OutlinedTextField(
+                value = uiState.password,
+                onValueChange = {
+                    connectionDetailsViewModel.onPasswordChange(it)
+                },
+                label = { Text("Password (Optional)") },
+                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+                trailingIcon = {
+                    val image = if (passwordVisible) {
+                        Icons.Filled.Visibility
+                    } else {
+                        Icons.Filled.VisibilityOff
+                    }
+
+                    val description = if (passwordVisible) "Hide password" else "Show password"
+
+                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                        Icon(imageVector = image, contentDescription = description)
+                    }
+                }
+            )
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Connect")
+                Checkbox(
+                    checked = uiState.useWebsockets,
+                    onCheckedChange = { connectionDetailsViewModel.onUseWebsocketsChange(it) })
+                Text("Use WebSockets")
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            if (uiState.isConnecting) {
+                CircularProgressIndicator()
+            }
+
+            if (uiState.connectionError != null) {
+                Text(
+                    text = uiState.connectionError!!,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
+
+            if (uiState.connectionSuccess) {
+                Text(
+                    "Connection Successful!",
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
+
+
+            Row(
+                modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                Button(
+                    onClick = { onCancel() },
+                    colors = ButtonDefaults.outlinedButtonColors()
+                ) {
+                    Text("Cancel")
+                }
+                Button(
+                    onClick = { connectionDetailsViewModel.connect() },
+                    enabled = !uiState.isConnecting
+                ) {
+                    Text("Connect")
+                }
             }
         }
     }
