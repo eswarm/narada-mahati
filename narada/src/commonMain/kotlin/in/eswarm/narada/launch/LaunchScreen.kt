@@ -135,8 +135,7 @@ fun LaunchScreen(
             }
 
             Row(
-                modifier = Modifier.padding(bottom = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(bottom = 8.dp).fillMaxSize(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
