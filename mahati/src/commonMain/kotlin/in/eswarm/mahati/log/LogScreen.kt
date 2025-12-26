@@ -37,7 +37,7 @@ fun LogScreen(appComponent: AppComponent) {
             modifier = Modifier.fillMaxSize().padding(innerPadding),
         ) {
             items(logs) { log ->
-                Text(text = "\n" + log.msg)
+                Text(text = "\n" + log)
             }
         }
     }

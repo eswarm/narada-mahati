@@ -6,7 +6,7 @@ plugins {
     alias(libs.plugins.sqldelight)
     alias(libs.plugins.kotlinxSerialization)
 }
- 
+
 sqldelight {
     databases {
         create("MahatiDb") {
@@ -21,6 +21,8 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
+                api(project(":shared"))
+
                 // SQLDelight
                 implementation(libs.sqldelight.runtime)
                 implementation(libs.sqldelight.coroutines.extensions)
@@ -125,7 +127,10 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
             signingConfig = signingConfigs.getByName("release")
         }
     }
@@ -164,13 +169,19 @@ compose.desktop {
     application {
         mainClass = "in.eswarm.mahati.desktop.MainKt"
         nativeDistributions {
-            targetFormats(org.jetbrains.compose.desktop.application.dsl.TargetFormat.Dmg, org.jetbrains.compose.desktop.application.dsl.TargetFormat.Msi, org.jetbrains.compose.desktop.application.dsl.TargetFormat.Deb)
+            targetFormats(
+                org.jetbrains.compose.desktop.application.dsl.TargetFormat.Dmg,
+                org.jetbrains.compose.desktop.application.dsl.TargetFormat.Msi,
+                org.jetbrains.compose.desktop.application.dsl.TargetFormat.Deb
+            )
             packageName = "Mahati"
             packageVersion = "1.0.0"
         }
     }
 }
 
-dependencies { // Root level dependencies block
+dependencies {
+    api(project(":shared"))
+    // Root level dependencies block
     coreLibraryDesugaring(libs.desugar.jdk.libs)
 }

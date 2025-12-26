@@ -14,6 +14,9 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
+
+                api(project(":shared"))
+
                 // SQLDelight
                 implementation(libs.sqldelight.runtime)
                 implementation(libs.sqldelight.coroutines.extensions)

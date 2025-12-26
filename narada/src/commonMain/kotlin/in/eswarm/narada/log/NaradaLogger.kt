@@ -1,5 +1,8 @@
 package `in`.eswarm.narada.log
 
+import `in`.eswarm.shared.LogData
+import `in`.eswarm.shared.LogLevel
+import `in`.eswarm.shared.LogStream
 import org.slf4j.Logger
 import org.slf4j.Marker
 

@@ -1,12 +1,14 @@
 package `in`.eswarm.mahati.log
 
+import `in`.eswarm.shared.LogData
+import `in`.eswarm.shared.LogStream
 import org.slf4j.Logger
 import org.slf4j.Marker
 
 class MahatiLogger(private val logStream: LogStream, private val name: String) : Logger {
 
     private fun log(level: String, msg: String) {
-        logStream.addLog(LogData("[$name] $level: $msg"))
+        logStream.addLog(LogData(tag = "HIVE_MQ", "[$name] $level: $msg"))
     }
 
     override fun getName(): String = name

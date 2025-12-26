@@ -1,12 +1,12 @@
 package `in`.eswarm.narada
 
-import `in`.eswarm.narada.log.LogStream
 import `in`.eswarm.narada.log.NaradaLoggerFactory
 import `in`.eswarm.narada.mqtt.MQTTServerListener
 import `in`.eswarm.narada.mqtt.MQTTWrapper
 import `in`.eswarm.narada.preferences.AppPreferences
 import `in`.eswarm.narada.service.ServerManager
 import `in`.eswarm.narada.service.getServerManager
+import `in`.eswarm.shared.LogStream
 import org.slf4j.impl.StaticLoggerBinder
 
 class AppComponent(val appPreferences: AppPreferences) {

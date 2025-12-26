@@ -1,4 +1,4 @@
-package `in`.eswarm.narada.log
+package `in`.eswarm.shared
 
 /**
  * Represents a single log entry with a message and a timestamp.
@@ -15,7 +15,7 @@ enum class LogLevel {
 
     companion object {
         fun fromString(level: String): LogLevel? {
-            LogLevel.entries.forEach {
+            entries.forEach {
                 if (it.name.equals(level, ignoreCase = true)) {
                     return it
                 }

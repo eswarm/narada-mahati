@@ -1,20 +1,20 @@
-package `in`.eswarm.narada.log
+package `in`.eswarm.shared
 
-import `in`.eswarm.narada.preferences.AppPreferences
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
-class LogStream(private val appPreferences: AppPreferences) {
+class LogStream(private val logProvider: LogProvider) {
 
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     val logFlow: Flow<List<LogData>>
         get() {
-            return appPreferences.logs.map { logSet ->
+            return logProvider.logs.map { logSet ->
                 logSet.mapNotNull { logString ->
                     // Safely parse the string, splitting it into timestamp and message
                     val parts = logString.split("-", limit = 4)
@@ -38,13 +38,13 @@ class LogStream(private val appPreferences: AppPreferences) {
     fun addLog(logData: LogData) {
         scope.launch {
             console(logData.level, logData.tag, logData.msg)
-            appPreferences.addLog("${logData.timestamp}-${logData.level}-${logData.tag}-${logData.msg}")
+            logProvider.addLog("${logData.timestamp}-${logData.level}-${logData.tag}-${logData.msg}")
         }
     }
 
     fun clear() {
         scope.launch {
-            appPreferences.clearLogs()
+            logProvider.clearLogs()
         }
     }
 }

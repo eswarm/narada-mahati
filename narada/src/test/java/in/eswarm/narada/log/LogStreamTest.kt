@@ -1,5 +1,6 @@
 package `in`.eswarm.narada.log
 
+import `in`.eswarm.shared.LogStream
 import kotlinx.coroutines.runBlocking
 
 import org.junit.After

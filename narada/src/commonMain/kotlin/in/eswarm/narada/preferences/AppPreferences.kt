@@ -3,6 +3,7 @@ package `in`.eswarm.narada.preferences
 import `in`.eswarm.narada.mqtt.ServerProperties
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.*
+import `in`.eswarm.shared.LogProvider
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -10,7 +11,7 @@ import kotlin.random.Random
 
 class AppPreferences(
     private val dataStore: DataStore<Preferences>,
-) {
+) : LogProvider {
 
     val mqttPort: Flow<Int>
         get() {
@@ -52,7 +53,7 @@ class AppPreferences(
             return dataStore.data.map { it[SERVER_STARTED] ?: false }
         }
 
-    val logs: Flow<Set<String>>
+    override val logs: Flow<Set<String>>
         get() {
             return dataStore.data.map { it[LOGS] ?: emptySet() }
         }
@@ -72,7 +73,7 @@ class AppPreferences(
         }.first()
     }
 
-    suspend fun addLog(log: String) {
+    override suspend fun addLog(log: String) {
         dataStore.edit { prefs ->
             val currentLogs = prefs[LOGS] ?: emptySet()
             // To prevent unbounded growth, let's keep only the last 1000 logs
@@ -83,7 +84,7 @@ class AppPreferences(
         }
     }
 
-    suspend fun clearLogs() {
+    override suspend fun clearLogs() {
         dataStore.edit { it[LOGS] = emptySet() }
     }
 

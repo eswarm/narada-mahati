@@ -1,5 +1,6 @@
 package `in`.eswarm.narada.log
 
+import `in`.eswarm.shared.LogStream
 import org.slf4j.ILoggerFactory
 import org.slf4j.Logger
 

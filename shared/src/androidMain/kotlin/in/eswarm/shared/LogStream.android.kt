@@ -1,4 +1,4 @@
-package `in`.eswarm.narada.log
+package `in`.eswarm.shared
 
 import android.util.Log
 

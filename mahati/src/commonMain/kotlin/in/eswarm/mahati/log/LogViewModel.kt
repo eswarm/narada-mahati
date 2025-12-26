@@ -2,6 +2,7 @@ package `in`.eswarm.mahati.log
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import `in`.eswarm.shared.LogStream
 
 class LogViewModel(val logStream: LogStream) : ViewModel() {
     fun clearLogs() {

@@ -1,7 +1,7 @@
 package `in`.eswarm.narada.mqtt
 
-import `in`.eswarm.narada.log.LogData
-import `in`.eswarm.narada.log.LogStream
+import `in`.eswarm.shared.LogData
+import `in`.eswarm.shared.LogStream
 import io.moquette.interception.AbstractInterceptHandler
 import io.moquette.interception.messages.*
 
@@ -53,7 +53,7 @@ class MQTTServerListener(private val logStream: LogStream) : AbstractInterceptHa
     }
 
     private fun log(logMsg: String) {
-        logStream.addLog(LogData(logMsg))
+        logStream.addLog(LogData(TAG, logMsg))
     }
 
     companion object {

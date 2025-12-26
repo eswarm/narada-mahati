@@ -1,18 +1,16 @@
 package `in`.eswarm.narada.launch
 
-import `in`.eswarm.narada.log.LogStream
 import `in`.eswarm.narada.share.ConnectionDetails
-import `in`.eswarm.narada.util.getLocalIpAddress
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
-import `in`.eswarm.narada.mqtt.MQTTWrapper
 import `in`.eswarm.narada.mqtt.ServerProperties
 import `in`.eswarm.narada.preferences.AppPreferences
 import `in`.eswarm.narada.service.ServerManager
+import `in`.eswarm.shared.LogStream
 import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json

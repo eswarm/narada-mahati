@@ -5,10 +5,11 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringSetPreferencesKey
+import `in`.eswarm.shared.LogProvider
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-class SettingsDataStore(private val dataStore: DataStore<Preferences>) {
+class SettingsDataStore(private val dataStore: DataStore<Preferences>) : LogProvider {
 
     val autoReconnect: Flow<Boolean>
         get() = dataStore.data.map {
@@ -21,10 +22,10 @@ class SettingsDataStore(private val dataStore: DataStore<Preferences>) {
         }
     }
 
-    val logs: Flow<Set<String>>
+    override val logs: Flow<Set<String>>
         get() = dataStore.data.map { it[LOGS] ?: emptySet() }
 
-    suspend fun addLog(log: String) {
+    override suspend fun addLog(log: String) {
         dataStore.edit { prefs ->
             val currentLogs = prefs[LOGS] ?: emptySet()
             // To prevent unbounded growth, let's keep only the last 1000 logs
@@ -35,7 +36,7 @@ class SettingsDataStore(private val dataStore: DataStore<Preferences>) {
         }
     }
 
-    suspend fun clearLogs() {
+    override suspend fun clearLogs() {
         dataStore.edit { it[LOGS] = emptySet() }
     }
 

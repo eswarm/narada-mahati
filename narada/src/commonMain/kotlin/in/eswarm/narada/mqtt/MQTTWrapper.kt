@@ -1,8 +1,7 @@
 package `in`.eswarm.narada.mqtt
 
-import `in`.eswarm.narada.log.LogData
-import `in`.eswarm.narada.log.LogStream
-import `in`.eswarm.narada.log.log
+import `in`.eswarm.shared.LogData
+import `in`.eswarm.shared.LogStream
 import io.moquette.BrokerConstants
 import io.moquette.broker.Server
 import io.moquette.broker.config.IConfig
@@ -50,7 +49,7 @@ class MQTTWrapper(private val listener: MQTTServerListener, private val logStrea
         scope.launch {
             try {
                 _isRunning.value = true
-                logStream.addLog(LogData("Initializing MQTT server..."))
+                logStream.addLog(LogData(tag = TAG, msg = "Initializing MQTT server..."))
 
                 mqttBroker = Server()
                 val userHandlers: List<InterceptHandler> = listOf(listener)
@@ -59,12 +58,16 @@ class MQTTWrapper(private val listener: MQTTServerListener, private val logStrea
                 // startServer is a blocking call, perfect for Dispatchers.IO
                 mqttBroker?.startServer(memoryConfig, userHandlers)
 
-                logStream.addLog(LogData("Server started successfully on port ${serverProperties.mqttPort}."))
+                logStream.addLog(
+                    LogData(
+                        tag = TAG,
+                        "Server started successfully on port ${serverProperties.mqttPort}."
+                    )
+                )
 
                 Thread.sleep(5000)
 
-                log(TAG, "Before self publish")
-                logStream.addLog(LogData("Before self publish"))
+                logStream.addLog(LogData(tag = TAG, "Before self publish"))
                 val message = MqttMessageBuilders.publish()
                     .topicName("/exit")
                     .retained(true)
@@ -73,15 +76,13 @@ class MQTTWrapper(private val listener: MQTTServerListener, private val logStrea
                     .build()
 
                 mqttBroker?.internalPublish(message, "INTRLPUB")
-                log(TAG, "After self publish")
-                logStream.addLog(LogData("After self publish"))
+                logStream.addLog(LogData(tag = TAG, "After self publish"))
 
             } catch (e: Exception) {
                 // If startup fails, reset the state and log the error.
                 _isRunning.value = false
                 val errorMessage = "Failed to start MQTT server: ${e.message}"
-                log(TAG, errorMessage)
-                logStream.addLog(LogData(errorMessage))
+                logStream.addLog(LogData(tag = TAG, errorMessage))
             }
         }
     }
@@ -93,14 +94,13 @@ class MQTTWrapper(private val listener: MQTTServerListener, private val logStrea
 
         scope.launch {
             try {
-                logStream.addLog(LogData("Stopping MQTT server..."))
+                logStream.addLog(LogData(tag = TAG, "Stopping MQTT server..."))
                 mqttBroker?.stopServer()
                 _isRunning.value = false
-                logStream.addLog(LogData("Server stopped."))
+                logStream.addLog(LogData(tag = TAG, "Server stopped."))
             } catch (e: Exception) {
                 val errorMessage = "Error while stopping MQTT server: ${e.message}"
-                log(TAG, errorMessage)
-                logStream.addLog(LogData(errorMessage))
+                logStream.addLog(LogData(tag = TAG, errorMessage))
                 // Even if stop fails, we consider it stopped from the app's perspective.
                 _isRunning.value = false
             }
