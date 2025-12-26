@@ -1,5 +1,6 @@
 package `in`.eswarm.narada.log
 
+import `in`.eswarm.shared.LogData
 import `in`.eswarm.shared.LogStream
 import kotlinx.coroutines.runBlocking
 
@@ -24,7 +25,7 @@ class LogStreamTest {
     fun test() {
         runBlocking {
             for (i in 1..1000) {
-                logStream.addLog(LogData(i.toString()))
+                logStream.addLog(LogData("Tag", i.toString()))
             }
 
             //val logList = logStream.addLog()

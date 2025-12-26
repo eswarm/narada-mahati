@@ -16,7 +16,7 @@ class AppComponent(settingsDataStore: SettingsDataStore) {
     val messageRepo: MessageRepository = MessageRepository()
     val logStream: LogStream = LogStream(settingsDataStore)
 
-    lateinit var mqttController: MqttControllerContract
+    var mqttController: MqttControllerContract
 
     init {
         // 1. Initialize the logging system FIRST.

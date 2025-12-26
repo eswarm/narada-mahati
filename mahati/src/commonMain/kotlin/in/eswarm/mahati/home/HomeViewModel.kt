@@ -97,7 +97,7 @@ class HomeViewModel(
                     if (clientID == newState.clientID) {
                         clientID = null
                         _sideEffects.value =
-                            HomeSideEffect.NavigateToConnectionDetails(newState.clientID)
+                            NavigateToConnectionDetails(newState.clientID)
                     }
                     currentUiState.copy(
                         isConnecting = false, // Connection attempt finished
@@ -128,7 +128,7 @@ class HomeViewModel(
         viewModelScope.launch {
             when (event) {
                 is HomeUiEvent.AddNewConnectionClicked -> {
-                    _sideEffects.value = HomeSideEffect.NavigateToNewConnectionScreen
+                    _sideEffects.value = NavigateToNewConnectionScreen
                 }
 
                 is HomeUiEvent.ConnectionSelected -> {

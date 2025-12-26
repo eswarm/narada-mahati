@@ -73,13 +73,13 @@ class AppPreferences(
         }.first()
     }
 
-    override suspend fun addLog(log: String) {
+    override suspend fun addLog(msg: String) {
         dataStore.edit { prefs ->
             val currentLogs = prefs[LOGS] ?: emptySet()
             // To prevent unbounded growth, let's keep only the last 1000 logs
             val sortedLogs = currentLogs.sortedDescending()
             val newLogs = sortedLogs.take(999).toMutableSet()
-            newLogs.add(log)
+            newLogs.add(msg)
             prefs[LOGS] = newLogs
         }
     }
