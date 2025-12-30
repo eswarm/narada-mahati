@@ -3,27 +3,22 @@ package `in`.eswarm.mahati
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
-import android.os.Binder
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
+import `in`.eswarm.mahati.mqtt.service.MqttControllerContract
 import `in`.eswarm.mahati.util.NotificationUtil.FG_SERVICE_CHANNEL
-import kotlinx.coroutines.CoroutineName
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
+import `in`.eswarm.mahati.util.getAppComponent
 
 class MqttClientService : Service() {
-    private val binder = LocalBinder()
-    private val serviceJob = SupervisorJob()
-    private val serviceScope =
-        CoroutineScope(Dispatchers.IO + serviceJob + CoroutineName("AndroidMqttServiceScope"))
 
-    inner class LocalBinder : Binder() {
-        fun getService(): MqttClientService = this@MqttClientService
-    }
+    private lateinit var mqttController: MqttControllerContract
 
     override fun onCreate() {
         super.onCreate()
+
+        val appComponent = getAppComponent()
+        mqttController = appComponent.mqttController
+
 
         // Create the intent that will be sent when the user clicks the "Stop" button
         val stopSelfIntent = Intent(this, MqttClientService::class.java).apply {
@@ -57,12 +52,10 @@ class MqttClientService : Service() {
         return START_STICKY
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        serviceJob.cancel() // Cancels serviceScope and all its children
+    override fun onBind(intent: Intent): IBinder? {
+        // We don't provide binding, so return null
+        return null
     }
-
-    override fun onBind(intent: Intent): IBinder = binder
 
     companion object {
         const val ACTION_STOP = "in.eswarm.mahati.service.action.STOP"

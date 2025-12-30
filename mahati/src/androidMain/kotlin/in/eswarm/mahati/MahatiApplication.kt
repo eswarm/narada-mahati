@@ -10,8 +10,6 @@ import `in`.eswarm.mahati.mqtt.di.AppContext
 class MahatiApplication : Application() {
 
     lateinit var appComponent: AppComponent
-
-    // Clean this up.
     val prefStore by preferencesDataStore(name = "settings")
 
     override fun onCreate() {

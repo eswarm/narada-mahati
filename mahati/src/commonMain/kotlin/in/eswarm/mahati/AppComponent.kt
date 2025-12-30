@@ -10,6 +10,7 @@ import `in`.eswarm.shared.LogStream
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import org.slf4j.impl.StaticLoggerBinder
 
 class AppComponent(
@@ -36,7 +37,17 @@ class AppComponent(
             messageRepo = messageRepo,
             sendNotification = sendNotification
         )
+
+        // Load all saved connections from the database and add them to the controller.
+        appScope.launch {
+            val connections = connectionRepo.getAllConnections()
+            for (connection in connections) {
+                mqttController.addConnection(connection)
+            }
+        }
     }
 
-    fun clear() {}
+    fun clear() {
+        mqttController.shutdownAll()
+    }
 }
