@@ -1,11 +1,11 @@
-package `in`.eswarm.mahati
+package `in`.eswarm.mahati.home
 
 import PermissionState
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-class MainViewModel : ViewModel() {
+class HomeDroidViewModel : ViewModel() {
     // Initialize with null to represent an undetermined state
     private val _permissionState = MutableStateFlow<PermissionState?>(null)
     val permissionState = _permissionState.asStateFlow()

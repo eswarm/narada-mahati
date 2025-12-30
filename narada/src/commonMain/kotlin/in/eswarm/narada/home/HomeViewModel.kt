@@ -24,7 +24,7 @@ open class HomeViewModel(
     ViewModel() {
 
     val isServerRunning = serverManager.isRunning
-    var logs = mutableStateListOf<String>()
+    var logs = logStream.logFlow
     var clientsCount = mutableStateOf(0)
     lateinit var serverProperties: ServerProperties
 
@@ -32,13 +32,7 @@ open class HomeViewModel(
         viewModelScope.launch {
             // Concurrently load server properties
             serverProperties = appPreferences.getServerProperties()
-
-            // Collect the logs from the persistent DataStore
-            logStream.logFlow.collect { logDataList ->
-                logs.clear()
-                logs.addAll(logDataList.map { it.msg + "\n" })
-                clientsCount.value = serverManager.clientsConnected
-            }
+            clientsCount.value = serverManager.clientsConnected
         }
     }
 

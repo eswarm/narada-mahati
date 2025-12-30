@@ -14,7 +14,7 @@ class AppComponent(val appPreferences: AppPreferences) {
     val logStream: LogStream = LogStream(appPreferences)
     val mqttServerListener: MQTTServerListener = MQTTServerListener(logStream)
     val mqttWrapper: MQTTWrapper = MQTTWrapper(mqttServerListener, logStream)
-    val serverManager: ServerManager = getServerManager()
+    val serverManager: ServerManager = getServerManager(mqttWrapper)
 
     init {
         val binder = StaticLoggerBinder.getSingleton()
@@ -23,9 +23,5 @@ class AppComponent(val appPreferences: AppPreferences) {
 
     fun clear() {
         logStream.clear()
-    }
-
-    companion object {
-        lateinit var INSTANCE: AppComponent
     }
 }

@@ -38,6 +38,8 @@ import `in`.eswarm.narada.util.PlatformUtil
 import `in`.eswarm.narada.util.isAndroid
 import `in`.eswarm.narada.util.postNotificationPermission
 import `in`.eswarm.narada.util.rememberPermissionState
+import `in`.eswarm.shared.LogData
+import kotlinx.coroutines.flow.Flow
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(
@@ -47,7 +49,7 @@ import org.jetbrains.compose.resources.stringResource
 fun LaunchScreen(
     homeViewModel: HomeViewModel,
     navController: NavController,
-    logView: @Composable (List<String>) -> Unit
+    logView: @Composable (Flow<List<LogData>>) -> Unit
 ) {
     val isServerRunning = homeViewModel.isServerRunning.collectAsState()
     val notifPermissionState = rememberPermissionState(postNotificationPermission)

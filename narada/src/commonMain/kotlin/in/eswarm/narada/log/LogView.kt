@@ -9,28 +9,30 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
+import `in`.eswarm.shared.LogData
+import kotlinx.coroutines.flow.Flow
 
 
 @Composable
-fun LogView(logs: List<String>) {
+fun LogView(logs: Flow<List<LogData>>) {
 
     val listState = rememberLazyListState()
+    val logState = logs.collectAsState(initial = emptyList())
 
-    LaunchedEffect(logs.size) {
-        listState.animateScrollToItem(index = if (logs.isNotEmpty()) logs.size - 1 else logs.size)
+    LaunchedEffect(logState.value.size) {
+        if (logState.value.isNotEmpty()) {
+            listState.animateScrollToItem(index = logState.value.size - 1)
+        }
     }
 
     LazyColumn(
-        state = listState,
-        modifier = Modifier
-            .fillMaxWidth()
-            .fillMaxHeight(0.85f)
-            .padding(Dp(8f))
+        state = listState, modifier = Modifier.fillMaxWidth().fillMaxHeight(0.85f).padding(Dp(8f))
     ) {
-        items(logs) { log ->
-            Text(log)
+        items(logState.value) { log ->
+            Text("${log.timestamp} ${log.tag} ${log.msg}")
         }
     }
 }

@@ -1,4 +1,4 @@
-package `in`.eswarm.mahati
+package `in`.eswarm.mahati.home
 
 import android.Manifest
 import android.content.Intent
@@ -21,13 +21,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import `in`.eswarm.mahati.AppNavigation
+import `in`.eswarm.mahati.MahatiApplication
 import `in`.eswarm.mahati.navigation.DeepLinkDestination
 import `in`.eswarm.mahati.theme.NaradaMQTTBrokerTheme
 import `in`.eswarm.mahati.util.NotificationUtil
 import kotlinx.coroutines.runBlocking
 
-class Main : ComponentActivity() {
-    private val viewModel: MainViewModel by viewModels()
+class HomeActivity : ComponentActivity() {
+    private val viewModel: HomeDroidViewModel by viewModels()
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -77,8 +79,8 @@ class Main : ComponentActivity() {
         enableEdgeToEdge()
         // TODO: Fix this.
         runBlocking {
-            NotificationUtil.createNotificationChannel(this@Main)
-            NotificationUtil.createMessageChannel(this@Main)
+            NotificationUtil.createNotificationChannel(this@HomeActivity)
+            NotificationUtil.createMessageChannel(this@HomeActivity)
         }
 
         setContent {

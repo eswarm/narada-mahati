@@ -13,7 +13,7 @@ import `in`.eswarm.narada.AppComponent
 import `in`.eswarm.narada.R
 import `in`.eswarm.narada.home.HomeActivity
 import `in`.eswarm.narada.util.NotificationUtil.FG_SERVICE_CHANNEL
-import `in`.eswarm.narada.util.preferences
+import `in`.eswarm.narada.util.getAppComponent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -24,6 +24,7 @@ import kotlinx.coroutines.withContext
 class MQTTServerService : Service() {
 
     private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    lateinit var appComponent: AppComponent
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
@@ -42,8 +43,8 @@ class MQTTServerService : Service() {
 
     private fun stopService() {
         serviceScope.launch {
-            application.preferences.setServerStopped()
-            AppComponent.INSTANCE.mqttWrapper.stopMoquette()
+            appComponent.appPreferences.setServerStopped()
+            appComponent.mqttWrapper.stopMoquette()
             withContext(Dispatchers.Main) {
                 stopForeground(true)
                 stopSelf()
@@ -53,9 +54,9 @@ class MQTTServerService : Service() {
 
     private fun init() {
         serviceScope.launch {
-            application.preferences.setServerStarted()
-            val serverProperties = application.preferences.getServerProperties()
-            AppComponent.INSTANCE.mqttWrapper.startMoquette(
+            appComponent.appPreferences.setServerStarted()
+            val serverProperties = appComponent.appPreferences.getServerProperties()
+            appComponent.mqttWrapper.startMoquette(
                 serverProperties
             )
 
@@ -87,6 +88,11 @@ class MQTTServerService : Service() {
 
     override fun onBind(intent: Intent): IBinder? {
         return null
+    }
+
+    override fun onCreate() {
+        super.onCreate()
+        appComponent = getAppComponent()
     }
 
     override fun onDestroy() {

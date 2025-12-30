@@ -1,16 +1,16 @@
 package `in`.eswarm.narada.service
 
-import `in`.eswarm.narada.AppComponent
+import `in`.eswarm.narada.mqtt.MQTTWrapper
 import `in`.eswarm.narada.util.AppContext
 import kotlinx.coroutines.flow.StateFlow
 
-class AndroidServerManager : ServerManager {
+class AndroidServerManager(val mqttWrapper: MQTTWrapper) : ServerManager {
 
     override val isRunning: StateFlow<Boolean>
-        get() = AppComponent.INSTANCE.mqttWrapper.isRunning
+        get() = mqttWrapper.isRunning
 
     override val clientsConnected: Int
-        get() = AppComponent.INSTANCE.mqttWrapper.clientsConnected
+        get() = mqttWrapper.clientsConnected
 
     override fun start() {
         MQTTServerService.start(AppContext.context)
@@ -21,6 +21,6 @@ class AndroidServerManager : ServerManager {
     }
 }
 
-actual fun getServerManager(): ServerManager {
-    return AndroidServerManager()
+actual fun getServerManager(mqttWrapper: MQTTWrapper): ServerManager {
+    return AndroidServerManager(mqttWrapper)
 }

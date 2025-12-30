@@ -1,5 +1,6 @@
 package `in`.eswarm.narada.service
 
+import `in`.eswarm.narada.mqtt.MQTTWrapper
 import kotlinx.coroutines.flow.StateFlow
 
 interface ServerManager {
@@ -9,4 +10,4 @@ interface ServerManager {
     fun stop()
 }
 
-expect fun getServerManager(): ServerManager
+expect fun getServerManager(mqttWrapper: MQTTWrapper): ServerManager

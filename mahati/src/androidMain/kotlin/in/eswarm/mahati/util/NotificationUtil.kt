@@ -8,11 +8,10 @@ import android.content.Context
 import android.content.Context.NOTIFICATION_SERVICE
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import `in`.eswarm.mahati.Main
+import `in`.eswarm.mahati.home.HomeActivity
 import `in`.eswarm.mahati.R
 import `in`.eswarm.mahati.navigation.Screen
 import `in`.eswarm.mahati.resources.Res
@@ -54,7 +53,7 @@ object NotificationUtil {
     fun sendNotification(
         context: Context, title: String, message: String, clientID: String, topicName: String
     ) {
-        val intent = Intent(context, Main::class.java).apply {
+        val intent = Intent(context, HomeActivity::class.java).apply {
             action = Intent.ACTION_VIEW
             data = Screen.Chat.createDeepLink(clientID, topicName).toUri()
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
