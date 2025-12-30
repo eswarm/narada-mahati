@@ -66,15 +66,14 @@ fun ConnectionDetailsScreen(
             )
         })
     }
-    ) {
+    ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
+                .padding(padding).padding(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-
 
             OutlinedTextField(
                 value = uiState.clientID,
@@ -84,6 +83,7 @@ fun ConnectionDetailsScreen(
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )
+
             if (uiState.clientIDError != null) {
                 Text(
                     text = uiState.clientIDError!!,
