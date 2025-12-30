@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.StateFlow
 
 interface ServerManager {
     val isRunning: StateFlow<Boolean>
-    val clientsConnected: Int
+    val clientsConnected: StateFlow<Int>
     fun start()
     fun stop()
 }

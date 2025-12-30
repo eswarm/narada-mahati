@@ -23,15 +23,14 @@ open class HomeViewModel(
     ViewModel() {
 
     val isServerRunning = serverManager.isRunning
+    val clientsConnected = serverManager.clientsConnected
     val logs = logStream.logFlow
-    var clientsCount = mutableStateOf(0)
     lateinit var serverProperties: ServerProperties
 
     init {
         viewModelScope.launch {
             // Concurrently load server properties
             serverProperties = appPreferences.getServerProperties()
-            clientsCount.value = serverManager.clientsConnected
         }
     }
 

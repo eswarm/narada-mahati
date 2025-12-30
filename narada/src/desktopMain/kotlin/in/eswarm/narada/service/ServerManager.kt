@@ -11,7 +11,7 @@ class DesktopServerManager(val mqttWrapper: MQTTWrapper) : ServerManager {
 
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
-    override val clientsConnected: Int
+    override val clientsConnected: StateFlow<Int>
         get() = mqttWrapper.clientsConnected
 
     override val isRunning: StateFlow<Boolean>

@@ -51,6 +51,8 @@ fun HomeScreen(
     navController: NavController
 ) {
     val isServerRunning = homeViewModel.isServerRunning.collectAsState()
+    val clientsCount = homeViewModel.clientsConnected.collectAsState()
+
     val notifPermissionState = rememberPermissionState(postNotificationPermission)
     val showQrDialog = rememberSaveable { mutableStateOf(false) }
 
@@ -117,7 +119,7 @@ fun HomeScreen(
                     style = MaterialTheme.typography.titleMedium
                 )
                 Spacer(modifier = Modifier.weight(1f))
-                Text(homeViewModel.clientsCount.value.toString())
+                Text(clientsCount.value.toString())
             }
 
             Row(modifier = Modifier.padding(vertical = Dp(16f))) {

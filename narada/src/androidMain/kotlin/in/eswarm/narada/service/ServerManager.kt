@@ -9,7 +9,7 @@ class AndroidServerManager(val mqttWrapper: MQTTWrapper) : ServerManager {
     override val isRunning: StateFlow<Boolean>
         get() = mqttWrapper.isRunning
 
-    override val clientsConnected: Int
+    override val clientsConnected: StateFlow<Int>
         get() = mqttWrapper.clientsConnected
 
     override fun start() {
