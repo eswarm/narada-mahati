@@ -16,8 +16,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewmodel.compose.viewModel
 import `in`.eswarm.mahati.AppComponent
+import `in`.eswarm.shared.LogLevel
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,8 +42,24 @@ fun LogScreen(appComponent: AppComponent) {
             modifier = Modifier.fillMaxSize().padding(innerPadding),
         ) {
             items(logs) { log ->
-                Text(text = "\n" + log)
+                val color = when (log.level) {
+                    LogLevel.INFO -> Color.Yellow
+                    LogLevel.DEBUG -> Color.Gray
+                    LogLevel.WARN -> Color(0xFFFFA500) // Orange
+                    LogLevel.ERROR -> Color.Red
+                    LogLevel.VERBOSE -> Color.White
+                }
+                Text(
+                    text = "${formatTimestamp(log.timestamp)} [${log.tag}] ${log.msg}\n",
+                    color = color
+                )
             }
         }
     }
+}
+
+fun formatTimestamp(timestamp: Long): String {
+    val date = Date(timestamp)
+    val format = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
+    return format.format(date)
 }

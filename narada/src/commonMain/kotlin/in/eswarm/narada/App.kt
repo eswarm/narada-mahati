@@ -9,9 +9,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import `in`.eswarm.narada.home.LaunchScreen
+import `in`.eswarm.narada.home.HomeScreen
 import `in`.eswarm.narada.home.HomeViewModel
-import `in`.eswarm.narada.log.LogView
 import `in`.eswarm.narada.settings.SettingsScreen
 import `in`.eswarm.narada.settings.SettingsViewModelFactory
 import `in`.eswarm.narada.ui.theme.NaradaMQTTBrokerTheme
@@ -35,12 +34,10 @@ fun App(appComponent: AppComponent) {
                             appComponent.serverManager
                         )
                     )
-                    LaunchScreen(
+                    HomeScreen(
                         launchViewModel,
                         navController
-                    ) { logs ->
-                        LogView(logs = logs)
-                    }
+                    )
                 }
                 composable("settings") {
                     SettingsScreen(

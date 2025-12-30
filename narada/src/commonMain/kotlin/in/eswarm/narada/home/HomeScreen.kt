@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
@@ -23,6 +24,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import `in`.eswarm.narada.log.LogView
 import `in`.eswarm.narada.resources.Res
 import `in`.eswarm.narada.resources.app_name
 import `in`.eswarm.narada.resources.clients_connected
@@ -38,18 +40,15 @@ import `in`.eswarm.narada.util.PlatformUtil
 import `in`.eswarm.narada.util.isAndroid
 import `in`.eswarm.narada.util.postNotificationPermission
 import `in`.eswarm.narada.util.rememberPermissionState
-import `in`.eswarm.shared.LogData
-import kotlinx.coroutines.flow.Flow
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(
     ExperimentalMaterial3Api::class
 )
 @Composable
-fun LaunchScreen(
+fun HomeScreen(
     homeViewModel: HomeViewModel,
-    navController: NavController,
-    logView: @Composable (Flow<List<LogData>>) -> Unit
+    navController: NavController
 ) {
     val isServerRunning = homeViewModel.isServerRunning.collectAsState()
     val notifPermissionState = rememberPermissionState(postNotificationPermission)
@@ -137,7 +136,7 @@ fun LaunchScreen(
             }
 
             Row(
-                modifier = Modifier.padding(bottom = 8.dp).fillMaxSize(),
+                modifier = Modifier.padding(bottom = 8.dp).fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
@@ -151,7 +150,7 @@ fun LaunchScreen(
             }
 
             if (!PlatformUtil.isNotificationPermissionRequired || notifPermissionState.status.isGranted) {
-                logView(homeViewModel.logs)
+                LogView(homeViewModel.logs)
             } else {
                 Column(modifier = Modifier.padding(vertical = Dp(16f))) {
                     Text(text = stringResource(Res.string.no_notification_permission_description))

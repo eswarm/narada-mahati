@@ -1,7 +1,6 @@
 package `in`.eswarm.narada.home
 
 import `in`.eswarm.narada.share.ConnectionDetails
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -24,7 +23,7 @@ open class HomeViewModel(
     ViewModel() {
 
     val isServerRunning = serverManager.isRunning
-    var logs = logStream.logFlow
+    val logs = logStream.logFlow
     var clientsCount = mutableStateOf(0)
     lateinit var serverProperties: ServerProperties
 
