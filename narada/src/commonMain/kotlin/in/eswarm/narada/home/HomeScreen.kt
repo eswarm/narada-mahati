@@ -1,4 +1,4 @@
-package `in`.eswarm.narada.launch
+package `in`.eswarm.narada.home
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -45,16 +45,16 @@ import org.jetbrains.compose.resources.stringResource
 )
 @Composable
 fun LaunchScreen(
-    launchViewModel: LaunchViewModel,
+    homeViewModel: HomeViewModel,
     navController: NavController,
     logView: @Composable (List<String>) -> Unit
 ) {
-    val isServerRunning = launchViewModel.isServerRunning.collectAsState()
+    val isServerRunning = homeViewModel.isServerRunning.collectAsState()
     val notifPermissionState = rememberPermissionState(postNotificationPermission)
     val showQrDialog = rememberSaveable { mutableStateOf(false) }
 
     if (showQrDialog.value) {
-        val connectionString = launchViewModel.getConnectionString()
+        val connectionString = homeViewModel.getConnectionString()
         if (connectionString != null) {
             ShareQrCodeDialog(
                 onDismissRequest = { showQrDialog.value = false },
@@ -107,7 +107,7 @@ fun LaunchScreen(
                     style = MaterialTheme.typography.titleMedium
                 )
                 Spacer(modifier = Modifier.weight(1f))
-                Text(launchViewModel.getLocalIpAddress() ?: "-")
+                Text(homeViewModel.getLocalIpAddress() ?: "-")
             }
 
             Row(modifier = Modifier.padding(vertical = Dp(4f))) {
@@ -116,13 +116,13 @@ fun LaunchScreen(
                     style = MaterialTheme.typography.titleMedium
                 )
                 Spacer(modifier = Modifier.weight(1f))
-                Text(launchViewModel.clientsCount.value.toString())
+                Text(homeViewModel.clientsCount.value.toString())
             }
 
             Row(modifier = Modifier.padding(vertical = Dp(16f))) {
                 Button(
                     onClick = {
-                        launchViewModel.toggleServer()
+                        homeViewModel.toggleServer()
                     }, modifier = Modifier.padding(horizontal = Dp(16f)).weight(1f)
                 ) {
                     val buttonText = if (isServerRunning.value) {
@@ -145,11 +145,11 @@ fun LaunchScreen(
 
                 IconButton(
                     content = { Icon(Icons.Filled.Delete, "Delete") },
-                    onClick = { launchViewModel.clearLogs() })
+                    onClick = { homeViewModel.clearLogs() })
             }
 
             if (!PlatformUtil.isNotificationPermissionRequired || notifPermissionState.status.isGranted) {
-                logView(launchViewModel.logs)
+                logView(homeViewModel.logs)
             } else {
                 Column(modifier = Modifier.padding(vertical = Dp(16f))) {
                     Text(text = stringResource(Res.string.no_notification_permission_description))

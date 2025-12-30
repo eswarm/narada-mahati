@@ -1,4 +1,4 @@
-package `in`.eswarm.narada.launch
+package `in`.eswarm.narada.home
 
 import `in`.eswarm.narada.share.ConnectionDetails
 import androidx.compose.runtime.mutableStateListOf
@@ -16,7 +16,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlin.reflect.KClass
 
-open class LaunchViewModel(
+open class HomeViewModel(
     private val logStream: LogStream,
     private val appPreferences: AppPreferences,
     private val serverManager: ServerManager
@@ -82,8 +82,8 @@ open class LaunchViewModel(
             override fun <T : ViewModel> create(
                 modelClass: KClass<T>, extras: CreationExtras
             ): T {
-                if (modelClass.java.isAssignableFrom(LaunchViewModel::class.java)) {
-                    return LaunchViewModel(
+                if (modelClass.java.isAssignableFrom(HomeViewModel::class.java)) {
+                    return HomeViewModel(
                         logStream,
                         appPreferences,
                         serverManager

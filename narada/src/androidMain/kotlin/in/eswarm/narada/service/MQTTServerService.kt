@@ -11,7 +11,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import `in`.eswarm.narada.AppComponent
 import `in`.eswarm.narada.R
-import `in`.eswarm.narada.launch.LaunchActivity
+import `in`.eswarm.narada.home.HomeActivity
 import `in`.eswarm.narada.util.NotificationUtil.FG_SERVICE_CHANNEL
 import `in`.eswarm.narada.util.preferences
 import kotlinx.coroutines.CoroutineScope
@@ -61,7 +61,7 @@ class MQTTServerService : Service() {
 
             withContext(Dispatchers.Main) {
                 val pendingIntent: PendingIntent = Intent(
-                    this@MQTTServerService, LaunchActivity::class.java
+                    this@MQTTServerService, HomeActivity::class.java
                 ).let { notificationIntent ->
                     PendingIntent.getActivity(
                         this@MQTTServerService,

@@ -1,4 +1,4 @@
-package `in`.eswarm.narada.launch
+package `in`.eswarm.narada.log
 
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth

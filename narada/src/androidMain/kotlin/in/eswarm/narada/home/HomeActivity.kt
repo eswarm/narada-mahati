@@ -1,4 +1,4 @@
-package `in`.eswarm.narada.launch
+package `in`.eswarm.narada.home
 
 import android.annotation.SuppressLint
 import `in`.eswarm.narada.util.NotificationUtil
@@ -14,7 +14,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
 @SuppressLint("CustomSplashScreen")
-class LaunchActivity : ComponentActivity() {
+class HomeActivity : ComponentActivity() {
 
     private val mainScope = MainScope()
     override fun onCreate(savedInstanceState: Bundle?) {

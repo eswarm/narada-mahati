@@ -9,9 +9,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import `in`.eswarm.narada.launch.LaunchScreen
-import `in`.eswarm.narada.launch.LaunchViewModel
-import `in`.eswarm.narada.launch.LogView
+import `in`.eswarm.narada.home.LaunchScreen
+import `in`.eswarm.narada.home.HomeViewModel
+import `in`.eswarm.narada.log.LogView
 import `in`.eswarm.narada.settings.SettingsScreen
 import `in`.eswarm.narada.settings.SettingsViewModelFactory
 import `in`.eswarm.narada.ui.theme.NaradaMQTTBrokerTheme
@@ -28,8 +28,8 @@ fun App(appComponent: AppComponent) {
         ) {
             NavHost(navController = navController, startDestination = "home") {
                 composable("home") {
-                    val launchViewModel: LaunchViewModel = viewModel(
-                        factory = LaunchViewModel.Factory(
+                    val launchViewModel: HomeViewModel = viewModel(
+                        factory = HomeViewModel.Factory(
                             appComponent.logStream,
                             appComponent.appPreferences,
                             appComponent.serverManager
