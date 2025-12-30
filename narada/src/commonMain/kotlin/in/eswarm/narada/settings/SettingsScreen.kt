@@ -51,7 +51,6 @@ fun SettingsScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
                 .verticalScroll(scrollState)
-                .windowInsetsPadding(WindowInsets.statusBars)
         ) {
 
             val showDialog = remember { mutableStateOf(false) }
