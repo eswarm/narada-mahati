@@ -190,7 +190,7 @@ fun SubscribeToTopicDialog(
                 OutlinedTextField(
                     value = topicFilter,
                     onValueChange = { topicFilter = it },
-                    label = { Text("Topic e.g /home/hall") },
+                    label = { Text("Topic e.g home/hall") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
