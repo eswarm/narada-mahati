@@ -68,7 +68,7 @@ fun HomeScreen(
     onNavigateToScanQr: () -> Unit, // Added this
     onNavigateToLog: () -> Unit,
     appComponent: AppComponent,
-    permissionState: PermissionState,
+    permissionState: PermissionState?,
     permissionRationale: () -> Unit,
     viewModel: HomeViewModel = viewModel(
         factory = HomeViewModel.Factory(
@@ -167,7 +167,10 @@ fun HomeScreen(
 }
 
 @Composable
-fun PermissionView(permissionState: PermissionState, permissionRationale: () -> Unit) {
+fun PermissionView(permissionState: PermissionState?, permissionRationale: () -> Unit) {
+    if (permissionState == null) {
+        return
+    }
     Column(
         modifier = Modifier
             .fillMaxWidth()
