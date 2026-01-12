@@ -25,8 +25,8 @@ import java.net.URLDecoder
 @Composable
 fun AppNavigation(
     appComponent: AppComponent,
-    permissionState: PermissionState,
-    requestPermission: () -> Unit,
+    permissionState: PermissionState = PermissionState.GRANTED,
+    requestPermission: () -> Unit = {},
     deepLinkDestination: DeepLinkDestination? = null,
     onDeepLinkHandled: () -> Unit = {}
 ) {

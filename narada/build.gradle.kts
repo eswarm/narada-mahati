@@ -38,7 +38,7 @@ kotlin {
                     exclude(group = "org.slf4j", module = "slf4j-log4j12")
                     exclude(group = "org.slf4j", module = "slf4j-reload4j")
                 }
-                implementation(libs.androidx.navigation.compose)
+                implementation(libs.navigation.compose)
                 implementation(libs.androidx.datastore.preferences)
                 api(libs.kotlinx.coroutines.core)
 
@@ -59,7 +59,6 @@ kotlin {
                 implementation(libs.androidx.core.ktx)
                 implementation(libs.androidx.activity.compose)
                 implementation(libs.androidx.lifecycle.runtime.ktx)
-                implementation(libs.androidx.navigation.compose)
 
                 // Android DataStore (correct place for these)
                 implementation(libs.androidx.datastore)
