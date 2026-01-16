@@ -13,7 +13,6 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import `in`.eswarm.mahati.home.HomeActivity
 import `in`.eswarm.mahati.R
-import `in`.eswarm.mahati.navigation.Screen
 import `in`.eswarm.mahati.resources.Res
 import `in`.eswarm.mahati.resources.fg_channel_description
 import `in`.eswarm.mahati.resources.fg_channel_name
@@ -21,6 +20,7 @@ import `in`.eswarm.mahati.resources.message_channel_description
 import `in`.eswarm.mahati.resources.message_channel_name
 import org.jetbrains.compose.resources.getString
 import androidx.core.net.toUri
+import `in`.eswarm.mahati.navigation.Route
 
 object NotificationUtil {
 
@@ -55,7 +55,7 @@ object NotificationUtil {
     ) {
         val intent = Intent(context, HomeActivity::class.java).apply {
             action = Intent.ACTION_VIEW
-            data = Screen.Chat.createDeepLink(clientID, topicName).toUri()
+            data = Route.Chat(clientID, topicName).deepLink().toUri()
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
 

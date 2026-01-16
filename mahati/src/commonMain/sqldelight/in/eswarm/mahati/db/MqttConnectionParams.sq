@@ -1,6 +1,6 @@
 import kotlin.Boolean;
 
-CREATE TABLE MqttConnection (
+CREATE TABLE IF NOT EXISTS MqttConnection (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, -- Assuming you want an auto-incrementing ID
     brokerHost TEXT NOT NULL,
     brokerPort INTEGER NOT NULL DEFAULT 1883,

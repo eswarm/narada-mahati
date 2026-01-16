@@ -8,10 +8,17 @@ import `in`.eswarm.mahati.AppNavigation
 import `in`.eswarm.mahati.data.data.SettingsDataStore
 import `in`.eswarm.mahati.db.DriverFactory
 import `in`.eswarm.mahati.db.initializeDb
+import `in`.eswarm.mahati.log.MahatiLoggerFactory
 import `in`.eswarm.mahati.theme.NaradaMQTTBrokerTheme
+import org.slf4j.impl.StaticLoggerBinder
 import java.io.File
 
 fun main() = application {
+
+    // 1. Initialize the logging system FIRST.
+    val binder = StaticLoggerBinder.getSingleton()
+    binder.init(MahatiLoggerFactory())
+
     // Setup Database
     initializeDb(DriverFactory())
 
@@ -24,6 +31,7 @@ fun main() = application {
 
     // Create the AppComponent
     val appComponent = AppComponent(settingsDataStore)
+
 
     Window(
         onCloseRequest = ::exitApplication,

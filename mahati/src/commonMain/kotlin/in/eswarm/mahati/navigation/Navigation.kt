@@ -1,39 +1,34 @@
 package `in`.eswarm.mahati.navigation
 
-import java.net.URLEncoder
+import kotlinx.serialization.Serializable
 
-// Define a sealed class for screen routes
-sealed class Screen(val route: String) {
-    data object Home : Screen("home")
-    data object TopicSubscription : Screen("topic_subscription/{clientID}") {
-        fun createRoute(clientID: String) = "topic_subscription/$clientID"
-    }
+sealed class Route {
+    @Serializable
+    object Home
 
-    data object Chat : Screen("chat/{clientID}/{topicName}") {
-        fun createRoute(clientID: String, topicName: String): String {
-            val encodedClient = URLEncoder.encode(clientID, "UTF-8")
-            val encodedTopic = URLEncoder.encode(topicName, "UTF-8")
-            return "chat/$encodedClient/$encodedTopic"
+    @Serializable
+    object Settings
+
+    @Serializable
+    object Log
+
+    @Serializable
+    object NewConnection
+
+    @Serializable
+    data class EditConnection(val clientID: String)
+
+    @Serializable
+    object QRCode
+
+    @Serializable
+    data class Chat(val clientID: String, val topicName: String) {
+
+        fun deepLink(): String {
+            return "mahati://chat/$clientID/$topicName"
         }
-
-        fun createDeepLink(clientID: String, topicName: String): String {
-            val encodedClient = URLEncoder.encode(clientID, "UTF-8")
-            val encodedTopic = URLEncoder.encode(topicName, "UTF-8")
-            return "mahati://chat/$encodedClient/$encodedTopic"
-        }
-
-        const val uriPattern = "mahati://chat/{clientID}/{topicName}"
     }
 
-    data object NewConnection : Screen("new_connection")
-
-    data object EditConnection : Screen("edit_connection/{clientID}") {
-        fun createRoute(clientID: String) = "edit_connection/$clientID"
-    }
-
-    data object Settings : Screen("settings")
-
-    data object ScanQr : Screen("scan_qr")
-
-    data object Log : Screen("log")
+    @Serializable
+    data class TopicSubscription(val clientID: String)
 }

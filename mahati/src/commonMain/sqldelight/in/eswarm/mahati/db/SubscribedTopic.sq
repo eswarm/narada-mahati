@@ -1,7 +1,7 @@
 -- SubscribedTopic.sq
 -- Stores topics a client is subscribed to.
 
-CREATE TABLE SubscribedTopic (
+CREATE TABLE IF NOT EXISTS SubscribedTopic (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     clientID TEXT NOT NULL,                -- Identifier for the client/user
     topicFilter TEXT NOT NULL,             -- The exact topic filter string (e.g., "my/data/#", "sensors/temp")
@@ -9,11 +9,8 @@ CREATE TABLE SubscribedTopic (
     subscribedAt INTEGER NOT NULL DEFAULT (STRFTIME('%s', 'now')) -- Unix timestamp of subscription
 );
 
--- Optional: Add an index for faster lookups by clientId and topicFilter
-CREATE INDEX idx_subscribedtopic_client_topic ON SubscribedTopic(clientID, topicFilter);
-
 -- Optional: Add a unique constraint to prevent duplicate subscriptions for the same client and topic
-CREATE UNIQUE INDEX uidx_subscribedtopic_client_topic_unique ON SubscribedTopic(clientID, topicFilter);
+CREATE UNIQUE INDEX IF NOT EXISTS uidx_subscribedtopic_client_topic_unique ON SubscribedTopic(clientID, topicFilter);
 
 
 -- Common Queries for SubscribedTopicEntity

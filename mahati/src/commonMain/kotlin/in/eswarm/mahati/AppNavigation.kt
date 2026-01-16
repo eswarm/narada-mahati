@@ -5,22 +5,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
+import androidx.navigation.toRoute
 import `in`.eswarm.mahati.chat.ChatScreen
 import `in`.eswarm.mahati.connection.ConnectionDetailsScreen
 import `in`.eswarm.mahati.home.HomeScreen
 import `in`.eswarm.mahati.log.LogScreen
 import `in`.eswarm.mahati.navigation.DeepLinkDestination
-import `in`.eswarm.mahati.navigation.Screen
+import `in`.eswarm.mahati.navigation.Route
 import `in`.eswarm.mahati.settings.SettingsScreen
 import `in`.eswarm.mahati.share.QrScannerScreen
 import `in`.eswarm.mahati.share.QrScannerViewModel
 import `in`.eswarm.mahati.topics.TopicSubscriptionScreen
-import java.net.URLDecoder
 
 @Composable
 fun AppNavigation(
@@ -35,37 +33,35 @@ fun AppNavigation(
     HandleDeepLink(navController, deepLinkDestination, onDeepLinkHandled)
 
 
-    NavHost(navController = navController, startDestination = Screen.Home.route) {
-        composable(Screen.NewConnection.route) {
+    NavHost(navController = navController, startDestination = Route.Home) {
+        composable<Route.NewConnection> {
             ConnectionDetailsScreen(appComponent, {
                 navController.popBackStack()
             }, {
                 navController.popBackStack()
             })
         }
-        composable(Screen.Home.route) {
+        composable<Route.Home> {
             HomeScreen(
-                { navController.navigate(Screen.NewConnection.route) },
-                { navController.navigate(Screen.Settings.route) },
-                { clientID -> navController.navigate(Screen.TopicSubscription.createRoute(clientID)) },
+                { navController.navigate(Route.NewConnection) },
+                { navController.navigate(Route.Settings) },
+                { clientID -> navController.navigate(Route.TopicSubscription(clientID)) },
                 { clientID ->
                     navController.navigate(
-                        Screen.EditConnection.createRoute(
-                            clientID
-                        )
+                        Route.EditConnection(clientID)
                     )
                 },
-                { navController.navigate(Screen.ScanQr.route) },
-                { navController.navigate(Screen.Log.route) },
+                { navController.navigate(Route.QRCode) },
+                { navController.navigate(Route.Log) },
                 appComponent,
                 permissionState,
                 requestPermission
             )
         }
-        composable(Screen.Log.route) {
+        composable<Route.Log> {
             LogScreen(appComponent)
         }
-        composable(Screen.ScanQr.route) {
+        composable<Route.QRCode> {
             val viewModel: QrScannerViewModel =
                 viewModel(factory = QrScannerViewModel.Factory(appComponent.connectionRepo))
             QrScannerScreen(onScanResult = {
@@ -73,57 +69,38 @@ fun AppNavigation(
                 navController.popBackStack()
             })
         }
-        composable(
-            Screen.EditConnection.route,
-            arguments = listOf(navArgument("clientID") { type = NavType.StringType })
-        ) { backStackEntry ->
-            val clientID = backStackEntry.arguments?.getString("clientID")
+        composable<Route.EditConnection> { backStackEntry ->
+            val editConnection: Route.EditConnection = backStackEntry.toRoute()
 
             ConnectionDetailsScreen(
                 appComponent, {
-                navController.popBackStack()
-            }, {
-                navController.popBackStack()
-            }, clientID = clientID
+                    navController.popBackStack()
+                }, {
+                    navController.popBackStack()
+                }, clientID = editConnection.clientID
             )
         }
-        composable(Screen.Settings.route) {
+        composable<Route.Settings> {
             SettingsScreen()
         }
-        composable(
-            Screen.TopicSubscription.route,
-            arguments = listOf(navArgument("clientID") { type = NavType.StringType })
-        ) { backStackEntry ->
-            val clientID = backStackEntry.arguments?.getString("clientID")
-            if (clientID != null) {
-                TopicSubscriptionScreen(
-                    appComponent, clientID, onTopicClick = { topic ->
-                        navController.navigate(
-                            Screen.Chat.createRoute(
-                                clientID, topic
-                            )
-                        )
-                    })
-            }
-        }
-        composable(
-            route = Screen.Chat.route,
-            arguments = listOf(
-                navArgument("clientID") { type = NavType.StringType },
-                navArgument("topicName") { type = NavType.StringType })
-        ) { backStackEntry ->
-            val encodedTopicName = checkNotNull(backStackEntry.arguments?.getString("topicName"))
-            val encodedClientID = checkNotNull(backStackEntry.arguments?.getString("clientID"))
-            val clientID = URLDecoder.decode(encodedClientID, "UTF-8")
-            val topicName = URLDecoder.decode(encodedTopicName, "UTF-8")
+        composable<Route.TopicSubscription> { backStackEntry ->
 
-            if (topicName != null) {
-                ChatScreen(
-                    appComponent, clientID, topicName, appComponent.messageRepo
-                )
-            } else {
-                // Handle error: topicName not found, perhaps navigate back or show error
-            }
+            val topicSubscription: Route.TopicSubscription = backStackEntry.toRoute()
+
+            TopicSubscriptionScreen(
+                appComponent, topicSubscription.clientID, onTopicClick = { topic ->
+                    navController.navigate(
+                        Route.Chat(
+                            topicSubscription.clientID, topic
+                        )
+                    )
+                })
+        }
+        composable<Route.Chat> { backStackEntry ->
+            val chat: Route.Chat = backStackEntry.toRoute()
+            ChatScreen(
+                appComponent, chat.clientID, chat.topicName, appComponent.messageRepo
+            )
         }
     }
 }
@@ -139,9 +116,7 @@ private fun HandleDeepLink(
             when (deepLinkDestination) {
                 is DeepLinkDestination.Chat -> {
                     navController.navigate(
-                        Screen.Chat.createRoute(
-                            deepLinkDestination.clientId, deepLinkDestination.topicName
-                        )
+                        Route.Chat(deepLinkDestination.clientId, deepLinkDestination.topicName)
                     )
                 }
             }

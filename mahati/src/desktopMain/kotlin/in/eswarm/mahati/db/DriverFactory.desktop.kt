@@ -10,6 +10,9 @@ actual class DriverFactory { // No constructor parameter needed for basic deskto
         if (!dbFile.parentFile.exists()) {
             dbFile.parentFile.mkdirs()
         }
+
+        Class.forName("org.sqlite.JDBC")
+
         val driver: SqlDriver = JdbcSqliteDriver("jdbc:sqlite:${dbFile.absolutePath}")
         MahatiDb.Schema.create(driver) // Create schema if it doesn't exist
         return driver

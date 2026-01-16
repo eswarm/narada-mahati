@@ -1,7 +1,7 @@
 import in.eswarm.mahati.db.MessageDirection;
 import kotlin.Boolean;
 
-CREATE TABLE AppMqttMessage (
+CREATE TABLE IF NOT EXISTS AppMqttMessage (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     connectionID TEXT NOT NULL,             -- The connection profile ID in this app that this message is associated with
     publisherID TEXT NOT NULL,              -- The client ID of the original publisher of the message
@@ -14,8 +14,8 @@ CREATE TABLE AppMqttMessage (
 );
 
 -- Indexes for common query patterns
-CREATE INDEX idx_topicmessage_connection_topic ON AppMqttMessage(connectionID, topicName, timestamp);
-CREATE INDEX idx_topicmessage_timestamp ON AppMqttMessage(timestamp);
+CREATE INDEX IF NOT EXISTS idx_topicmessage_connection_topic ON AppMqttMessage(connectionID, topicName, timestamp);
+CREATE INDEX IF NOT EXISTS idx_topicmessage_timestamp ON AppMqttMessage(timestamp);
 
 -- Common Queries for TopicMessageEntity
 
