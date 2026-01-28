@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import `in`.eswarm.mahati.connection.ConnectionUiState
 import `in`.eswarm.mahati.db.ConnectionAdapter
-import `in`.eswarm.mahati.db.MqttConnection
+import `in`.eswarm.mahati.db.MqttConnectionModel
 import `in`.eswarm.mahati.home.HomeSideEffect.*
 import `in`.eswarm.mahati.mqtt.common.MqttClientState
 import `in`.eswarm.mahati.mqtt.service.MqttControllerContract
@@ -47,7 +47,7 @@ class HomeViewModel(
     private val mqttController: MqttControllerContract
 ) : ViewModel() {
 
-    var profiles: Flow<List<MqttConnection>> = MutableStateFlow(emptyList())
+    var profiles: Flow<List<MqttConnectionModel>> = MutableStateFlow(emptyList())
         private set
 
     private val _sideEffects = MutableStateFlow<HomeSideEffect?>(null)

@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import `in`.eswarm.mahati.AppComponent
-import `in`.eswarm.mahati.db.MqttConnection
+import `in`.eswarm.mahati.db.MqttConnectionModel
 import `in`.eswarm.mahati.mqtt.common.MqttClientState
 import `in`.eswarm.mahati.resources.Res
 import `in`.eswarm.mahati.resources.permission_denied_notification
@@ -193,7 +193,7 @@ fun PermissionView(permissionState: PermissionState?, permissionRationale: () ->
 
 @Composable
 fun ConnectionsList(
-    profiles: List<MqttConnection>,
+    profiles: List<MqttConnectionModel>,
     connectionStates: Map<String, MqttClientState>,
     onProfileClick: (String) -> Unit,
     onDeleteAction: (String) -> Unit,
@@ -220,7 +220,7 @@ fun ConnectionsList(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ConnectionListItem(
-    connectionDetails: MqttConnection,
+    connectionDetails: MqttConnectionModel,
     connectionState: MqttClientState?,
     clickAction: () -> Unit,
     deleteAction: (clientID: String) -> Unit,

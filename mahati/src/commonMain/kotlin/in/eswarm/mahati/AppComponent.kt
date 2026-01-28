@@ -37,6 +37,7 @@ class AppComponent(
         mqttController = MqttConnectionController(
             controllerScope = appScope,
             messageRepo = messageRepo,
+            subscriptionRepo = subscriptionRepo,
             sendNotification = sendNotification
         )
 

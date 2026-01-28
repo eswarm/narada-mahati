@@ -2,6 +2,7 @@ package `in`.eswarm.mahati.mqtt.core
 
 import `in`.eswarm.mahati.db.AppMqttMessage
 import `in`.eswarm.mahati.db.MqttConnection
+import `in`.eswarm.mahati.db.MqttConnectionModel
 import `in`.eswarm.mahati.mqtt.common.MqttClientState
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -31,7 +32,7 @@ interface MqttManager {
      *
      * @param params The connection parameters.
      */
-    fun connect(params: MqttConnection)
+    fun connect(params: MqttConnectionModel)
 
     /**
      * Disconnects from the MQTT broker.

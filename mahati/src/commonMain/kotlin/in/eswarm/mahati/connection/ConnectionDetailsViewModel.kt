@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import `in`.eswarm.mahati.db.ConnectionAdapter
-import `in`.eswarm.mahati.db.MqttConnection
+import `in`.eswarm.mahati.db.MqttConnectionModel
 import `in`.eswarm.mahati.mqtt.common.MqttClientState
 import `in`.eswarm.mahati.mqtt.service.MqttControllerContract
 import kotlinx.coroutines.delay
@@ -197,7 +197,7 @@ class ConnectionDetailsViewModel(
         // isConnecting will be updated by the mqttManager.connectionState collector
         // when MqttClientState.Connecting is emitted.
 
-        val params = MqttConnection(
+        val params = MqttConnectionModel(
             id = 0,
             brokerHost = currentState.hostname,
             brokerPort = portNumber!!.toLong(),

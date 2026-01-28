@@ -2,7 +2,6 @@ package `in`.eswarm.mahati.mqtt.core
 
 import com.hivemq.client.internal.mqtt.datatypes.MqttUtf8StringImpl
 import com.hivemq.client.internal.mqtt.message.auth.MqttSimpleAuth
-import `in`.eswarm.mahati.mqtt.common.MqttClientState
 import com.hivemq.client.mqtt.MqttClient
 import com.hivemq.client.mqtt.MqttGlobalPublishFilter
 import com.hivemq.client.mqtt.datatypes.MqttQos
@@ -13,14 +12,18 @@ import com.hivemq.client.mqtt.mqtt5.message.connect.Mqtt5Connect
 import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish
 import `in`.eswarm.mahati.db.AppMqttMessage
 import `in`.eswarm.mahati.db.MessageDirection
-import `in`.eswarm.mahati.db.MqttConnection
-import kotlinx.coroutines.*
+import `in`.eswarm.mahati.db.MqttConnectionModel
+import `in`.eswarm.mahati.mqtt.common.MqttClientState
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import org.slf4j.LoggerFactory
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
@@ -32,7 +35,7 @@ import kotlin.coroutines.resumeWithException
 
 class HiveMqttManagerImpl(private val coroutineScope: CoroutineScope) : MqttManager {
     private var client: Mqtt5AsyncClient? = null
-    private var currentParams: MqttConnection? = null
+    private var currentParams: MqttConnectionModel? = null
     private val _connectionState = MutableStateFlow<MqttClientState>(MqttClientState.Disconnected)
     override val connectionState: StateFlow<MqttClientState> = _connectionState.asStateFlow()
     private val _receivedMessages =
@@ -52,7 +55,7 @@ class HiveMqttManagerImpl(private val coroutineScope: CoroutineScope) : MqttMana
         }
     }
 
-    override fun connect(params: MqttConnection) {
+    override fun connect(params: MqttConnectionModel) {
         if (_connectionState.value is MqttClientState.Connected || _connectionState.value is MqttClientState.Connecting) {
             if (currentParams == params && client?.state?.isConnectedOrReconnect == true) {
                 // Already connected or connecting with the same parameters
@@ -97,12 +100,8 @@ class HiveMqttManagerImpl(private val coroutineScope: CoroutineScope) : MqttMana
         client = clientBuilder.buildAsync()
 
         client?.connect(
-            Mqtt5Connect
-                .builder()
-                .keepAlive(300)
-                .cleanStart(false)
-                .willPublish().topic("home").payload("Disconnected".toByteArray())
-                .applyWillPublish()
+            Mqtt5Connect.builder().keepAlive(300).cleanStart(false).willPublish().topic("home")
+                .payload("Disconnected".toByteArray()).applyWillPublish()
                 .sessionExpiryInterval(TimeUnit.HOURS.toSeconds(3)).build()
         )?.whenComplete { connAck, throwable ->
             coroutineScope.launch {

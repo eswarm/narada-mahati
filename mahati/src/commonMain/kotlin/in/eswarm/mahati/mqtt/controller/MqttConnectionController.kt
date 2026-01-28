@@ -4,6 +4,8 @@ import `in`.eswarm.mahati.chat.ChatScreenLifecycle
 import `in`.eswarm.mahati.db.AppMqttMessage
 import `in`.eswarm.mahati.db.MessageRepository
 import `in`.eswarm.mahati.db.MqttConnection // Still needed to create the object for the manager
+import `in`.eswarm.mahati.db.MqttConnectionModel
+import `in`.eswarm.mahati.db.SubscriptionRepository
 import `in`.eswarm.mahati.mqtt.common.MqttClientState
 import `in`.eswarm.mahati.mqtt.core.HiveMqttManagerImpl
 import `in`.eswarm.mahati.mqtt.core.MqttManager
@@ -17,11 +19,13 @@ import kotlinx.coroutines.sync.withLock
 class MqttConnectionController(
     private val controllerScope: CoroutineScope,
     private val messageRepo: MessageRepository,
+    private val subscriptionRepo: SubscriptionRepository,
     private val sendNotification: ((String, String, String, String) -> Unit)? = null
 ) : MqttControllerContract { // Implements the common interface
 
-    private val activeManagers = mutableMapOf<String, MqttManager>()
-    private val managerScopes = mutableMapOf<String, CoroutineScope>()
+    data class ManagerScope(val scope: CoroutineScope, val manager: MqttManager)
+
+    private val activeManagers = mutableMapOf<String, ManagerScope>()
     private val mapMutex = Mutex()
     private val _connectionStatesMap = MutableStateFlow<Map<String, MqttClientState>>(emptyMap())
     override val connectionStatesMap: StateFlow<Map<String, MqttClientState>> =
@@ -33,7 +37,7 @@ class MqttConnectionController(
 
     sealed class ControllerCommand {
         // Corrected to use MqttConnectionConfig
-        data class AddConnection(val config: MqttConnection) : ControllerCommand()
+        data class AddConnection(val config: MqttConnectionModel) : ControllerCommand()
         data class RemoveConnection(val connectionId: String) : ControllerCommand()
         data class PublishMessage(
             val connectionId: String,
@@ -103,63 +107,46 @@ class MqttConnectionController(
         }
     }
 
-    private suspend fun handleAddConnection(config: MqttConnection) {
+    private suspend fun handleAddConnection(config: MqttConnectionModel) {
         mapMutex.withLock {
-            val existingManager = activeManagers[config.clientID]
-            if (existingManager != null) {
-                val currentState = existingManager.connectionState.value
+            var managerWithScope = activeManagers[config.clientID]
 
-                _connectionStatesMap.value = _connectionStatesMap.value.toMutableMap().apply {
-                    this[config.clientID] = currentState
-                }
+            if (managerWithScope == null) {
+                val managerJob = SupervisorJob(controllerScope.coroutineContext[Job])
+                val managerScope =
+                    CoroutineScope(controllerScope.coroutineContext + managerJob + CoroutineName("ManagerScope-${config.clientID}"))
 
-                if (currentState !is MqttClientState.Connected) {
-                    // It's not connected, so let's try connecting again.
-                    _connectionStatesMap.update { currentMap ->
-                        currentMap.toMutableMap()
-                            .apply { this[config.clientID] = MqttClientState.Connecting }
-                    }
-                    existingManager.connect(config)
-                }
-                // If it IS connected, we do nothing more, the state has been emitted.
-                return@withLock
+                val mqttManager = HiveMqttManagerImpl(managerScope)
+                activeManagers[config.clientID] = ManagerScope(managerScope, mqttManager)
+                managerWithScope = activeManagers[config.clientID]
             }
 
-            // Manager doesn't exist, create it.
-            val managerJob = SupervisorJob(controllerScope.coroutineContext[Job])
-            val newManagerScope =
-                CoroutineScope(controllerScope.coroutineContext + managerJob + CoroutineName("ManagerScope-${config.clientID}"))
-            managerScopes[config.clientID] = newManagerScope
+            val mqttManager = checkNotNull(managerWithScope).manager
+            val managerScope = managerWithScope.scope
 
-            val manager = HiveMqttManagerImpl(newManagerScope)
-            activeManagers[config.clientID] = manager
-
-            newManagerScope.launch {
-                manager.connectionState.collect { state ->
+            managerScope.launch {
+                mqttManager.connectionState.collect { state ->
                     _connectionStatesMap.update { currentMap ->
                         currentMap.toMutableMap().apply { this[config.clientID] = state }
                     }
                 }
             }
-            newManagerScope.launch {
-                manager.receivedMessages.collect { message ->
+            managerScope.launch {
+                mqttManager.receivedMessages.collect { message ->
                     _allMessages.tryEmit(config.clientID to message)
                 }
             }
 
-            // And connect it for the first time.
-            _connectionStatesMap.update { currentMap ->
-                currentMap.toMutableMap()
-                    .apply { this[config.clientID] = MqttClientState.Connecting }
-            }
-            manager.connect(config)
+            mqttManager.connect(config)
         }
     }
 
     private suspend fun handleRemoveConnection(connectionId: String) {
         mapMutex.withLock {
-            managerScopes.remove(connectionId)?.cancel()
-            activeManagers.remove(connectionId)?.apply { cleanup() }
+            activeManagers.remove(connectionId)?.apply {
+                manager.disconnect()
+                scope.cancel()
+            }
             _connectionStatesMap.update { currentMap ->
                 currentMap.toMutableMap().apply { remove(connectionId) }
             }
@@ -167,28 +154,27 @@ class MqttConnectionController(
     }
 
     private suspend fun handlePublishMessage(command: ControllerCommand.PublishMessage) {
-        val manager = mapMutex.withLock { activeManagers[command.connectionId] }
-        // Assuming manager.publish is a suspend function that returns Boolean
+        val manager = mapMutex.withLock { activeManagers[command.connectionId]?.manager }
         val success =
             manager?.publish(command.topic, command.payload, command.qos, command.retain) ?: false
         command.result.complete(success)
     }
 
     private suspend fun handleSubscribeToTopic(command: ControllerCommand.SubscribeToTopic) {
-        val manager = mapMutex.withLock { activeManagers[command.connectionId] }
+        val manager = mapMutex.withLock { activeManagers[command.connectionId]?.manager }
         // Assuming manager.subscribe is a suspend function that returns Boolean
         val success = manager?.subscribe(command.topicFilter, command.qos) ?: false
         command.result.complete(success)
     }
 
     private suspend fun handleUnsubscribeToTopic(command: ControllerCommand.UnsubscribeToTopic) {
-        val manager = mapMutex.withLock { activeManagers[command.connectionId] }
+        val manager = mapMutex.withLock { activeManagers[command.connectionId]?.manager }
         // Assuming manager.unsubscribe is a suspend function that returns Boolean
         val success = manager?.unsubscribe(command.topicFilter) ?: false
         command.result.complete(success)
     }
 
-    override fun addConnection(config: MqttConnection) {
+    override fun addConnection(config: MqttConnectionModel) {
         controllerScope.launch { commandChannel.send(ControllerCommand.AddConnection(config)) }
     }
 
@@ -233,9 +219,10 @@ class MqttConnectionController(
     override fun shutdownAll() {
         controllerScope.launch {
             mapMutex.withLock {
-                managerScopes.values.forEach { it.cancel() }
-                managerScopes.clear()
-                activeManagers.values.forEach { it.cleanup() }
+                activeManagers.values.forEach {
+                    it.manager
+                    it.scope.cancel()
+                }
                 activeManagers.clear()
                 _connectionStatesMap.value = emptyMap()
             }
