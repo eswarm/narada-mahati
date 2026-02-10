@@ -100,7 +100,7 @@ class HiveMqttManagerImpl(private val coroutineScope: CoroutineScope) : MqttMana
         client = clientBuilder.buildAsync()
 
         client?.connect(
-            Mqtt5Connect.builder().keepAlive(300).cleanStart(false).willPublish().topic("home")
+            Mqtt5Connect.builder().keepAlive(300).cleanStart(true).willPublish().topic("home")
                 .payload("Disconnected".toByteArray()).applyWillPublish()
                 .sessionExpiryInterval(TimeUnit.HOURS.toSeconds(3)).build()
         )?.whenComplete { connAck, throwable ->
