@@ -68,7 +68,7 @@ object NotificationUtil {
             )
 
         val builder = NotificationCompat.Builder(context, MESSAGE_CHANNEL)
-            .setSmallIcon(R.drawable.notification_icon)
+            .setSmallIcon(R.drawable.notif_icon)
             .setContentTitle(title)
             .setContentText(message)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)

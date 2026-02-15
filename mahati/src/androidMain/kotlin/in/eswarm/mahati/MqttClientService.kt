@@ -42,7 +42,7 @@ class MqttClientService : Service() {
             NotificationCompat.Builder(this, FG_SERVICE_CHANNEL)
                 .setContentTitle("Mahati Mqtt client")
                 .setContentText("Mahati Mqtt client is running")
-                .setSmallIcon(R.drawable.notification_icon)
+                .setSmallIcon(R.drawable.notif_icon)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setContentIntent(contentPendingIntent)
                 .addAction(android.R.drawable.ic_menu_close_clear_cancel, "Stop", stopSelfPendingIntent)
