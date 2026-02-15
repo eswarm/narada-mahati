@@ -2,6 +2,7 @@ package `in`.eswarm.mahati
 
 import android.app.Application
 import android.content.Intent
+import android.os.Build
 import androidx.datastore.preferences.preferencesDataStore
 import `in`.eswarm.mahati.data.data.SettingsDataStore
 import `in`.eswarm.mahati.db.DriverFactory
@@ -32,13 +33,15 @@ class MahatiApplication : Application() {
                 NotificationUtil.sendNotification(this, title, message, clientId, topic)
             }
 
-        // Initialize the AppComponent, passing the notification function
-        val settingsStore = SettingsDataStore(prefStore)
-        appComponent = AppComponent(settingsStore, sendNotification)
+        // Define the action to start the foreground service
+        val onConnectionAction: () -> Unit = {
+            val serviceIntent = Intent(this, MqttClientService::class.java)
+            startForegroundService(serviceIntent)
+        }
 
-        // Start the MqttClientService to run in the background
-        val serviceIntent = Intent(this, MqttClientService::class.java)
-        startService(serviceIntent)
+        // Initialize the AppComponent, passing the notification function and the service starter callback
+        val settingsStore = SettingsDataStore(prefStore)
+        appComponent = AppComponent(settingsStore, sendNotification, onConnectionAction)
     }
 
     override fun onTerminate() {

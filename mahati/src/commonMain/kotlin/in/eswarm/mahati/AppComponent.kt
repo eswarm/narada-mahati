@@ -16,7 +16,8 @@ import org.slf4j.impl.StaticLoggerBinder
 
 class AppComponent(
     settingsDataStore: SettingsDataStore,
-    sendNotification: ((String, String, String, String) -> Unit)? = null
+    sendNotification: ((String, String, String, String) -> Unit)? = null,
+    private val onConnectionAction: (() -> Unit)? = null
 ) {
     private val appScope = CoroutineScope(SupervisorJob() + CoroutineName("MahatiAppScope"))
 
@@ -38,12 +39,16 @@ class AppComponent(
             controllerScope = appScope,
             messageRepo = messageRepo,
             subscriptionRepo = subscriptionRepo,
-            sendNotification = sendNotification
+            sendNotification = sendNotification,
+            onConnectionAdded = onConnectionAction
         )
 
         // Load all saved connections from the database and add them to the controller.
         appScope.launch {
             val connections = connectionRepo.getAllConnections()
+            if (connections.isNotEmpty()) {
+                onConnectionAction?.invoke()
+            }
             for (connection in connections) {
                 mqttController.addConnection(connection)
             }

@@ -5,6 +5,7 @@ import android.app.Service
 import android.content.Intent
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
+import `in`.eswarm.mahati.home.HomeActivity
 import `in`.eswarm.mahati.mqtt.service.MqttControllerContract
 import `in`.eswarm.mahati.util.NotificationUtil.FG_SERVICE_CHANNEL
 import `in`.eswarm.mahati.util.getAppComponent
@@ -28,13 +29,22 @@ class MqttClientService : Service() {
             this, 0, stopSelfIntent, PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
+        // Intent to open the app when clicking the notification
+        val contentIntent = Intent(this, HomeActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        val contentPendingIntent = PendingIntent.getActivity(
+            this, 1, contentIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
         // Build the foreground notification with the stop action
         val notification =
-            NotificationCompat.Builder(this, FG_SERVICE_CHANNEL) // Create this channel
+            NotificationCompat.Builder(this, FG_SERVICE_CHANNEL)
                 .setContentTitle("Mahati Mqtt client")
                 .setContentText("Mahati Mqtt client is running")
-                .setSmallIcon(android.R.drawable.ic_dialog_info) // Replace with your app's icon
+                .setSmallIcon(R.drawable.notification_icon)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setContentIntent(contentPendingIntent)
                 .addAction(android.R.drawable.ic_menu_close_clear_cancel, "Stop", stopSelfPendingIntent)
                 .build()
 

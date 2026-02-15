@@ -20,7 +20,8 @@ class MqttConnectionController(
     private val controllerScope: CoroutineScope,
     private val messageRepo: MessageRepository,
     private val subscriptionRepo: SubscriptionRepository,
-    private val sendNotification: ((String, String, String, String) -> Unit)? = null
+    private val sendNotification: ((String, String, String, String) -> Unit)? = null,
+    private val onConnectionAdded: (() -> Unit)? = null
 ) : MqttControllerContract { // Implements the common interface
 
     data class ManagerScope(val scope: CoroutineScope, val manager: MqttManager)
@@ -175,6 +176,7 @@ class MqttConnectionController(
     }
 
     override fun addConnection(config: MqttConnectionModel) {
+        onConnectionAdded?.invoke()
         controllerScope.launch { commandChannel.send(ControllerCommand.AddConnection(config)) }
     }
 

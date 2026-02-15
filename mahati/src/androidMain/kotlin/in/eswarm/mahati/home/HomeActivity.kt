@@ -30,6 +30,7 @@ import kotlinx.coroutines.runBlocking
 
 class HomeActivity : ComponentActivity() {
     private val viewModel: HomeDroidViewModel by viewModels()
+    private var deepLinkDestinationState = mutableStateOf<DeepLinkDestination?>(null)
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -83,10 +84,12 @@ class HomeActivity : ComponentActivity() {
             NotificationUtil.createMessageChannel(this@HomeActivity)
         }
 
+        deepLinkDestinationState.value = parseDeepLink(intent)
+
         setContent {
             NaradaMQTTBrokerTheme {
                 val permissionState by viewModel.permissionState.collectAsState()
-                var deepLinkDestination by remember { mutableStateOf(parseDeepLink(intent)) }
+                var deepLinkDestination by deepLinkDestinationState
 
                 Surface(
                     modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background
@@ -115,18 +118,10 @@ class HomeActivity : ComponentActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        setIntent(intent)
         val deepLink = parseDeepLink(intent)
         if (deepLink != null) {
-            val updatedIntent = getIntent()
-            if (updatedIntent != null) {
-                val uri = updatedIntent.data
-                if (uri != null) {
-                    val deepLink = parseDeepLink(updatedIntent)
-                    if (deepLink != null) {
-                        // TODO: This should be handled by a state update, not direct navigation
-                    }
-                }
-            }
+            deepLinkDestinationState.value = deepLink
         }
     }
 
