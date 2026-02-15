@@ -3,7 +3,6 @@ package `in`.eswarm.mahati.mqtt.controller
 import `in`.eswarm.mahati.chat.ChatScreenLifecycle
 import `in`.eswarm.mahati.db.AppMqttMessage
 import `in`.eswarm.mahati.db.MessageRepository
-import `in`.eswarm.mahati.db.MqttConnection // Still needed to create the object for the manager
 import `in`.eswarm.mahati.db.MqttConnectionModel
 import `in`.eswarm.mahati.db.SubscriptionRepository
 import `in`.eswarm.mahati.mqtt.common.MqttClientState

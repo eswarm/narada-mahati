@@ -2,7 +2,6 @@ package `in`.eswarm.mahati
 
 import android.app.Application
 import android.content.Intent
-import android.os.Build
 import androidx.datastore.preferences.preferencesDataStore
 import `in`.eswarm.mahati.data.data.SettingsDataStore
 import `in`.eswarm.mahati.db.DriverFactory
