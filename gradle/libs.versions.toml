@@ -1,42 +1,42 @@
 [versions]
 # Root build.gradle versions
-androidGradlePlugin = "8.13.0"
-kotlin = "2.2.20" # Also for KMP
+androidGradlePlugin = "9.0.1"
+kotlin = "2.3.10" # Also for KMP
 composeCompiler = "1.5.13" # Kotlin Compose Compiler version for composeOptions
-composeMultiplatform = "1.9.0" # JetBrains Compose Multiplatform plugin and libraries
-lifecycleViewmodelCompose = "2.9.4"
+composeMultiplatform = "1.10.1" # JetBrains Compose Multiplatform plugin and libraries
+lifecycleViewmodelCompose = "2.9.6"
 materialIconsExtended = "1.7.3"
 kotlinxCoroutines = "1.10.2"
-jetbrainsKotlinJvm = "2.2.20"
-sqlDelight = "2.1.0"
+jetbrainsKotlinJvm = "2.3.10"
+sqlDelight = "2.2.1"
 
 # app module versions (and some Android specific for KMP androidTarget)
 androidxCoreKtx = "1.17.0"
-androidxLifecycle = "2.9.3"
+androidxLifecycle = "2.10.0"
 androidxActivityCompose = "1.11.0"
 junit = "4.13.2" # For JVM tests
 androidxTestExtJunit = "1.3.0"
 androidxTestEspressoCore = "3.7.0"
-androidxDatastorePreferences = "1.1.7" # Android specific (for app module, or androidMain in mahati if not using KMP settings)
+androidxDatastorePreferences = "1.2.0" # Android specific (for app module, or androidMain in mahati if not using KMP settings)
 
 moquette = "0.18.0" # Java lib, for JVM targets if used by app module directly
 accompanistPermissions = "0.37.3" # Android specific (for app module)
-hivemqMqttClient = "1.3.9" # Java lib, for JVM targets (androidMain, desktopMain)
+hivemqMqttClient = "1.3.12" # Java lib, for JVM targets (androidMain, desktopMain)
 
 # mahati module versions (for Android tests)
 desugar_jdk_libs = "2.1.5"
-navigationCompose = "2.9.1"
+navigationCompose = "2.9.2"
 
-kotlinxSerializationJson = "1.6.3"
-customQrGenerator = "1.0.1"
-camera = "1.3.3"
-googleMlkitBarcodeScanning = "17.2.0"
-slf4j = "1.7.36"
-kotlinStdlib = "2.2.20"
-kotlinTest = "2.2.20"
-runner = "1.5.2"
-core = "1.5.0"
-sqliteJdbc = "3.51.1.0"
+kotlinxSerializationJson = "1.10.0"
+customQrGenerator = "1.1.2"
+camera = "1.5.3"
+googleMlkitBarcodeScanning = "17.3.0"
+slf4j = "2.0.17"
+kotlinStdlib = "2.3.10"
+kotlinTest = "2.3.10"
+runner = "1.7.0"
+core = "1.7.0"
+sqliteJdbc = "3.51.2.0"
 
 [libraries]
 # KMP Common - Coroutines
