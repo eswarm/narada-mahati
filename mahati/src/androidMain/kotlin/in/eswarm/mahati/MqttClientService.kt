@@ -54,12 +54,19 @@ class MqttClientService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         // Handle the stop action from the notification
         if (intent?.action == ACTION_STOP) {
-            // Calling stopSelf() will trigger onDestroy(), which handles the cleanup.
+            // Shut down all connections before stopping the service
+            mqttController.shutdownAll()
             stopSelf()
             return START_NOT_STICKY // Do not restart the service automatically.
         }
         // Handle other specific actions from intents if needed, e.g., auto-connecting
         return START_STICKY
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // Ensure that connections are shut down when the service is destroyed.
+        mqttController.shutdownAll()
     }
 
     override fun onBind(intent: Intent): IBinder? {
