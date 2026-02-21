@@ -76,6 +76,10 @@ class HiveMqttManagerImpl(private val coroutineScope: CoroutineScope) : MqttMana
                 logger.info("Connected to ${context.toServerUri()}")
                 _connectionState.value =
                     MqttClientState.Connected(context.toServerUri(), params.clientID)
+                // Subscribe to default topic "home" on every connection/reconnection
+                coroutineScope.launch {
+                    subscribe("home", 1)
+                }
             }.addDisconnectedListener { context ->
                 logger.info("Disconnected: ${context.cause.message ?: "Unknown reason"}")
                 _connectionState.value = MqttClientState.Error(
@@ -117,8 +121,6 @@ class HiveMqttManagerImpl(private val coroutineScope: CoroutineScope) : MqttMana
                             }", null
                         )
                     } else {
-                        // State already set by listener, this is more of a confirmation
-                        // _connectionState.value = MqttClientState.Connected (handled by listener)
                         // Setup global publish listener after successful connection
                         client?.publishes(MqttGlobalPublishFilter.ALL) { publish ->
 

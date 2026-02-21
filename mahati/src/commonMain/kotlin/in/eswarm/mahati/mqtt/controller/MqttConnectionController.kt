@@ -129,6 +129,9 @@ class MqttConnectionController(
                     _connectionStatesMap.update { currentMap ->
                         currentMap.toMutableMap().apply { this[config.clientID] = state }
                     }
+                    if (state is MqttClientState.Connected) {
+                        subscriptionRepo.insertSubscription(config.clientID, "home", 1L, System.currentTimeMillis())
+                    }
                 }
             }
             managerScope.launch {
@@ -164,6 +167,9 @@ class MqttConnectionController(
         val manager = mapMutex.withLock { activeManagers[command.connectionId]?.manager }
         // Assuming manager.subscribe is a suspend function that returns Boolean
         val success = manager?.subscribe(command.topicFilter, command.qos) ?: false
+        if (success) {
+            subscriptionRepo.insertSubscription(command.connectionId, command.topicFilter, command.qos.toLong(), System.currentTimeMillis())
+        }
         command.result.complete(success)
     }
 
@@ -171,6 +177,9 @@ class MqttConnectionController(
         val manager = mapMutex.withLock { activeManagers[command.connectionId]?.manager }
         // Assuming manager.unsubscribe is a suspend function that returns Boolean
         val success = manager?.unsubscribe(command.topicFilter) ?: false
+        if (success) {
+            subscriptionRepo.deleteSubscription(command.connectionId, command.topicFilter)
+        }
         command.result.complete(success)
     }
 
