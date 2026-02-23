@@ -7,7 +7,6 @@ import `in`.eswarm.shared.LogProvider
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.toList
 import kotlin.random.Random
 
 class AppPreferences(
@@ -56,7 +55,7 @@ class AppPreferences(
 
     override val logs: Flow<List<String>>
         get() {
-            return dataStore.data.map { it[LOGS] ?: emptySet() }
+            return dataStore.data.map { it[LOGS]?.toList() ?: emptyList() }
         }
 
     suspend fun getServerProperties(): ServerProperties {
