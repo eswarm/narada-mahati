@@ -1,47 +1,28 @@
 package `in`.eswarm.mahati.data.data
 
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.booleanPreferencesKey
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.stringSetPreferencesKey
-import `in`.eswarm.shared.LogProvider
+import `in`.eswarm.mahati.db.MahatiDb
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
+import app.cash.sqldelight.coroutines.asFlow
+import app.cash.sqldelight.coroutines.mapToOneOrNull
 
-class SettingsDataStore(private val dataStore: DataStore<Preferences>) : LogProvider {
+class SettingsDataStore(private val db: MahatiDb) {
 
     val autoReconnect: Flow<Boolean>
-        get() = dataStore.data.map {
-            it[AUTO_RECONNECT] ?: false
-        }
+        get() = db.settingsQueries.getBool(AUTO_RECONNECT_KEY)
+            .asFlow()
+            .mapToOneOrNull(Dispatchers.IO)
+            .map { if(it != null) { it.value_bool == 1L } else { false }  }
 
     suspend fun setAutoReconnect(value: Boolean) {
-        dataStore.edit {
-            it[AUTO_RECONNECT] = value
+        withContext(Dispatchers.IO) {
+            db.settingsQueries.insertOrUpdateBool(AUTO_RECONNECT_KEY, if (value) 1L else 0L)
         }
-    }
-
-    override val logs: Flow<Set<String>>
-        get() = dataStore.data.map { it[LOGS] ?: emptySet() }
-
-    override suspend fun addLog(log: String) {
-        dataStore.edit { prefs ->
-            val currentLogs = prefs[LOGS] ?: emptySet()
-            // To prevent unbounded growth, let's keep only the last 1000 logs
-            val sortedLogs = currentLogs.sortedDescending()
-            val newLogs = sortedLogs.take(999).toMutableSet()
-            newLogs.add(log)
-            prefs[LOGS] = newLogs
-        }
-    }
-
-    override suspend fun clearLogs() {
-        dataStore.edit { it[LOGS] = emptySet() }
     }
 
     companion object {
-        val AUTO_RECONNECT = booleanPreferencesKey("auto_reconnect")
-        val LOGS = stringSetPreferencesKey("logs")
+        private const val AUTO_RECONNECT_KEY = "auto_reconnect"
     }
 }

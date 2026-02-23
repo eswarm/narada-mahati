@@ -2,8 +2,6 @@ package `in`.eswarm.mahati
 
 import android.app.Application
 import android.content.Intent
-import androidx.datastore.preferences.preferencesDataStore
-import `in`.eswarm.mahati.data.data.SettingsDataStore
 import `in`.eswarm.mahati.db.DriverFactory
 import `in`.eswarm.mahati.db.initializeDb
 import `in`.eswarm.mahati.mqtt.di.AppContext
@@ -13,7 +11,6 @@ import kotlinx.coroutines.runBlocking
 class MahatiApplication : Application() {
 
     lateinit var appComponent: AppComponent
-    private val prefStore by preferencesDataStore(name = "settings")
 
     override fun onCreate() {
         super.onCreate()
@@ -24,6 +21,7 @@ class MahatiApplication : Application() {
         // Create the notification channel
         runBlocking {
             NotificationUtil.createNotificationChannel(this@MahatiApplication)
+            NotificationUtil.createMessageChannel(this@MahatiApplication)
         }
 
         // Define the notification function required by the controller
@@ -39,8 +37,7 @@ class MahatiApplication : Application() {
         }
 
         // Initialize the AppComponent, passing the notification function and the service starter callback
-        val settingsStore = SettingsDataStore(prefStore)
-        appComponent = AppComponent(settingsStore, sendNotification, onConnectionAction)
+        appComponent = AppComponent(sendNotification, onConnectionAction)
     }
 
     override fun onTerminate() {

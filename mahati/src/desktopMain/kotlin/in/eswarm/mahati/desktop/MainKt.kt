@@ -10,7 +10,6 @@ import `in`.eswarm.mahati.db.DriverFactory
 import `in`.eswarm.mahati.db.initializeDb
 import `in`.eswarm.mahati.log.MahatiLoggerFactory
 import `in`.eswarm.mahati.theme.NaradaMQTTBrokerTheme
-import org.slf4j.impl.StaticLoggerBinder
 import java.io.File
 
 fun main() = application {

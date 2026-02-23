@@ -2,9 +2,10 @@ package `in`.eswarm.mahati
 
 import `in`.eswarm.mahati.data.data.SettingsDataStore
 import `in`.eswarm.mahati.db.ConnectionAdapter
+import `in`.eswarm.mahati.db.LogRepository
 import `in`.eswarm.mahati.db.MessageRepository
 import `in`.eswarm.mahati.db.SubscriptionRepository
-import `in`.eswarm.mahati.log.MahatiLoggerFactory
+import `in`.eswarm.mahati.db.getMahatiDb
 import `in`.eswarm.mahati.log.mahatiLogger
 import `in`.eswarm.mahati.mqtt.controller.MqttConnectionController
 import `in`.eswarm.shared.LogStream
@@ -12,10 +13,8 @@ import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
-import org.slf4j.impl.StaticLoggerBinder
 
 class AppComponent(
-    settingsDataStore: SettingsDataStore,
     sendNotification: ((String, String, String, String) -> Unit)? = null,
     private val onConnectionAction: (() -> Unit)? = null
 ) {
@@ -24,17 +23,18 @@ class AppComponent(
     val connectionRepo: ConnectionAdapter = ConnectionAdapter()
     val subscriptionRepo: SubscriptionRepository = SubscriptionRepository()
     val messageRepo: MessageRepository = MessageRepository()
-    val logStream: LogStream = LogStream(settingsDataStore)
+    private val logRepository: LogRepository = LogRepository(getMahatiDb())
+    val logStream: LogStream = LogStream(logRepository)
+    val settingsDataStore: SettingsDataStore = SettingsDataStore(getMahatiDb())
 
     val mqttController: MqttConnectionController
 
     init {
-        // 1. Initialize the logging system FIRST.
-        val binder = StaticLoggerBinder.getSingleton()
-        binder.init(MahatiLoggerFactory())
+        // 1. Set the logStream for the logger.
+        // SLF4J will now automatically initialize the factory via MahatiServiceProvider.
         mahatiLogger.logStream = logStream
 
-        // 2. NOW, create the MQTT controller.
+        // 2. Create the MQTT controller.
         mqttController = MqttConnectionController(
             controllerScope = appScope,
             messageRepo = messageRepo,

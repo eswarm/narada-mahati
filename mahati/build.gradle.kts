@@ -22,31 +22,24 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 api(project(":shared"))
-
                 // SQLDelight
                 implementation(libs.sqldelight.runtime)
                 implementation(libs.sqldelight.coroutines.extensions)
-
-                implementation(compose.components.resources)
-                implementation(compose.runtime)
-                implementation(compose.foundation)
-                implementation(compose.material3)
-                implementation(compose.ui)
-                implementation(compose.components.uiToolingPreview)
+                implementation(libs.components.resources)
+                implementation(libs.runtime)
+                implementation(libs.foundation)
+                implementation(libs.material3)
+                implementation(libs.ui)
+                implementation(libs.ui.tooling.preview)
                 implementation(libs.lifecycle.runtime.compose)
-
                 implementation(libs.lifecycle.viewmodel.compose)
                 implementation(libs.navigation.compose)
-
                 implementation(libs.material.icons.extended)
 
                 api(libs.kotlinx.coroutines.core)
                 api(libs.hivemq.mqtt.client)
 
-                implementation(libs.androidx.datastore.preferences)
-
                 implementation(libs.kotlinx.serialization.json)
-
                 implementation(libs.slf4j.api)
                 runtimeOnly("org.apache.logging.log4j:log4j-core:2.25.3")
             }

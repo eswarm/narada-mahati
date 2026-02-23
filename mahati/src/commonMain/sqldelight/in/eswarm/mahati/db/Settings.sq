@@ -1,0 +1,14 @@
+CREATE TABLE Settings (
+    key TEXT NOT NULL PRIMARY KEY,
+    value_bool INTEGER, -- 0 for false, 1 for true
+    value_text TEXT
+);
+
+insertOrUpdateBool:
+INSERT OR REPLACE INTO Settings (key, value_bool) VALUES (?, ?);
+
+getBool:
+SELECT value_bool FROM Settings WHERE key = ?;
+
+deleteByKey:
+DELETE FROM Settings WHERE key = ?;

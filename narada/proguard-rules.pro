@@ -31,7 +31,6 @@
 
 # --- SLF4J Custom Logger Bridge ---
 # Keep our custom SLF4J implementation so it can be discovered.
--keep public class org.slf4j.impl.StaticLoggerBinder { *; }
 -keep public class in.eswarm.narada.log.NaradaLoggerFactory { *; }
 -keep public class in.eswarm.narada.log.NaradaLogger { *; }
 
