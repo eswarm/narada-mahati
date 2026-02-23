@@ -1,21 +1,53 @@
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# --- Generic Android Rules ---
+-ignorewarnings
+-keepattributes Signature,RuntimeVisibleAnnotations
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# Keep the entry point of the application
+-keep public class * extends android.app.Application
+-keep public class * extends androidx.core.app.ComponentActivity
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# --- Kotlinx Serialization ---
+# Keep classes annotated with @Serializable and their generated serializers.
+-keepclasseswithmembers,allowshrinking,allowoptimization class * {
+    @kotlinx.serialization.Serializable <methods>;
+}
+-keep class *$$serializer { *; }
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# --- HiveMQ MQTT Client ---
+# This is a Java library not designed for Android and uses reflection.
+# Keeping the entire package is the safest approach to prevent runtime crashes.
+-keep class com.hivemq.client.** { *; }
+
+# --- Netty (HiveMQ Dependency) ---
+# Netty is heavily reliant on reflection.
+-keep class io.netty.** { *; }
+
+# --- SQLDelight ---
+# Keep the generated adapters and runtime components.
+-keep class app.cash.sqldelight.** { *; }
+-keep class in.eswarm.mahati.db.** { *; } # Keep your generated DB classes
+
+# --- Log4j2 & SLF4J ---
+# Keep the runtime binding for Log4j2 and the custom SLF4J provider.
+-keep class org.apache.logging.log4j.core.** { *; }
+-keep public class in.eswarm.mahati.log.MahatiLogger { *; }
+-keep public class in.eswarm.mahati.log.MahatiLoggerFactory { *; }
+-keep public class in.eswarm.mahati.log.MahatiServiceProvider { *; }
+-keep interface org.slf4j.spi.SLF4JServiceProvider { *; }
+
+# --- Google ML Kit Barcode Scanning ---
+# These rules are recommended by Google to prevent ML Kit models from being stripped.
+-keep public class com.google.mlkit.vision.barcode.** { *; }
+-keep class com.google.android.gms.internal.mlkit_vision_barcode.** { *; }
+
+# --- Coroutines ---
+# Keep internal coroutine classes from being stripped.
+-keepclassmembers class kotlinx.coroutines.internal.MainDispatcherFactory {
+    public static final kotlinx.coroutines.MainCoroutineDispatcher sMain;
+}
+
+# --- AndroidX Camera ---
+# Keep CameraX implementation classes.
+-keep class androidx.camera.camera2.internal.** { *; }
+-keep class androidx.camera.core.impl.** { *; }
+

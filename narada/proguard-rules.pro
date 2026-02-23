@@ -1,6 +1,6 @@
 # --- Generic Android Rules ---
 -ignorewarnings
--keepattributes Signature
+-keepattributes Signature,RuntimeVisibleAnnotations
 
 # Keep the entry point of the application
 -keep public class * extends android.app.Application
@@ -14,25 +14,20 @@
 -keep class *$$serializer { *; }
 
 # --- Moquette (MQTT Broker) Rules ---
-# Moquette and its dependency Netty use reflection and have optional dependencies.
+# Moquette is a Java library not designed for Android and uses reflection.
+# Keeping the entire package is the safest approach to prevent runtime crashes.
+-keep class io.moquette.** { *; }
 
-# Keep the main Server class and its public members
--keep public class io.moquette.broker.Server { *; }
-
-# Netty uses reflection extensively. These are standard rules for Netty.
--keep public class io.netty.** { *; }
--keepclassmembers class io.netty.util.internal.shaded.org.jctools.queues.MpscArrayQueueL1Pad { *; }
--keepclassmembers class io.netty.util.internal.shaded.org.jctools.queues.MpscArrayQueueProducerIndexField { *; }
--keepclassmembers class io.netty.util.internal.shaded.org.jctools.queues.MpscArrayQueueMidPad { *; }
--keepclassmembers class io.netty.util.internal.shaded.org.jctools.queues.MpscArrayQueueConsumerIndexField { *; }
--keepclassmembers class io.netty.util.internal.shaded.org.jctools.queues.MpscArrayQueueL2Pad { *; }
--keepclassmembers class io.netty.util.internal.shaded.org.jctools.queues.MpscArrayQueueColdProducerFields { *; }
--keepclassmembers class io.netty.util.internal.shaded.org.jctools.queues.MpscArrayQueueL3Pad { *; }
+# --- Netty Rules ---
+# Netty is a Moquette dependency and is heavily reliant on reflection.
+-keep class io.netty.** { *; }
+-keepclassmembers class io.netty.util.internal.shaded.org.jctools.queues.** { *; }
 
 # --- SLF4J Custom Logger Bridge ---
-# Keep our custom SLF4J implementation so it can be discovered.
--keep public class in.eswarm.narada.log.NaradaLoggerFactory { *; }
+# Keep our custom SLF4J implementation and the SPI interface so it can be discovered.
 -keep public class in.eswarm.narada.log.NaradaLogger { *; }
+-keep public class in.eswarm.narada.log.NaradaLoggerFactory { *; }
+-keep class org.slf4j.impl.StaticLoggerBinder { *; }
 
 # --- Jetpack DataStore ---
 # Keep the generated code for DataStore.
@@ -50,4 +45,3 @@
 -dontwarn javax.jms.**
 -dontwarn javax.management.**
 -dontwarn com.conversantmedia.**
-
