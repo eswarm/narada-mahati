@@ -21,12 +21,12 @@ kotlin {
                 implementation(libs.sqldelight.runtime)
                 implementation(libs.sqldelight.coroutines.extensions)
 
-                implementation(compose.components.resources)
-                implementation(compose.runtime)
-                implementation(compose.foundation)
-                implementation(compose.material3)
-                implementation(compose.ui)
-                implementation(compose.components.uiToolingPreview)
+                implementation(libs.components.resources)
+                implementation(libs.runtime)
+                implementation(libs.foundation)
+                implementation(libs.material3)
+                implementation(libs.ui)
+                implementation(libs.ui.tooling.preview)
                 implementation(libs.lifecycle.runtime.compose)
 
                 implementation(libs.lifecycle.viewmodel.compose)
