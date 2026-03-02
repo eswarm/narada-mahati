@@ -39,8 +39,10 @@ kotlin {
                     exclude(group = "org.slf4j", module = "slf4j-reload4j")
                 }
                 implementation(libs.navigation.compose)
-                implementation(libs.androidx.datastore.preferences)
                 api(libs.kotlinx.coroutines.core)
+
+                implementation(libs.androidx.datastore)
+                implementation(libs.androidx.datastore.preferences)
 
                 // For QR Code generation
                 implementation(libs.custom.qr.generator)
@@ -59,10 +61,6 @@ kotlin {
                 implementation(libs.androidx.core.ktx)
                 implementation(libs.androidx.activity.compose)
                 implementation(libs.androidx.lifecycle.runtime.ktx)
-
-                // Android DataStore (correct place for these)
-                implementation(libs.androidx.datastore)
-                implementation(libs.androidx.datastore.preferences)
 
                 implementation(libs.accompanist.permissions)
 
@@ -158,9 +156,6 @@ android {
             excludes += "META-INF/INDEX.LIST"
             excludes += "META-INF/io.netty.versions.properties"
             excludes += "META-INF/DEPENDENCIES"
-        }
-        jniLibs {
-            useLegacyPackaging = false
         }
     }
 }
