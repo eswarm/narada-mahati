@@ -9,9 +9,9 @@ import androidx.compose.material3.Text // Changed import
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import `in`.eswarm.narada.ui.theme.NaradaMQTTBrokerTheme // Added for Preview
-import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 fun RegularPreference(

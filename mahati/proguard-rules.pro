@@ -22,6 +22,9 @@
 # Netty is heavily reliant on reflection.
 -keep class io.netty.** { *; }
 
+-keep class org.jctools.** { *; }
+-dontwarn org.jctools.**
+
 # --- SQLDelight ---
 # Keep the generated adapters and runtime components.
 -keep class app.cash.sqldelight.** { *; }
@@ -40,14 +43,7 @@
 -keep public class com.google.mlkit.vision.barcode.** { *; }
 -keep class com.google.android.gms.internal.mlkit_vision_barcode.** { *; }
 
-# --- Coroutines ---
-# Keep internal coroutine classes from being stripped.
--keepclassmembers class kotlinx.coroutines.internal.MainDispatcherFactory {
-    public static final kotlinx.coroutines.MainCoroutineDispatcher sMain;
-}
-
 # --- AndroidX Camera ---
 # Keep CameraX implementation classes.
 -keep class androidx.camera.camera2.internal.** { *; }
 -keep class androidx.camera.core.impl.** { *; }
-
