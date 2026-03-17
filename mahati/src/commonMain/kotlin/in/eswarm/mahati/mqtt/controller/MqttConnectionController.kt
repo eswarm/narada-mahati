@@ -23,6 +23,11 @@ class MqttConnectionController(
     private val onConnectionAdded: (() -> Unit)? = null
 ) : MqttControllerContract { // Implements the common interface
 
+    companion object {
+        private const val DEFAULT_HOME_TOPIC = "home"
+        private const val DEFAULT_HOME_QOS = 1L
+    }
+
     data class ManagerScope(val scope: CoroutineScope, val manager: MqttManager)
 
     private val activeManagers = mutableMapOf<String, ManagerScope>()
@@ -95,7 +100,7 @@ class MqttConnectionController(
                     message.timestamp
                 )
 
-                if (!ChatScreenLifecycle.isChatScreenVisible.value) {
+                if (ChatScreenLifecycle.shouldShowNotification(clientID, message.topicName)) {
                     sendNotification?.invoke(
                         "New message on ${message.topicName}",
                         String(message.payload),
@@ -104,6 +109,24 @@ class MqttConnectionController(
                     )
                 }
             }
+        }
+    }
+
+    private suspend fun ensureDefaultHomeSubscription(clientId: String) {
+        subscriptionRepo.insertSubscription(
+            clientID = clientId,
+            topicFilter = DEFAULT_HOME_TOPIC,
+            qos = DEFAULT_HOME_QOS,
+            subscribedAt = System.currentTimeMillis()
+        )
+    }
+
+    private suspend fun restoreSubscriptions(clientId: String, mqttManager: MqttManager) {
+        // Keep default subscription policy in one place and idempotent via INSERT OR IGNORE.
+        ensureDefaultHomeSubscription(clientId)
+        val savedSubscriptions = subscriptionRepo.getSubscriptionsByClientId(clientId)
+        savedSubscriptions.forEach { sub ->
+            mqttManager.subscribe(sub.topicFilter, sub.qos.toInt())
         }
     }
 
@@ -124,13 +147,14 @@ class MqttConnectionController(
             val mqttManager = checkNotNull(managerWithScope).manager
             val managerScope = managerWithScope.scope
 
+            mqttManager.onReconnected = {
+                restoreSubscriptions(config.clientID, mqttManager)
+            }
+
             managerScope.launch {
                 mqttManager.connectionState.collect { state ->
                     _connectionStatesMap.update { currentMap ->
                         currentMap.toMutableMap().apply { this[config.clientID] = state }
-                    }
-                    if (state is MqttClientState.Connected) {
-                        subscriptionRepo.insertSubscription(config.clientID, "home", 1L, System.currentTimeMillis())
                     }
                 }
             }

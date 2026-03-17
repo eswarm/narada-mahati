@@ -1,7 +1,6 @@
 package `in`.eswarm.mahati.mqtt.core
 
 import `in`.eswarm.mahati.db.AppMqttMessage
-import `in`.eswarm.mahati.db.MqttConnection
 import `in`.eswarm.mahati.db.MqttConnectionModel
 import `in`.eswarm.mahati.mqtt.common.MqttClientState
 import kotlinx.coroutines.flow.SharedFlow
@@ -24,6 +23,12 @@ interface MqttManager {
      * Multiple collectors can listen to incoming messages.
      */
     val receivedMessages: SharedFlow<AppMqttMessage>
+
+    /**
+     * Optional callback invoked on each successful connect/reconnect.
+     * The controller uses this to restore persisted subscriptions.
+     */
+    var onReconnected: (suspend () -> Unit)?
 
     /**
      * Attempts to connect to the MQTT broker with the given parameters.

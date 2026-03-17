@@ -1,7 +1,6 @@
 package `in`.eswarm.narada.service
 
 import android.app.Notification
-import android.app.Notification.FOREGROUND_SERVICE_IMMEDIATE
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
@@ -41,12 +40,36 @@ class MQTTServerService : Service() {
         return START_STICKY
     }
 
+    private fun startAsForeground() {
+        val pendingIntent: PendingIntent = Intent(
+            this@MQTTServerService, HomeActivity::class.java
+        ).let { notificationIntent ->
+            PendingIntent.getActivity(
+                this@MQTTServerService,
+                0,
+                notificationIntent,
+                PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+        }
+
+        val notification: Notification =
+            NotificationCompat.Builder(this@MQTTServerService, FG_SERVICE_CHANNEL)
+                .setContentTitle(getText(R.string.notification_mqtt_service_title))
+                .setContentText(getText(R.string.notification_mqtt_service_content))
+                .setSmallIcon(R.mipmap.ic_launcher_foreground)
+                .setContentIntent(pendingIntent)
+                .setTicker(getText(R.string.notification_mqtt_ticker))
+                .build()
+
+        startForeground(NOT_SERVICE_ID, notification)
+    }
+
     private fun stopService() {
         serviceScope.launch {
             appComponent.appPreferences.setServerStopped()
             appComponent.mqttWrapper.stopMoquette()
             withContext(Dispatchers.Main) {
-                stopForeground(true)
+                stopForeground(STOP_FOREGROUND_REMOVE)
                 stopSelf()
             }
         }
@@ -59,30 +82,6 @@ class MQTTServerService : Service() {
             appComponent.mqttWrapper.startMoquette(
                 serverProperties
             )
-
-            withContext(Dispatchers.Main) {
-                val pendingIntent: PendingIntent = Intent(
-                    this@MQTTServerService, HomeActivity::class.java
-                ).let { notificationIntent ->
-                    PendingIntent.getActivity(
-                        this@MQTTServerService,
-                        0,
-                        notificationIntent,
-                        PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
-                    )
-                }
-
-                val notification: Notification =
-                    NotificationCompat.Builder(this@MQTTServerService, FG_SERVICE_CHANNEL)
-                        .setContentTitle(getText(R.string.notification_mqtt_service_title))
-                        .setContentText(getText(R.string.notification_mqtt_service_content))
-                        .setSmallIcon(R.mipmap.ic_launcher_foreground)
-                        .setContentIntent(pendingIntent)
-                        .setTicker(getText(R.string.notification_mqtt_ticker))
-                        .setForegroundServiceBehavior(FOREGROUND_SERVICE_IMMEDIATE).build()
-
-                startForeground(NOT_SERVICE_ID, notification)
-            }
         }
     }
 
@@ -93,12 +92,13 @@ class MQTTServerService : Service() {
     override fun onCreate() {
         super.onCreate()
         appComponent = getAppComponent()
+        startAsForeground()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        serviceScope.cancel()
         stopService()
+        serviceScope.cancel()
     }
 
     companion object {

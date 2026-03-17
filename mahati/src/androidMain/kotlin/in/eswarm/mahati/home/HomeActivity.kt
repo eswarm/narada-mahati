@@ -26,6 +26,8 @@ import `in`.eswarm.mahati.navigation.DeepLinkDestination
 import `in`.eswarm.mahati.theme.NaradaMQTTBrokerTheme
 import `in`.eswarm.mahati.util.NotificationUtil
 import kotlinx.coroutines.runBlocking
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
 
 class HomeActivity : ComponentActivity() {
     private val viewModel: HomeDroidViewModel by viewModels()
@@ -129,7 +131,13 @@ class HomeActivity : ComponentActivity() {
             val uri: Uri = intent.data!!
             if (uri.scheme == "mahati" && uri.host == "chat") {
                 val clientId = uri.pathSegments.getOrNull(0)
-                val topicName = uri.pathSegments.getOrNull(1)
+                // topicName is URL-encoded in Route.Chat.deepLink() to prevent
+                // '/' in topic names from being split into multiple path segments by the URI parser.
+                // Decode it back to the original topic string here.
+                val encodedTopic = uri.pathSegments.getOrNull(1)
+                val topicName = encodedTopic?.let {
+                    URLDecoder.decode(it, StandardCharsets.UTF_8.name())
+                }
                 if (clientId != null && topicName != null) {
                     return DeepLinkDestination.Chat(clientId, topicName)
                 }

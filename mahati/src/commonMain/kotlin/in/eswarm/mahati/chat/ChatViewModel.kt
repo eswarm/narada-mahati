@@ -7,6 +7,7 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import `in`.eswarm.mahati.db.MessageDirection
 import `in`.eswarm.mahati.db.MessageRepository
 import `in`.eswarm.mahati.mqtt.common.MqttClientState
+import `in`.eswarm.mahati.mqtt.common.mqttTopicMatches
 import `in`.eswarm.mahati.mqtt.common.payloadAsText
 import `in`.eswarm.mahati.mqtt.service.MqttControllerContract
 import kotlinx.coroutines.Dispatchers
@@ -48,34 +49,46 @@ class ChatViewModel(
         }
 
         viewModelScope.launch {
+            // Use mqttTopicMatches() instead of == so that wildcard
+            // subscription filters like "home/#" or "sensors/+/temp" correctly match
+            // incoming messages on concrete topics like "home/temp".
+            //  Renamed lambda param to 'connectionId' to avoid shadowing
+            // the outer 'clientID' field; the old code incorrectly compared
+            // message.publisherID against the lambda's clientID (the connection ID),
+            // not the app's own client identity.
             mqttController.allMessages?.collect { received ->
-                val clientID = received.first
+                val connectionId = received.first
                 val message = received.second
 
-                if (message.topicName == topic) {
-                    if (message.publisherID != clientID) {
-                        val chatMsg = ChatMessage(
-                            text = message.payloadAsText,
-                            timestamp = System.currentTimeMillis(),
-                            senderId = message.publisherID,
-                            isSentByUser = false
-                        )
-                        _uiState.update { currentState ->
-                            currentState.copy(messages = currentState.messages + chatMsg)
-                        }
-                    } else if (received == null) {
-                        // Handle potential non-WireMessage format if topic is shared
-                        // For a dedicated chat topic, this might indicate an issue or different message type
-                        println("Received malformed message on $topic: ${received.payloadAsText}")
+                // Only process messages for this connection
+                if (connectionId != clientID) return@collect
+
+                // BUG-1 FIX: match using MQTT wildcard semantics
+                if (mqttTopicMatches(topic, message.topicName)) {
+                    val chatMsg = ChatMessage(
+                        text = message.payloadAsText,
+                        timestamp = message.timestamp,
+                        senderId = message.publisherID,
+                        isSentByUser = false
+                    )
+                    _uiState.update { currentState ->
+                        currentState.copy(messages = currentState.messages + chatMsg)
                     }
                 }
             }
         }
 
-        with(Dispatchers.IO) {
-            viewModelScope.launch {
-                val messages = messageRepo.getMessagesByClientId(clientID)
-                val chatMessages = messages.map { message ->
+        viewModelScope.launch(Dispatchers.IO) {
+            // TODO [BUG-2 FIX]: Previously loaded ALL messages for the client via
+            // getMessagesByClientId(), which caused every subscription window to show
+            // the entire message history regardless of topic.
+            // Now we load all messages for this client and filter them using
+            // mqttTopicMatches() so wildcard filters (e.g. "home/#") also match
+            // persisted messages on concrete topics (e.g. "home/temp").
+            val messages = messageRepo.getMessagesByClientId(clientID)
+            val chatMessages = messages
+                .filter { mqttTopicMatches(topic, it.topicName) }
+                .map { message ->
                     ChatMessage(
                         text = message.payloadAsText,
                         senderId = message.publisherID,
@@ -85,11 +98,11 @@ class ChatViewModel(
                     )
                 }
 
-                _uiState.update {
-                    it.copy(
-                        messages = it.messages + chatMessages
-                    )
-                }
+            _uiState.update { currentState ->
+                // Prepend persisted messages; live messages collected above are appended later
+                val existingIds = currentState.messages.map { it.id }.toSet()
+                val newPersistedMessages = chatMessages.filter { it.id !in existingIds }
+                currentState.copy(messages = newPersistedMessages + currentState.messages)
             }
         }
     }

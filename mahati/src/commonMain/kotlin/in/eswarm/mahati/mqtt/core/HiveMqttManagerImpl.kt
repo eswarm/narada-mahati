@@ -42,15 +42,33 @@ class HiveMqttManagerImpl(private val coroutineScope: CoroutineScope) : MqttMana
         MutableSharedFlow<AppMqttMessage>(replay = 0, extraBufferCapacity = 64)
     override val receivedMessages: SharedFlow<AppMqttMessage> = _receivedMessages.asSharedFlow()
 
+    override var onReconnected: (suspend () -> Unit)? = null
+
     private val logger = LoggerFactory.getLogger(HiveMqttManagerImpl::class.java)
+
+    companion object {
+        // Keep-alive long enough to reduce wakeups, but short enough to survive common NAT idle timeouts.
+        private const val KEEP_ALIVE_SECONDS = 15 * 60
+        private const val SESSION_EXPIRY_SECONDS = 24 * 60 * 60L
+        private const val RECONNECT_INITIAL_DELAY_SECONDS = 2L
+        private const val RECONNECT_MAX_DELAY_SECONDS = 5 * 60L
+    }
+
+    private fun Throwable?.isTransientDisconnect(): Boolean {
+        val message = this?.message?.lowercase() ?: return false
+        return message.contains("without disconnect") ||
+            message.contains("timed out") ||
+            message.contains("connection reset") ||
+            message.contains("broken pipe")
+    }
 
     private fun MqttClientConnectedContext.toServerUri(): String {
         return try {
             val host = this.clientConfig.serverHost
             val port = this.clientConfig.serverPort
-            val ssl = this.clientConfig.sslConfig != null
-            (if (ssl) "ssl" else "tcp") + "://" + host + ":" + port
-        } catch (e: Exception) {
+            val scheme = if (currentParams?.useSsl == true) "ssl" else "tcp"
+            "$scheme://$host:$port"
+        } catch (_: Exception) {
             "unknown_server"
         }
     }
@@ -69,22 +87,28 @@ class HiveMqttManagerImpl(private val coroutineScope: CoroutineScope) : MqttMana
         _connectionState.value = MqttClientState.Connecting
 
         var clientBuilder = MqttClient.builder().useMqttVersion5().automaticReconnect(
-            MqttClientAutoReconnect.builder().initialDelay(10, TimeUnit.SECONDS)
-                .maxDelay(600, TimeUnit.SECONDS).build()
+            MqttClientAutoReconnect.builder()
+                .initialDelay(RECONNECT_INITIAL_DELAY_SECONDS, TimeUnit.SECONDS)
+                .maxDelay(RECONNECT_MAX_DELAY_SECONDS, TimeUnit.SECONDS)
+                .build()
         ).identifier(params.clientID).serverHost(params.brokerHost)
             .serverPort(params.brokerPort.toInt()).addConnectedListener { context ->
                 logger.info("Connected to ${context.toServerUri()}")
                 _connectionState.value =
                     MqttClientState.Connected(context.toServerUri(), params.clientID)
-                // Subscribe to default topic "home" on every connection/reconnection
                 coroutineScope.launch {
-                    subscribe("home", 1)
+                    onReconnected?.invoke()
                 }
             }.addDisconnectedListener { context ->
-                logger.info("Disconnected: ${context.cause.message ?: "Unknown reason"}")
-                _connectionState.value = MqttClientState.Error(
-                    "Disconnected: ${context.cause.message ?: "Unknown reason"}", context.cause
-                )
+                val cause = context.cause
+                val reason = cause.message ?: "Unknown reason"
+                logger.info("Disconnected: $reason")
+
+                _connectionState.value = if (cause.isTransientDisconnect()) {
+                    MqttClientState.Connecting
+                } else {
+                    MqttClientState.Error("Disconnected: $reason", cause)
+                }
             }
 
         if (params.useSsl) {
@@ -104,9 +128,10 @@ class HiveMqttManagerImpl(private val coroutineScope: CoroutineScope) : MqttMana
         client = clientBuilder.buildAsync()
 
         client?.connect(
-            Mqtt5Connect.builder().keepAlive(120 * 60).cleanStart(false).willPublish().topic("home")
+            Mqtt5Connect.builder().keepAlive(KEEP_ALIVE_SECONDS).cleanStart(false)
+                .willPublish().topic("home")
                 .payload("Disconnected".toByteArray()).applyWillPublish()
-                .sessionExpiryInterval(TimeUnit.HOURS.toSeconds(3)).build()
+                .sessionExpiryInterval(SESSION_EXPIRY_SECONDS).build()
         )?.whenComplete { connAck, throwable ->
             coroutineScope.launch {
                 if (throwable != null) {

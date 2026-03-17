@@ -55,8 +55,9 @@ fun ChatScreen(
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
+    // specific subscription, not for all topics app-wide.
     LifecycleStartEffect(Unit) {
-        ChatScreenLifecycle.onChatScreenVisible()
+        ChatScreenLifecycle.onChatScreenVisible(clientID, topic)
         onStopOrDispose {
             ChatScreenLifecycle.onChatScreenHidden()
         }
