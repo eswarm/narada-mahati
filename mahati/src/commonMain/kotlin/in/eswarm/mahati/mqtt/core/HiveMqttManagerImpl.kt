@@ -47,11 +47,10 @@ class HiveMqttManagerImpl(private val coroutineScope: CoroutineScope) : MqttMana
     private val logger = LoggerFactory.getLogger(HiveMqttManagerImpl::class.java)
 
     companion object {
-        // Keep-alive long enough to reduce wakeups, but short enough to survive common NAT idle timeouts.
-        private const val KEEP_ALIVE_SECONDS = 15 * 60
-        private const val SESSION_EXPIRY_SECONDS = 24 * 60 * 60L
-        private const val RECONNECT_INITIAL_DELAY_SECONDS = 2L
-        private const val RECONNECT_MAX_DELAY_SECONDS = 5 * 60L
+        private const val KEEP_ALIVE_SECONDS = 30 * 60 // 30 minutes
+        private const val SESSION_EXPIRY_SECONDS = 24 * 60 * 60L // 24 hours
+        private const val RECONNECT_INITIAL_DELAY_SECONDS = 30L // 30 seconds
+        private const val RECONNECT_MAX_DELAY_SECONDS = 2 * 60L // 2 minutes. 
     }
 
     private fun Throwable?.isTransientDisconnect(): Boolean {
@@ -135,9 +134,17 @@ class HiveMqttManagerImpl(private val coroutineScope: CoroutineScope) : MqttMana
         )?.whenComplete { connAck, throwable ->
             coroutineScope.launch {
                 if (throwable != null) {
-                    _connectionState.value = MqttClientState.Error(
-                        "Connection failed: ${throwable.message}", throwable
-                    )
+                    val errorMsg = when {
+                        throwable.message?.contains("ConnectTimeoutException") == true ->
+                            "Connection timeout - check network connectivity and broker availability at ${params.brokerHost}:${params.brokerPort}"
+                        throwable.message?.contains("UnknownHostException") == true ->
+                            "Cannot resolve host ${params.brokerHost} - check network and DNS settings"
+                        throwable.message?.contains("ConnectionRefusedException") == true ->
+                            "Connection refused - broker may not be running on ${params.brokerHost}:${params.brokerPort}"
+                        else -> "Connection failed: ${throwable.message}"
+                    }
+                    logger.error(errorMsg, throwable)
+                    _connectionState.value = MqttClientState.Error(errorMsg, throwable)
                 } else {
                     if (connAck != null && connAck.reasonCode.isError) {
                         _connectionState.value = MqttClientState.Error(
