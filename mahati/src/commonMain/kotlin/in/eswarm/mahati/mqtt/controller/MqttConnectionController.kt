@@ -192,7 +192,12 @@ class MqttConnectionController(
         // Assuming manager.subscribe is a suspend function that returns Boolean
         val success = manager?.subscribe(command.topicFilter, command.qos) ?: false
         if (success) {
-            subscriptionRepo.insertSubscription(command.connectionId, command.topicFilter, command.qos.toLong(), System.currentTimeMillis())
+            subscriptionRepo.insertSubscription(
+                command.connectionId,
+                command.topicFilter,
+                command.qos.toLong(),
+                System.currentTimeMillis()
+            )
         }
         command.result.complete(success)
     }
@@ -214,6 +219,19 @@ class MqttConnectionController(
 
     override fun removeConnection(clientID: String) {
         controllerScope.launch { commandChannel.send(ControllerCommand.RemoveConnection(clientID)) }
+    }
+
+    override fun removeAllConnections() {
+        controllerScope.launch {
+            mapMutex.withLock {
+                activeManagers.values.forEach {
+                    it.manager.disconnect()
+                    it.scope.cancel()
+                }
+                activeManagers.clear()
+                _connectionStatesMap.value = emptyMap()
+            }
+        }
     }
 
     override suspend fun publish(

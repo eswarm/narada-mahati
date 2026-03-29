@@ -39,6 +39,11 @@ interface MqttControllerContract {
     fun removeConnection(clientID: String)
 
     /**
+     * Removes all previously added MQTT connections.
+     */
+    fun removeAllConnections()
+
+    /**
      * Publishes a message to a topic on a specific connection.
      * This is a suspend function that returns true on success and false on failure.
      */

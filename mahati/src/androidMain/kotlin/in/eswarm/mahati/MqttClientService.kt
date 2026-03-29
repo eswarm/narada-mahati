@@ -65,6 +65,7 @@ class MqttClientService : Service() {
         // Handle the stop action from the notification
         if (intent?.action == ACTION_STOP) {
             // Shut down all connections before stopping the service
+            mqttController.removeAllConnections()
             mqttController.shutdownAll()
             stopSelf()
             return START_NOT_STICKY // Do not restart the service automatically.
