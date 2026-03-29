@@ -68,9 +68,8 @@ kotlin {
                 // SQLDelight SQLite Driver (for JVM/Desktop)
                 implementation(libs.sqldelight.sqlite.driver)
 
-                // Dependencies from your existing file
-                implementation(compose.desktop.currentOs)
-                implementation(compose.desktop.common)
+                //implementation(compose.desktop.currentOs)
+                //implementation(compose.desktop.common)
                 implementation(libs.kotlinx.coroutines.swing)
 
                 implementation("org.xerial:sqlite-jdbc:3.51.1.0") {
@@ -150,9 +149,12 @@ android {
     buildFeatures {
         compose = true
     }
+    /*
     composeOptions {
         kotlinCompilerExtensionVersion = libs.versions.composeCompiler.get()
     }
+
+     */
     lint {
         abortOnError = false
     }

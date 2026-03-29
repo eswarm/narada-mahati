@@ -77,8 +77,8 @@ kotlin {
                 implementation(libs.sqldelight.sqlite.driver)
 
                 // Dependencies from your existing file
-                implementation(compose.desktop.currentOs)
-                implementation(compose.desktop.common)
+                //implementation(compose.desktop.currentOs)
+                //implementation(compose.desktop.common)
             }
         }
 
@@ -147,9 +147,12 @@ android {
     buildFeatures {
         compose = true
     }
+    /*
     composeOptions {
         kotlinCompilerExtensionVersion = libs.versions.composeCompiler.get()
     }
+
+     */
     packaging {
         resources {
             excludes += "META-INF/license/*"

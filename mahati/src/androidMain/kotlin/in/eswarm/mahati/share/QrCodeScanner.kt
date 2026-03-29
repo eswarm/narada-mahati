@@ -40,6 +40,8 @@ actual fun QrCodeScanner(onScanResult: (String) -> Unit) {
     }
 
     if (hasCameraPermission) {
+
+        /*
         val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
         val cameraProvider = cameraProviderFuture.get()
         val previewView = remember { PreviewView(context) }
@@ -69,6 +71,8 @@ actual fun QrCodeScanner(onScanResult: (String) -> Unit) {
         cameraProvider.bindToLifecycle(lifecycleOwner, cameraSelector, preview, imageAnalysis)
 
         AndroidView({ previewView }, modifier = Modifier.fillMaxSize())
+
+         */
     } else {
         Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
             Text("Camera permission is required to scan QR codes.")
