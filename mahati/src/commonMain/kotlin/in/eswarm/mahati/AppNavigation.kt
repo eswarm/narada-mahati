@@ -26,6 +26,7 @@ import `in`.eswarm.mahati.log.LogScreen
 import `in`.eswarm.mahati.navigation.DeepLinkDestination
 import `in`.eswarm.mahati.navigation.Route
 import `in`.eswarm.mahati.settings.SettingsScreen
+import `in`.eswarm.mahati.settings.SettingsViewModel
 import `in`.eswarm.mahati.share.QrScannerScreen
 import `in`.eswarm.mahati.share.QrScannerViewModel
 import `in`.eswarm.mahati.topics.TopicSubscriptionScreen
@@ -109,7 +110,10 @@ fun MobileNavigation(
             )
         }
         composable<Route.Settings> {
-            SettingsScreen()
+            val viewModel: SettingsViewModel = viewModel(
+                factory = SettingsViewModel.Factory(appComponent.settingsDataStore)
+            )
+            SettingsScreen(viewModel)
         }
         composable<Route.TopicSubscription> { backStackEntry ->
 
@@ -210,7 +214,10 @@ fun DesktopNavigation(
                     )
                 }
                 composable<Route.Settings> {
-                    SettingsScreen()
+                    val viewModel: SettingsViewModel = viewModel(
+                        factory = SettingsViewModel.Factory(appComponent.settingsDataStore)
+                    )
+                    SettingsScreen(viewModel)
                 }
                 composable<Route.TopicSubscription> { backStackEntry ->
                     val topicSubscription: Route.TopicSubscription = backStackEntry.toRoute()

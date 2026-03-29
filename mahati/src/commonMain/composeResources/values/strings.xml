@@ -12,7 +12,13 @@
     <string name="message_channel_description">Channel to receive messages from other clients</string>
 
 
+    <string name="settings">Settings</string>
+    <string name="settings_info">Manage App Preferences</string>
+    <string name="auto_reconnect_title">Auto Reconnect</string>
+    <string name="auto_reconnect_summary">Automatically reconnect to MQTT broker if connection is lost</string>
+
     <string name="permission_denied_notification">The app does not work properly without the notification permission. Please go to settings to grant them.</string>
+
     <string name="permission_rationale">App needs notification permission to function properly, press below to grant it.</string>
     <string name="permission_grant">Grant permission</string>
 </resources>

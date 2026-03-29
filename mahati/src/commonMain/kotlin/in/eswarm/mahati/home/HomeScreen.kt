@@ -55,6 +55,9 @@ fun HomeScreen(
                 IconButton(onClick = { onNavigateToLog() }) {
                     Icon(Icons.Default.Article, contentDescription = "View Logs")
                 }
+                IconButton(onClick = { onNavigateToSettings() }) {
+                    Icon(Icons.Default.Settings, contentDescription = "Settings")
+                }
             }
         )
     }, floatingActionButton = {
