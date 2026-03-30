@@ -6,11 +6,13 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.os.IBinder
+import android.os.PowerManager
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import `in`.eswarm.narada.AppComponent
 import `in`.eswarm.narada.R
 import `in`.eswarm.narada.home.HomeActivity
+import `in`.eswarm.narada.util.BatteryOptimizationHelper
 import `in`.eswarm.narada.util.NotificationUtil.FG_SERVICE_CHANNEL
 import `in`.eswarm.narada.util.getAppComponent
 import kotlinx.coroutines.CoroutineScope
@@ -24,8 +26,10 @@ class MQTTServerService : Service() {
 
     private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     lateinit var appComponent: AppComponent
+    private var wakeLock: PowerManager.WakeLock? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        startAsForeground()
         when (intent?.action) {
             START -> {
                 init()
@@ -68,6 +72,7 @@ class MQTTServerService : Service() {
         serviceScope.launch {
             appComponent.appPreferences.setServerStopped()
             appComponent.mqttWrapper.stopMoquette()
+            releaseWakeLock()
             withContext(Dispatchers.Main) {
                 stopForeground(STOP_FOREGROUND_REMOVE)
                 stopSelf()
@@ -79,6 +84,8 @@ class MQTTServerService : Service() {
         serviceScope.launch {
             appComponent.appPreferences.setServerStarted()
             val serverProperties = appComponent.appPreferences.getServerProperties()
+            requestBatteryOptimizationExemption()
+            acquireWakeLock()
             appComponent.mqttWrapper.startMoquette(
                 serverProperties
             )
@@ -92,7 +99,36 @@ class MQTTServerService : Service() {
     override fun onCreate() {
         super.onCreate()
         appComponent = getAppComponent()
-        startAsForeground()
+    }
+
+    private fun acquireWakeLock() {
+        if (wakeLock == null) {
+            val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+            wakeLock = powerManager.newWakeLock(
+                PowerManager.PARTIAL_WAKE_LOCK,
+                "Narada::MqttServerWakeLock"
+            )
+            wakeLock?.acquire(10 * 60 * 60 * 1000L) // 10 hours max
+        }
+    }
+
+    private fun releaseWakeLock() {
+        wakeLock?.let {
+            if (it.isHeld) {
+                it.release()
+            }
+        }
+        wakeLock = null
+    }
+
+    private fun requestBatteryOptimizationExemption() {
+        if (!BatteryOptimizationHelper.isIgnoringBatteryOptimizations(this)) {
+            try {
+                BatteryOptimizationHelper.requestIgnoreBatteryOptimizations(this)
+            } catch (e: Exception) {
+                // Permission not granted or other issue
+            }
+        }
     }
 
     override fun onDestroy() {
