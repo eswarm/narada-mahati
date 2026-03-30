@@ -19,8 +19,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import android.os.Build
 
 class MQTTServerService : Service() {
 
@@ -74,7 +76,11 @@ class MQTTServerService : Service() {
             appComponent.mqttWrapper.stopMoquette()
             releaseWakeLock()
             withContext(Dispatchers.Main) {
-                stopForeground(STOP_FOREGROUND_REMOVE)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    stopForeground(STOP_FOREGROUND_REMOVE)
+                } else {
+                    stopForeground(true)
+                }
                 stopSelf()
             }
         }
@@ -84,8 +90,17 @@ class MQTTServerService : Service() {
         serviceScope.launch {
             appComponent.appPreferences.setServerStarted()
             val serverProperties = appComponent.appPreferences.getServerProperties()
-            requestBatteryOptimizationExemption()
-            acquireWakeLock()
+
+            val ignoreBattery = appComponent.appPreferences.ignoreBatteryOptimization.first()
+            if (ignoreBattery) {
+                requestBatteryOptimizationExemption()
+            }
+
+            val useWakeLock = appComponent.appPreferences.wakeLock.first()
+            if (useWakeLock) {
+                acquireWakeLock()
+            }
+
             appComponent.mqttWrapper.startMoquette(
                 serverProperties
             )

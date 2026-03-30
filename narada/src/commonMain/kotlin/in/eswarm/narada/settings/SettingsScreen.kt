@@ -36,6 +36,10 @@ import `in`.eswarm.narada.resources.settings_info
 import `in`.eswarm.narada.resources.username
 import `in`.eswarm.narada.resources.ws_path_title
 import `in`.eswarm.narada.resources.ws_port_title
+import `in`.eswarm.narada.resources.battery_optimization_summary
+import `in`.eswarm.narada.resources.battery_optimization_title
+import `in`.eswarm.narada.resources.wakelock_summary
+import `in`.eswarm.narada.resources.wakelock_title
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -65,6 +69,10 @@ fun SettingsScreen(
                 settingsViewModel.appPreferences.wsPath.collectAsState(initial = AppPreferences.WS_PATH_DEFAULT)
             val authEnabled =
                 settingsViewModel.appPreferences.authEnabled.collectAsState(initial = AppPreferences.AUTH_ENABLED_DEFAULT)
+            val ignoreBatteryOptimization =
+                settingsViewModel.appPreferences.ignoreBatteryOptimization.collectAsState(initial = AppPreferences.IGNORE_BATTERY_OPTIMIZATION_DEFAULT)
+            val wakeLock =
+                settingsViewModel.appPreferences.wakeLock.collectAsState(initial = AppPreferences.WAKELOCK_DEFAULT)
             val userName = settingsViewModel.appPreferences.userName.collectAsState(initial = "")
             val password = settingsViewModel.appPreferences.password.collectAsState(initial = "")
 
@@ -188,6 +196,26 @@ fun SettingsScreen(
                 checked = authEnabled.value,
                 onCheckedChange = { value: Boolean ->
                     settingsViewModel.setAuthEnabled(value)
+                })
+
+            HorizontalDivider()
+
+            SwitchPreference(
+                title = stringResource(Res.string.battery_optimization_title),
+                subtitle = stringResource(Res.string.battery_optimization_summary),
+                checked = ignoreBatteryOptimization.value,
+                onCheckedChange = {
+                    settingsViewModel.setIgnoreBatteryOptimization(it)
+                })
+
+            HorizontalDivider()
+
+            SwitchPreference(
+                title = stringResource(Res.string.wakelock_title),
+                subtitle = stringResource(Res.string.wakelock_summary),
+                checked = wakeLock.value,
+                onCheckedChange = {
+                    settingsViewModel.setWakeLock(it)
                 })
 
             HorizontalDivider()

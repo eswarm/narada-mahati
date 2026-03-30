@@ -13,23 +13,37 @@ import `in`.eswarm.mahati.mqtt.service.MqttControllerContract
 import `in`.eswarm.mahati.util.BatteryOptimizationHelper
 import `in`.eswarm.mahati.util.NotificationUtil.FG_SERVICE_CHANNEL
 import `in`.eswarm.mahati.util.getAppComponent
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
 class MqttClientService : Service() {
 
     private lateinit var mqttController: MqttControllerContract
     private var wakeLock: PowerManager.WakeLock? = null
+    private val serviceScope = CoroutineScope(Dispatchers.IO)
 
     override fun onCreate() {
         super.onCreate()
 
         val appComponent = getAppComponent()
         mqttController = appComponent.mqttController
+        val settingsDataStore = appComponent.settingsDataStore
 
-        // Request battery optimization exemption for MQTT keepalive during Doze mode
-        requestBatteryOptimizationExemption()
+        serviceScope.launch {
+            val ignoreBattery = settingsDataStore.ignoreBatteryOptimization.first()
+            if (ignoreBattery) {
+                // Request battery optimization exemption for MQTT keepalive during Doze mode
+                requestBatteryOptimizationExemption()
+            }
 
-        // Acquire wake lock to keep network alive for MQTT keepalive during Doze mode
-        acquireWakeLock()
+            val useWakeLock = settingsDataStore.wakeLock.first()
+            if (useWakeLock) {
+                // Acquire wake lock to keep network alive for MQTT keepalive during Doze mode
+                acquireWakeLock()
+            }
+        }
 
         // ...existing code...
         val stopSelfIntent = Intent(this, MqttClientService::class.java).apply {

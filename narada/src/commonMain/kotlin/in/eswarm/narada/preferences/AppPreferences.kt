@@ -38,6 +38,16 @@ class AppPreferences(
             return dataStore.data.map { it[AUTH_ENABLED] ?: AUTH_ENABLED_DEFAULT }
         }
 
+    val ignoreBatteryOptimization: Flow<Boolean>
+        get() {
+            return dataStore.data.map { it[IGNORE_BATTERY_OPTIMIZATION] ?: IGNORE_BATTERY_OPTIMIZATION_DEFAULT }
+        }
+
+    val wakeLock: Flow<Boolean>
+        get() {
+            return dataStore.data.map { it[WAKELOCK] ?: WAKELOCK_DEFAULT }
+        }
+
     val userName: Flow<String>
         get() {
             return dataStore.data.map { it[UNAME] ?: UNAME_DEFAULT }
@@ -108,6 +118,14 @@ class AppPreferences(
         dataStore.edit { it[AUTH_ENABLED] = value }
     }
 
+    suspend fun setIgnoreBatteryOptimization(value: Boolean) {
+        dataStore.edit { it[IGNORE_BATTERY_OPTIMIZATION] = value }
+    }
+
+    suspend fun setWakeLock(value: Boolean) {
+        dataStore.edit { it[WAKELOCK] = value }
+    }
+
     suspend fun setUsername(value: String) {
         dataStore.edit { it[UNAME] = value }
     }
@@ -139,6 +157,8 @@ class AppPreferences(
         val WS_PORT = intPreferencesKey("ws_port")
         val WS_PATH = stringPreferencesKey("ws_path")
         val AUTH_ENABLED = booleanPreferencesKey("auth_enabled")
+        val IGNORE_BATTERY_OPTIMIZATION = booleanPreferencesKey("ignore_battery_optimization")
+        val WAKELOCK = booleanPreferencesKey("wakelock")
         val UNAME = stringPreferencesKey("username")
         val PWD = stringPreferencesKey("password")
         val SERVER_STARTED = booleanPreferencesKey("server_started")
@@ -149,6 +169,8 @@ class AppPreferences(
         const val WS_PORT_DEFAULT = 8080
         const val WS_PATH_DEFAULT = "/mqtt"
         const val AUTH_ENABLED_DEFAULT = false
+        const val IGNORE_BATTERY_OPTIMIZATION_DEFAULT = true
+        const val WAKELOCK_DEFAULT = true
         const val UNAME_DEFAULT = "narada"
         const val PWD_DEFAULT = "narada"
     }

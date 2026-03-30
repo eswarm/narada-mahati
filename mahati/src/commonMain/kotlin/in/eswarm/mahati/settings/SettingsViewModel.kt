@@ -14,6 +14,18 @@ class SettingsViewModel(val settingsDataStore: SettingsDataStore) : ViewModel() 
         }
     }
 
+    fun setIgnoreBatteryOptimization(value: Boolean) {
+        viewModelScope.launch {
+            settingsDataStore.setIgnoreBatteryOptimization(value)
+        }
+    }
+
+    fun setWakeLock(value: Boolean) {
+        viewModelScope.launch {
+            settingsDataStore.setWakeLock(value)
+        }
+    }
+
     class Factory(private val settingsDataStore: SettingsDataStore) : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: kotlin.reflect.KClass<T>, extras: androidx.lifecycle.viewmodel.CreationExtras): T {
             @Suppress("UNCHECKED_CAST")
@@ -21,5 +33,3 @@ class SettingsViewModel(val settingsDataStore: SettingsDataStore) : ViewModel() 
         }
     }
 }
-
-

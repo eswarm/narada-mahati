@@ -16,6 +16,12 @@
     <string name="ws_port_title">Websocket Port</string>
     <string name="enable_ws_title">Enable Websocket</string>
 
+    <string name="battery_optimization_title">Ignore Battery Optimization</string>
+    <string name="battery_optimization_summary">Request to disable battery optimization for better background connectivity (Android)</string>
+
+    <string name="wakelock_title">Acquire WakeLock</string>
+    <string name="wakelock_summary">Keep CPU awake when the MQTT broker is running (Android)</string>
+
     <!--Launch screen -->
     <string name="start_server">Start Server</string>
     <string name="stop_server">Stop Server</string>

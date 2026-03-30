@@ -22,7 +22,33 @@ class SettingsDataStore(private val db: MahatiDb) {
         }
     }
 
+    val ignoreBatteryOptimization: Flow<Boolean>
+        get() = db.settingsQueries.getBool(IGNORE_BATTERY_OPTIMIZATION_KEY)
+            .asFlow()
+            .mapToOneOrNull(Dispatchers.IO)
+            .map { if(it != null) { it.value_bool == 1L } else { false }  }
+
+    suspend fun setIgnoreBatteryOptimization(value: Boolean) {
+        withContext(Dispatchers.IO) {
+            db.settingsQueries.insertOrUpdateBool(IGNORE_BATTERY_OPTIMIZATION_KEY, if (value) 1L else 0L)
+        }
+    }
+
+    val wakeLock: Flow<Boolean>
+        get() = db.settingsQueries.getBool(WAKELOCK_KEY)
+            .asFlow()
+            .mapToOneOrNull(Dispatchers.IO)
+            .map { if(it != null) { it.value_bool == 1L } else { false }  }
+
+    suspend fun setWakeLock(value: Boolean) {
+        withContext(Dispatchers.IO) {
+            db.settingsQueries.insertOrUpdateBool(WAKELOCK_KEY, if (value) 1L else 0L)
+        }
+    }
+
     companion object {
         private const val AUTO_RECONNECT_KEY = "auto_reconnect"
+        private const val IGNORE_BATTERY_OPTIMIZATION_KEY = "ignore_battery_optimization"
+        private const val WAKELOCK_KEY = "wakelock"
     }
 }
