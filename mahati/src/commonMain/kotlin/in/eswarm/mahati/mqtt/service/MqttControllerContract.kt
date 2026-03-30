@@ -1,7 +1,6 @@
 package `in`.eswarm.mahati.mqtt.service
 
 import `in`.eswarm.mahati.db.AppMqttMessage
-import `in`.eswarm.mahati.db.MqttConnection
 import `in`.eswarm.mahati.db.MqttConnectionModel
 import `in`.eswarm.mahati.mqtt.common.MqttClientState
 import kotlinx.coroutines.flow.SharedFlow

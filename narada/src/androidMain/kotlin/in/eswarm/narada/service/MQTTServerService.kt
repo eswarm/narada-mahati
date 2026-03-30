@@ -22,7 +22,6 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import android.os.Build
 
 class MQTTServerService : Service() {
 
@@ -76,11 +75,7 @@ class MQTTServerService : Service() {
             appComponent.mqttWrapper.stopMoquette()
             releaseWakeLock()
             withContext(Dispatchers.Main) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    stopForeground(STOP_FOREGROUND_REMOVE)
-                } else {
-                    stopForeground(true)
-                }
+                stopForeground(STOP_FOREGROUND_REMOVE)
                 stopSelf()
             }
         }

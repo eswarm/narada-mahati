@@ -117,14 +117,12 @@ class MqttClientService : Service() {
     }
 
     private fun requestBatteryOptimizationExemption() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (!BatteryOptimizationHelper.isIgnoringBatteryOptimizations(this)) {
-                try {
-                    BatteryOptimizationHelper.requestIgnoreBatteryOptimizations(this)
-                } catch (e: Exception) {
-                    // Permission not granted or other issue, continue without exemption
-                    // User can manually disable battery optimization in settings
-                }
+        if (!BatteryOptimizationHelper.isIgnoringBatteryOptimizations(this)) {
+            try {
+                BatteryOptimizationHelper.requestIgnoreBatteryOptimizations(this)
+            } catch (e: Exception) {
+                // Permission not granted or other issue, continue without exemption
+                // User can manually disable battery optimization in settings
             }
         }
     }
