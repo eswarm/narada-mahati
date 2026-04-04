@@ -59,7 +59,8 @@ class ConnectionDetailsViewModel(
                     username = connection.username ?: "",
                     password = connection.password?.decodeToString() ?: "",
                     useSsl = connection.useSsl,
-                    useWebsockets = connection.useSsl
+                    useWebsockets = connection.useWebsocket,
+                    webSocketPath = connection.webSocketPath
                 )
                 _uiState.update { details }
             }
@@ -194,6 +195,7 @@ class ConnectionDetailsViewModel(
         if (mqttController.connectionStatesMap.value[clientID] is MqttClientState.Connected) {
             _uiState.update { it.copy(connectionError = "Already Connected, not reconnecting") }
         }
+
         // isConnecting will be updated by the mqttManager.connectionState collector
         // when MqttClientState.Connecting is emitted.
 
@@ -206,9 +208,15 @@ class ConnectionDetailsViewModel(
             password = currentState.password.toByteArray(),
             useSsl = currentState.useSsl,
             topicPrefix = "",
-            createdAt = System.currentTimeMillis()
+            createdAt = System.currentTimeMillis(),
+            useWebsocket = currentState.useWebsockets,
+            webSocketPath = currentState.webSocketPath
         )
         mqttController.addConnection(params)
+    }
+
+    fun onWebSocketPathChange(path: String) {
+        _uiState.update { it.copy(webSocketPath = path) }
     }
 
     companion object {

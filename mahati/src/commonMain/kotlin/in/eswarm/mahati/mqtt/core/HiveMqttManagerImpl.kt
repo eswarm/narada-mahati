@@ -4,6 +4,7 @@ import com.hivemq.client.internal.mqtt.datatypes.MqttUtf8StringImpl
 import com.hivemq.client.internal.mqtt.message.auth.MqttSimpleAuth
 import com.hivemq.client.mqtt.MqttClient
 import com.hivemq.client.mqtt.MqttGlobalPublishFilter
+import com.hivemq.client.mqtt.MqttWebSocketConfig
 import com.hivemq.client.mqtt.datatypes.MqttQos
 import com.hivemq.client.mqtt.lifecycle.MqttClientAutoReconnect
 import com.hivemq.client.mqtt.lifecycle.MqttClientConnectedContext
@@ -56,9 +57,9 @@ class HiveMqttManagerImpl(private val coroutineScope: CoroutineScope) : MqttMana
     private fun Throwable?.isTransientDisconnect(): Boolean {
         val message = this?.message?.lowercase() ?: return false
         return message.contains("without disconnect") ||
-            message.contains("timed out") ||
-            message.contains("connection reset") ||
-            message.contains("broken pipe")
+                message.contains("timed out") ||
+                message.contains("connection reset") ||
+                message.contains("broken pipe")
     }
 
     private fun MqttClientConnectedContext.toServerUri(): String {
@@ -110,10 +111,13 @@ class HiveMqttManagerImpl(private val coroutineScope: CoroutineScope) : MqttMana
                 }
             }
 
+        // SSL must be configured BEFORE WebSocket for wss:// connections
         if (params.useSsl) {
             clientBuilder =
                 clientBuilder.sslWithDefaultConfig() // Consider more advanced SSL config if needed
+            logger.info("SSL configured for ${if (params.useWebsocket) "wss://" else "ssl://"}${params.brokerHost}:${params.brokerPort}")
         }
+
         if (params.username != null) {
             clientBuilder = clientBuilder.simpleAuth(
                 MqttSimpleAuth(
@@ -122,25 +126,69 @@ class HiveMqttManagerImpl(private val coroutineScope: CoroutineScope) : MqttMana
                     ), ByteBuffer.wrap(checkNotNull(params.password))
                 )
             )
+            logger.info("Authentication configured for user: ${params.username}")
+        }
+
+        // WebSocket configuration - must come after SSL if using wss://
+        if (params.useWebsocket) {
+            // Use default path "/mqtt" if not specified, as per MQTT over WebSocket standard
+            val wsPath = params.webSocketPath.ifBlank { "/mqtt" }
+            logger.info("Configuring WebSocket with path: $wsPath at ${if (params.useSsl) "wss" else "ws"}://${params.brokerHost}:${params.brokerPort}$wsPath")
+
+            clientBuilder = clientBuilder.webSocketConfig(
+                MqttWebSocketConfig.builder()
+                    .serverPath(wsPath)
+                    .build()
+            )
+        } else {
+            logger.info("Configuring ${if (params.useSsl) "SSL" else "TCP"} transport at ${params.brokerHost}:${params.brokerPort}")
         }
 
         client = clientBuilder.buildAsync()
 
         client?.connect(
-            Mqtt5Connect.builder().keepAlive(KEEP_ALIVE_SECONDS).cleanStart(false)
-                .willPublish().topic("home")
-                .payload("Disconnected".toByteArray()).applyWillPublish()
+            Mqtt5Connect
+                .builder()
+                .keepAlive(KEEP_ALIVE_SECONDS)
+                .cleanStart(false)
+                .willPublish().topic("home").payload("Disconnected".toByteArray())
+                .applyWillPublish()
                 .sessionExpiryInterval(SESSION_EXPIRY_SECONDS).build()
         )?.whenComplete { connAck, throwable ->
             coroutineScope.launch {
                 if (throwable != null) {
                     val errorMsg = when {
-                        throwable.message?.contains("ConnectTimeoutException") == true ->
-                            "Connection timeout - check network connectivity and broker availability at ${params.brokerHost}:${params.brokerPort}"
+                        throwable.message?.contains("ConnectTimeoutException") == true -> {
+                            if (params.useWebsocket) {
+                                "WebSocket connection timeout - check that:\n" +
+                                "1. Broker WebSocket is enabled on port ${params.brokerPort}\n" +
+                                "2. WebSocket path is correct (current: ${params.webSocketPath.ifBlank { "/mqtt" }})\n" +
+                                "3. Network connectivity is available"
+                            } else {
+                                "Connection timeout - check network connectivity and broker availability at ${params.brokerHost}:${params.brokerPort}"
+                            }
+                        }
+
                         throwable.message?.contains("UnknownHostException") == true ->
                             "Cannot resolve host ${params.brokerHost} - check network and DNS settings"
-                        throwable.message?.contains("ConnectionRefusedException") == true ->
-                            "Connection refused - broker may not be running on ${params.brokerHost}:${params.brokerPort}"
+
+                        throwable.message?.contains("ConnectionRefusedException") == true -> {
+                            if (params.useWebsocket) {
+                                "WebSocket connection refused - broker may not have WebSocket enabled or is not running on ${params.brokerHost}:${params.brokerPort}"
+                            } else {
+                                "Connection refused - broker may not be running on ${params.brokerHost}:${params.brokerPort}"
+                            }
+                        }
+
+                        throwable.message?.contains("handshake") == true ->
+                            "WebSocket handshake failed - check WebSocket path (current: ${params.webSocketPath.ifBlank { "/mqtt" }}) and broker WebSocket configuration"
+
+                        throwable.message?.contains("401") == true || throwable.message?.contains("403") == true ->
+                            "Authentication failed - check username and password"
+
+                        throwable.message?.contains("404") == true ->
+                            "WebSocket path not found - check that path '${params.webSocketPath.ifBlank { "/mqtt" }}' is correct"
+
                         else -> "Connection failed: ${throwable.message}"
                     }
                     logger.error(errorMsg, throwable)

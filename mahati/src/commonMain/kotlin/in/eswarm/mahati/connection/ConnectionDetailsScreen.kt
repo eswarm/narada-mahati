@@ -167,6 +167,15 @@ fun ConnectionDetailsScreen(
                 Text("Use WebSockets")
             }
 
+            OutlinedTextField(
+                value = uiState.webSocketPath,
+                enabled = uiState.useWebsockets,
+                onValueChange = { connectionDetailsViewModel.onWebSocketPathChange(it) },
+                label = { Text("WebSocket Path (default: /mqtt)") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+
             Spacer(modifier = Modifier.height(16.dp))
 
             if (uiState.isConnecting) {

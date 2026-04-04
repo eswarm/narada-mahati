@@ -38,6 +38,7 @@ kotlin {
 
                 api(libs.kotlinx.coroutines.core)
                 api(libs.hivemq.mqtt.client)
+                api("io.netty:netty-codec-http:4.1.100.Final") // Add Netty HTTP codec for WebSocket support
 
                 implementation(libs.kotlinx.serialization.json)
                 implementation(libs.slf4j.api)

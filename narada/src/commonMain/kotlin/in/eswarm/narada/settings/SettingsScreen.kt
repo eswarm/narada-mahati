@@ -197,26 +197,6 @@ fun SettingsScreen(
 
             HorizontalDivider()
 
-            SwitchPreference(
-                title = stringResource(Res.string.battery_optimization_title),
-                subtitle = stringResource(Res.string.battery_optimization_summary),
-                checked = ignoreBatteryOptimization.value,
-                onCheckedChange = {
-                    settingsViewModel.setIgnoreBatteryOptimization(it)
-                })
-
-            HorizontalDivider()
-
-            SwitchPreference(
-                title = stringResource(Res.string.wakelock_title),
-                subtitle = stringResource(Res.string.wakelock_summary),
-                checked = wakeLock.value,
-                onCheckedChange = {
-                    settingsViewModel.setWakeLock(it)
-                })
-
-            HorizontalDivider()
-
             RegularPreference(title = userNameString, subtitle = userName.value, onClick = {
                 showDialog.value = true
                 dialogTitle.value = userNameString
@@ -246,6 +226,27 @@ fun SettingsScreen(
                     }
                 }
             })
+
+            HorizontalDivider()
+
+            SwitchPreference(
+                title = stringResource(Res.string.battery_optimization_title),
+                subtitle = stringResource(Res.string.battery_optimization_summary),
+                checked = ignoreBatteryOptimization.value,
+                onCheckedChange = {
+                    settingsViewModel.setIgnoreBatteryOptimization(it)
+                })
+
+            HorizontalDivider()
+
+            SwitchPreference(
+                title = stringResource(Res.string.wakelock_title),
+                subtitle = stringResource(Res.string.wakelock_summary),
+                checked = wakeLock.value,
+                onCheckedChange = {
+                    settingsViewModel.setWakeLock(it)
+                })
+
         }
     }
 }

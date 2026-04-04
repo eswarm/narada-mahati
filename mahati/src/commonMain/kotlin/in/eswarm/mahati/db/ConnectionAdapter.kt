@@ -16,6 +16,8 @@ data class MqttConnectionModel(
     val useSsl: Boolean,
     val topicPrefix: String,
     val createdAt: Long,
+    val useWebsocket: Boolean = false,
+    val webSocketPath: String = "",
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -32,6 +34,8 @@ data class MqttConnectionModel(
         if (username != other.username) return false
         if (!password.contentEquals(other.password)) return false
         if (topicPrefix != other.topicPrefix) return false
+        if (useWebsocket != other.useWebsocket) return false
+        if (webSocketPath != other.webSocketPath) return false
 
         return true
     }
@@ -46,6 +50,8 @@ data class MqttConnectionModel(
         result = 31 * result + (username?.hashCode() ?: 0)
         result = 31 * result + (password?.contentHashCode() ?: 0)
         result = 31 * result + topicPrefix.hashCode()
+        result = 31 * result + useWebsocket.hashCode()
+        result = 31 * result + webSocketPath.hashCode()
         return result
     }
 }
@@ -89,7 +95,9 @@ class ConnectionAdapter {
                     mqttConnection.password,
                     mqttConnection.useSsl,
                     mqttConnection.topicPrefix,
-                    mqttConnection.createdAt
+                    mqttConnection.createdAt,
+                    mqttConnection.useWebsocket,
+                    mqttConnection.websocketPath
                 )
             }
             return@withContext null
@@ -98,7 +106,7 @@ class ConnectionAdapter {
 
     suspend fun getAllConnections(): List<MqttConnectionModel> {
         return withContext(Dispatchers.IO) {
-            queries.selectAll(mapper = { id, brokerHost, brokerPort, clientID, username, password, useSsl, topicPrefix, createdAt ->
+            queries.selectAll(mapper = { id, brokerHost, brokerPort, clientID, username, password, useSsl, topicPrefix, createdAt, useWebsocket, webSocketPath ->
                 MqttConnectionModel(
                     id,
                     brokerHost,
@@ -108,7 +116,9 @@ class ConnectionAdapter {
                     password,
                     useSsl,
                     topicPrefix,
-                    createdAt
+                    createdAt,
+                    useWebsocket,
+                    webSocketPath
                 )
             }).executeAsList()
         }
@@ -116,7 +126,7 @@ class ConnectionAdapter {
 
     fun getAllConnectionsFlow(): Flow<List<MqttConnectionModel>> {
         return queries.selectAll(
-            mapper = { id, brokerHost, brokerPort, clientID, username, password, useSsl, topicPrefix, createdAt ->
+            mapper = { id, brokerHost, brokerPort, clientID, username, password, useSsl, topicPrefix, createdAt, useWebsocket, webSocketPath ->
                 MqttConnectionModel(
                     id,
                     brokerHost,
@@ -128,8 +138,7 @@ class ConnectionAdapter {
                     topicPrefix,
                     createdAt
                 )
-            }
-        ).asFlow().mapToList(Dispatchers.IO)
+            }).asFlow().mapToList(Dispatchers.IO)
     }
 
     suspend fun deleteConnectionByClientId(clientID: String) {
