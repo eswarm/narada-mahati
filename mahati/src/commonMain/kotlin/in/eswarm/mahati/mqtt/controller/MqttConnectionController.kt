@@ -142,26 +142,28 @@ class MqttConnectionController(
                 val mqttManager = HiveMqttManagerImpl(managerScope)
                 activeManagers[config.clientID] = ManagerScope(managerScope, mqttManager)
                 managerWithScope = activeManagers[config.clientID]
-            }
 
-            val mqttManager = checkNotNull(managerWithScope).manager
-            val managerScope = managerWithScope.scope
+                // Only attach the collectors ONCE when the manager is first created.
+                // Doing this outside the block was causing duplicate message collection.
+                managerScope.launch {
+                    mqttManager.connectionState.collect { state ->
+                        _connectionStatesMap.update { currentMap ->
+                            currentMap.toMutableMap().apply { this[config.clientID] = state }
+                        }
+                    }
+                }
 
-            mqttManager.onReconnected = {
-                restoreSubscriptions(config.clientID, mqttManager)
-            }
-
-            managerScope.launch {
-                mqttManager.connectionState.collect { state ->
-                    _connectionStatesMap.update { currentMap ->
-                        currentMap.toMutableMap().apply { this[config.clientID] = state }
+                managerScope.launch {
+                    mqttManager.receivedMessages.collect { message ->
+                        _allMessages.tryEmit(config.clientID to message)
                     }
                 }
             }
-            managerScope.launch {
-                mqttManager.receivedMessages.collect { message ->
-                    _allMessages.tryEmit(config.clientID to message)
-                }
+
+            val mqttManager = checkNotNull(managerWithScope).manager
+
+            mqttManager.onReconnected = {
+                restoreSubscriptions(config.clientID, mqttManager)
             }
 
             mqttManager.connect(config)
