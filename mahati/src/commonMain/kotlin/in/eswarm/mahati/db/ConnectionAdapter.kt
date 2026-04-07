@@ -15,9 +15,9 @@ data class MqttConnectionModel(
     val password: ByteArray?,
     val useSsl: Boolean,
     val topicPrefix: String,
-    val createdAt: Long,
     val useWebsocket: Boolean = false,
     val webSocketPath: String = "",
+    val createdAt: Long
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -67,7 +67,9 @@ class ConnectionAdapter {
         username: String?,
         password: ByteArray?,
         useSsl: Boolean,
-        topicPrefix: String
+        topicPrefix: String,
+        useWebsocket: Boolean,
+        webSocketPath: String
     ) {
         withContext(Dispatchers.IO) { // Perform DB operation on IO dispatcher
             queries.insert(
@@ -76,8 +78,10 @@ class ConnectionAdapter {
                 clientID = clientID,
                 username = username,
                 password = password,
-                useSsl = useSsl, // Corrected: Pass Boolean directly, adapter handles it
-                topicPrefix = topicPrefix
+                useSsl = useSsl,
+                topicPrefix = topicPrefix,
+                useWebsocket = useWebsocket,
+                websocketPath = webSocketPath
             )
         }
     }
@@ -95,9 +99,9 @@ class ConnectionAdapter {
                     mqttConnection.password,
                     mqttConnection.useSsl,
                     mqttConnection.topicPrefix,
-                    mqttConnection.createdAt,
                     mqttConnection.useWebsocket,
-                    mqttConnection.websocketPath
+                    mqttConnection.websocketPath,
+                    mqttConnection.createdAt
                 )
             }
             return@withContext null
@@ -106,7 +110,7 @@ class ConnectionAdapter {
 
     suspend fun getAllConnections(): List<MqttConnectionModel> {
         return withContext(Dispatchers.IO) {
-            queries.selectAll(mapper = { id, brokerHost, brokerPort, clientID, username, password, useSsl, topicPrefix, createdAt, useWebsocket, webSocketPath ->
+            queries.selectAll(mapper = { id, brokerHost, brokerPort, clientID, username, password, useSsl, topicPrefix, useWebsocket, webSocketPath, createdAt ->
                 MqttConnectionModel(
                     id,
                     brokerHost,
@@ -116,9 +120,9 @@ class ConnectionAdapter {
                     password,
                     useSsl,
                     topicPrefix,
-                    createdAt,
                     useWebsocket,
-                    webSocketPath
+                    webSocketPath,
+                    createdAt
                 )
             }).executeAsList()
         }
@@ -126,7 +130,7 @@ class ConnectionAdapter {
 
     fun getAllConnectionsFlow(): Flow<List<MqttConnectionModel>> {
         return queries.selectAll(
-            mapper = { id, brokerHost, brokerPort, clientID, username, password, useSsl, topicPrefix, createdAt, useWebsocket, webSocketPath ->
+            mapper = { id, brokerHost, brokerPort, clientID, username, password, useSsl, topicPrefix, useWebsocket, webSocketPath, createdAt ->
                 MqttConnectionModel(
                     id,
                     brokerHost,
@@ -136,6 +140,8 @@ class ConnectionAdapter {
                     password,
                     useSsl,
                     topicPrefix,
+                    useWebsocket,
+                    webSocketPath,
                     createdAt
                 )
             }).asFlow().mapToList(Dispatchers.IO)

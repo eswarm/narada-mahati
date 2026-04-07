@@ -9,9 +9,9 @@ CREATE TABLE IF NOT EXISTS MqttConnection (
     password BLOB,
     useSsl INTEGER AS Boolean NOT NULL DEFAULT FALSE, -- 0 for false, 1 for true
     topicPrefix TEXT NOT NULL DEFAULT '',
-    createdAt INTEGER NOT NULL DEFAULT (STRFTIME('%s', 'now')),
     useWebsocket INTEGER AS Boolean NOT NULL DEFAULT FALSE, -- 0 for false, 1 for true
-    websocketPath TEXT NOT NULL DEFAULT ''
+    websocketPath TEXT NOT NULL DEFAULT '',
+    createdAt INTEGER NOT NULL DEFAULT (STRFTIME('%s', 'now'))
 );
 
 selectAll:
@@ -21,8 +21,8 @@ selectByClientID:
 SELECT * FROM MqttConnection WHERE clientID = ?;
 
 insert:
-INSERT OR REPLACE INTO MqttConnection(brokerHost, brokerPort, clientID, username, password, useSsl, topicPrefix)
-VALUES (?, ?, ?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO MqttConnection(brokerHost, brokerPort, clientID, username, password, useSsl, topicPrefix, useWebsocket, websocketPath)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 deleteByClientId:
 DELETE FROM MqttConnection WHERE clientID = ?;

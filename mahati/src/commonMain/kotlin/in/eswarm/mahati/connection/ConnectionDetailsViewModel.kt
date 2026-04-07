@@ -94,7 +94,9 @@ class ConnectionDetailsViewModel(
                             uiState.value.username,
                             uiState.value.password.toByteArray(),
                             uiState.value.useSsl,
-                            ""
+                            "",
+                            uiState.value.useWebsockets,
+                            uiState.value.webSocketPath
                         )
 
                         viewModelScope.launch {

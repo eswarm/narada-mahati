@@ -22,6 +22,8 @@ class QrScannerViewModel(private val connectionRepository: ConnectionAdapter) : 
                     username = details.username,
                     password = details.password.toByteArray(),
                     useSsl = false, // Assuming no SSL from QR
+                    useWebsocket = false, // Assuming no WebSocket from QR
+                    webSocketPath = "",
                     topicPrefix = ""
                 )
             } catch (e: Exception) {
