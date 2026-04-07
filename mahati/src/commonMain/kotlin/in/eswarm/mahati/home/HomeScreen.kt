@@ -155,6 +155,9 @@ fun ConnectionListContent(
                     onEditAction = { profileId ->
                         viewModel.onEvent(HomeUiEvent.EditConnectionClicked(profileId))
                     },
+                    onDisconnectAction = { profileId ->
+                        viewModel.onEvent(HomeUiEvent.DisconnectClicked(profileId))
+                    },
                     modifier = Modifier.weight(1f)
                 )
 
@@ -189,6 +192,7 @@ fun PermissionView(permissionState: PermissionState?, permissionRationale: () ->
                     Text(stringResource(Res.string.permission_grant))
                 }
             }
+
             else -> {}
         }
     }
@@ -201,6 +205,7 @@ fun ConnectionsList(
     onProfileClick: (String) -> Unit,
     onDeleteAction: (String) -> Unit,
     onEditAction: (String) -> Unit,
+    onDisconnectAction: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
@@ -214,7 +219,8 @@ fun ConnectionsList(
                 connectionState = connectionStates[connectionParamsEntity.clientID],
                 clickAction = { onProfileClick(connectionParamsEntity.clientID) },
                 deleteAction = { clientID -> onDeleteAction(clientID) },
-                editAction = { clientID -> onEditAction(clientID) }
+                editAction = { clientID -> onEditAction(clientID) },
+                disconnectAction = { clientID -> onDisconnectAction(clientID) }
             )
         }
     }
@@ -228,11 +234,13 @@ fun ConnectionListItem(
     clickAction: () -> Unit,
     deleteAction: (clientID: String) -> Unit,
     editAction: (clientID: String) -> Unit,
+    disconnectAction: (clientID: String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val isConnecting = connectionState is MqttClientState.Connecting
     Card(
-        onClick = if (isConnecting) { {}
+        onClick = if (isConnecting) {
+            {}
         } else clickAction, modifier = modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.padding(16.dp).fillMaxWidth(),
@@ -268,10 +276,19 @@ fun ConnectionListItem(
             }
             Spacer(modifier = Modifier.width(16.dp))
             if (isConnecting) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(24.dp), // Standard icon size
-                    color = MaterialTheme.colorScheme.primary, strokeWidth = 2.dp
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(onClick = { disconnectAction(connectionDetails.clientID) }) {
+                        Icon(
+                            imageVector = Icons.Default.PowerOff,
+                            contentDescription = "Disconnect",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp), // Standard icon size
+                        color = MaterialTheme.colorScheme.primary, strokeWidth = 2.dp
+                    )
+                }
             } else {
                 Row {
                     IconButton(onClick = { editAction(connectionDetails.clientID) }) {
@@ -285,6 +302,13 @@ fun ConnectionListItem(
                         Icon(
                             imageVector = Icons.Default.Delete,
                             contentDescription = "Delete connection",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    IconButton(onClick = { disconnectAction(connectionDetails.clientID) }) {
+                        Icon(
+                            imageVector = Icons.Default.PowerOff,
+                            contentDescription = "Disconnect",
                             tint = MaterialTheme.colorScheme.primary
                         )
                     }

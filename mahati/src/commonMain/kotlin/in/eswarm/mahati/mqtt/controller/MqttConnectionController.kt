@@ -171,14 +171,18 @@ class MqttConnectionController(
     }
 
     private suspend fun handleRemoveConnection(connectionId: String) {
-        mapMutex.withLock {
-            activeManagers.remove(connectionId)?.apply {
-                manager.disconnect()
-                scope.cancel()
-            }
+        val managerWithScope = mapMutex.withLock {
+            val removed = activeManagers.remove(connectionId)
             _connectionStatesMap.update { currentMap ->
                 currentMap.toMutableMap().apply { remove(connectionId) }
             }
+            removed
+        }
+
+        managerWithScope?.apply {
+            manager.disconnect()
+            delay(1000) // allow network packets to be sent before cancelling
+            scope.cancel()
         }
     }
 
@@ -225,13 +229,18 @@ class MqttConnectionController(
 
     override fun removeAllConnections() {
         controllerScope.launch {
-            mapMutex.withLock {
-                activeManagers.values.forEach {
-                    it.manager.disconnect()
-                    it.scope.cancel()
-                }
+            val removedManagers = mapMutex.withLock {
+                val managers = activeManagers.values.toList()
                 activeManagers.clear()
                 _connectionStatesMap.value = emptyMap()
+                managers
+            }
+            removedManagers.forEach {
+                it.manager.disconnect()
+            }
+            delay(1000)
+            removedManagers.forEach {
+                it.scope.cancel()
             }
         }
     }
@@ -272,13 +281,18 @@ class MqttConnectionController(
 
     override fun shutdownAll() {
         controllerScope.launch {
-            mapMutex.withLock {
-                activeManagers.values.forEach {
-                    it.manager
-                    it.scope.cancel()
-                }
+            val removedManagers = mapMutex.withLock {
+                val managers = activeManagers.values.toList()
                 activeManagers.clear()
                 _connectionStatesMap.value = emptyMap()
+                managers
+            }
+            removedManagers.forEach {
+                it.manager.disconnect()
+            }
+            delay(1000)
+            removedManagers.forEach {
+                it.scope.cancel()
             }
         }
     }

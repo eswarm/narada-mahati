@@ -24,6 +24,7 @@ sealed interface HomeUiEvent {
     data object SettingsClicked : HomeUiEvent
     data class EditConnectionClicked(val clientID: String) : HomeUiEvent
     data class DeleteConnectionClicked(val clientID: String) : HomeUiEvent
+    data class DisconnectClicked(val clientID: String) : HomeUiEvent
 }
 
 sealed interface HomeSideEffect {
@@ -36,10 +37,6 @@ sealed interface HomeSideEffect {
 
     data class EditConnection(val clientID: String) : HomeSideEffect
 }
-
-data class HomeUiState(
-    val isConnecting: Boolean = false,
-)
 
 
 class HomeViewModel(
@@ -177,6 +174,10 @@ class HomeViewModel(
                 is HomeUiEvent.EditConnectionClicked -> {
                     _sideEffects.value =
                         EditConnection(event.clientID)
+                }
+
+                is HomeUiEvent.DisconnectClicked -> {
+                    mqttController.removeConnection(event.clientID)
                 }
 
                 HomeUiEvent.SettingsClicked -> {
