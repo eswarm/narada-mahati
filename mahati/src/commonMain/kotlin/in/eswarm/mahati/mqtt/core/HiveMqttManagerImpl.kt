@@ -48,7 +48,7 @@ class HiveMqttManagerImpl(private val coroutineScope: CoroutineScope) : MqttMana
     private val logger = LoggerFactory.getLogger(HiveMqttManagerImpl::class.java)
 
     companion object {
-        private const val KEEP_ALIVE_SECONDS = 30 * 60 // 30 minutes
+        private const val KEEP_ALIVE_SECONDS = 5 * 60 // 30 minutes
         private const val SESSION_EXPIRY_SECONDS = 24 * 60 * 60L // 24 hours
         private const val RECONNECT_INITIAL_DELAY_SECONDS = 30L // 30 seconds
         private const val RECONNECT_MAX_DELAY_SECONDS = 2 * 60L // 2 minutes. 
