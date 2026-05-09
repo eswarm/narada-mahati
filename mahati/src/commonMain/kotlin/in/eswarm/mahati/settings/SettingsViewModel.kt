@@ -14,12 +14,6 @@ class SettingsViewModel(val settingsDataStore: SettingsDataStore) : ViewModel() 
         }
     }
 
-    fun setIgnoreBatteryOptimization(value: Boolean) {
-        viewModelScope.launch {
-            settingsDataStore.setIgnoreBatteryOptimization(value)
-        }
-    }
-
     fun setWakeLock(value: Boolean) {
         viewModelScope.launch {
             settingsDataStore.setWakeLock(value)

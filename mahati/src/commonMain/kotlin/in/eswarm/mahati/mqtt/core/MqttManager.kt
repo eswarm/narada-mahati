@@ -36,8 +36,9 @@ interface MqttManager {
      * This method should handle reconnections internally if desired by the implementation.
      *
      * @param params The connection parameters.
+     * @param autoReconnect Whether to automatically reconnect on connection loss.
      */
-    fun connect(params: MqttConnectionModel)
+    fun connect(params: MqttConnectionModel, autoReconnect: Boolean)
 
     /**
      * Disconnects from the MQTT broker.

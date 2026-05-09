@@ -40,7 +40,8 @@ class AppComponent(
             messageRepo = messageRepo,
             subscriptionRepo = subscriptionRepo,
             sendNotification = sendNotification,
-            onConnectionAdded = onConnectionAction
+            onConnectionAdded = onConnectionAction,
+            settingsDataStore = settingsDataStore
         )
 
         // Load all saved connections from the database and add them to the controller.

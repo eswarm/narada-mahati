@@ -74,7 +74,7 @@ class HiveMqttManagerImpl(private val coroutineScope: CoroutineScope) : MqttMana
         }
     }
 
-    override fun connect(params: MqttConnectionModel) {
+    override fun connect(params: MqttConnectionModel, autoReconnect: Boolean) {
         if (_connectionState.value is MqttClientState.Connected || _connectionState.value is MqttClientState.Connecting) {
             if (currentParams == params && client?.state?.isConnectedOrReconnect == true) {
                 // Already connected or connecting with the same parameters
@@ -89,13 +89,20 @@ class HiveMqttManagerImpl(private val coroutineScope: CoroutineScope) : MqttMana
         currentParams = params
         _connectionState.value = MqttClientState.Connecting
 
-        var clientBuilder = MqttClient.builder().useMqttVersion5().automaticReconnect(
-            MqttClientAutoReconnect.builder()
-                .initialDelay(RECONNECT_INITIAL_DELAY_SECONDS, TimeUnit.SECONDS)
-                .maxDelay(RECONNECT_MAX_DELAY_SECONDS, TimeUnit.SECONDS)
-                .build()
-        ).identifier(params.clientID).serverHost(params.brokerHost)
-            .serverPort(params.brokerPort.toInt()).addConnectedListener { context ->
+        var clientBuilder = MqttClient.builder().useMqttVersion5()
+            .identifier(params.clientID).serverHost(params.brokerHost)
+            .serverPort(params.brokerPort.toInt())
+
+        if (autoReconnect) {
+            clientBuilder = clientBuilder.automaticReconnect(
+                MqttClientAutoReconnect.builder()
+                    .initialDelay(RECONNECT_INITIAL_DELAY_SECONDS, TimeUnit.SECONDS)
+                    .maxDelay(RECONNECT_MAX_DELAY_SECONDS, TimeUnit.SECONDS)
+                    .build()
+            )
+        }
+
+        clientBuilder = clientBuilder.addConnectedListener { context ->
                 logger.info("Connected to ${context.toServerUri()}")
                 _connectionState.value =
                     MqttClientState.Connected(context.toServerUri(), params.clientID)

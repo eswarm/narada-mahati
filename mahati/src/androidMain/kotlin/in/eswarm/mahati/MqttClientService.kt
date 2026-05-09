@@ -32,11 +32,7 @@ class MqttClientService : Service() {
         val settingsDataStore = appComponent.settingsDataStore
 
         serviceScope.launch {
-            val ignoreBattery = settingsDataStore.ignoreBatteryOptimization.first()
-            if (ignoreBattery) {
-                // Request battery optimization exemption for MQTT keepalive during Doze mode
-                requestBatteryOptimizationExemption()
-            }
+            val autoReconnect = settingsDataStore.autoReconnect.first()
 
             val useWakeLock = settingsDataStore.wakeLock.first()
             if (useWakeLock) {

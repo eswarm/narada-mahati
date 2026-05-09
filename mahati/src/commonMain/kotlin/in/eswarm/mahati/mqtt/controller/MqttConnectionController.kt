@@ -9,6 +9,7 @@ import `in`.eswarm.mahati.mqtt.common.MqttClientState
 import `in`.eswarm.mahati.mqtt.core.HiveMqttManagerImpl
 import `in`.eswarm.mahati.mqtt.core.MqttManager
 import `in`.eswarm.mahati.mqtt.service.MqttControllerContract
+import `in`.eswarm.mahati.data.data.SettingsDataStore
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
@@ -19,6 +20,7 @@ class MqttConnectionController(
     private val controllerScope: CoroutineScope,
     private val messageRepo: MessageRepository,
     private val subscriptionRepo: SubscriptionRepository,
+    private val settingsDataStore: SettingsDataStore,
     private val sendNotification: ((String, String, String, String) -> Unit)? = null,
     private val onConnectionAdded: (() -> Unit)? = null
 ) : MqttControllerContract { // Implements the common interface
@@ -166,7 +168,8 @@ class MqttConnectionController(
                 restoreSubscriptions(config.clientID, mqttManager)
             }
 
-            mqttManager.connect(config)
+            val autoReconnect = settingsDataStore.autoReconnect.first()
+            mqttManager.connect(config, autoReconnect)
         }
     }
 

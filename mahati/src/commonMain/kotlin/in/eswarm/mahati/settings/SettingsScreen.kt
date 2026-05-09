@@ -13,7 +13,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import `in`.eswarm.mahati.resources.*
+import `in`.eswarm.mahati.system.BatteryOptimizationManager
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -22,8 +29,24 @@ fun SettingsScreen(
 ) {
     val scrollState = rememberScrollState()
     val autoReconnect = settingsViewModel.settingsDataStore.autoReconnect.collectAsState(initial = false)
-    val ignoreBatteryOptimization = settingsViewModel.settingsDataStore.ignoreBatteryOptimization.collectAsState(initial = false)
     val wakeLock = settingsViewModel.settingsDataStore.wakeLock.collectAsState(initial = false)
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val ignoreBatteryOptimization = remember { mutableStateOf(BatteryOptimizationManager.isIgnoringBatteryOptimizations()) }
+
+    if (BatteryOptimizationManager.isSupported) {
+        DisposableEffect(lifecycleOwner) {
+            val observer = LifecycleEventObserver { _, event ->
+                if (event == Lifecycle.Event.ON_RESUME) {
+                    ignoreBatteryOptimization.value = BatteryOptimizationManager.isIgnoringBatteryOptimizations()
+                }
+            }
+            lifecycleOwner.lifecycle.addObserver(observer)
+            onDispose {
+                lifecycleOwner.lifecycle.removeObserver(observer)
+            }
+        }
+    }
 
     Scaffold { innerPadding ->
         Column(
@@ -54,15 +77,19 @@ fun SettingsScreen(
                     settingsViewModel.setAutoReconnect(it)
                 })
 
-            HorizontalDivider()
+            if (BatteryOptimizationManager.isSupported) {
+                HorizontalDivider()
 
-            SwitchPreference(
-                title = stringResource(Res.string.battery_optimization_title),
-                subtitle = stringResource(Res.string.battery_optimization_summary),
-                checked = ignoreBatteryOptimization.value,
-                onCheckedChange = {
-                    settingsViewModel.setIgnoreBatteryOptimization(it)
-                })
+                SwitchPreference(
+                    title = stringResource(Res.string.battery_optimization_title),
+                    subtitle = stringResource(Res.string.battery_optimization_summary),
+                    checked = ignoreBatteryOptimization.value,
+                    onCheckedChange = {
+                        if (it && !ignoreBatteryOptimization.value) {
+                            BatteryOptimizationManager.requestIgnoreBatteryOptimizations()
+                        }
+                    })
+            }
 
             HorizontalDivider()
 
