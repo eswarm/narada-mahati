@@ -149,7 +149,6 @@ class AppPreferences(
         val WS_PORT = intPreferencesKey("ws_port")
         val WS_PATH = stringPreferencesKey("ws_path")
         val AUTH_ENABLED = booleanPreferencesKey("auth_enabled")
-        val IGNORE_BATTERY_OPTIMIZATION = booleanPreferencesKey("ignore_battery_optimization")
         val WAKELOCK = booleanPreferencesKey("wakelock")
         val UNAME = stringPreferencesKey("username")
         val PWD = stringPreferencesKey("password")

@@ -4,7 +4,6 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
 import androidx.core.app.NotificationCompat
@@ -32,8 +31,6 @@ class MqttClientService : Service() {
         val settingsDataStore = appComponent.settingsDataStore
 
         serviceScope.launch {
-            val autoReconnect = settingsDataStore.autoReconnect.first()
-
             val useWakeLock = settingsDataStore.wakeLock.first()
             if (useWakeLock) {
                 // Acquire wake lock to keep network alive for MQTT keepalive during Doze mode
