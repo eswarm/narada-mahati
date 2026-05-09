@@ -35,8 +35,8 @@ kotlin {
                 implementation(libs.material.icons.extended)
 
                 implementation("com.github.moquette-io:moquette:0.18.0") {
-                    //exclude(group = "org.slf4j", module = "slf4j-log4j12")
-                    //exclude(group = "org.slf4j", module = "slf4j-reload4j")
+                    exclude(group = "org.slf4j", module = "slf4j-log4j12")
+                    exclude(group = "org.slf4j", module = "slf4j-reload4j")
                 }
                 implementation(libs.navigation.compose)
                 api(libs.kotlinx.coroutines.core)
@@ -48,7 +48,7 @@ kotlin {
                 implementation(libs.custom.qr.generator)
                 implementation(libs.kotlinx.serialization.json)
 
-                implementation("org.slf4j:slf4j-jdk14:2.0.17")
+                implementation(libs.slf4j.api)
             }
         }
 

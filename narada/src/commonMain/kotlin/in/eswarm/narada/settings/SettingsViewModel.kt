@@ -62,11 +62,6 @@ class SettingsViewModel(val appPreferences: AppPreferences) : ViewModel() {
         }
     }
 
-    fun setIgnoreBatteryOptimization(value: Boolean) {
-        viewModelScope.launch {
-            appPreferences.setIgnoreBatteryOptimization(value)
-        }
-    }
 
     fun setWakeLock(value: Boolean) {
         viewModelScope.launch {

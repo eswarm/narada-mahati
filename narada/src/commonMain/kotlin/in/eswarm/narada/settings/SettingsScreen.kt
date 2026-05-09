@@ -19,12 +19,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.compose.runtime.DisposableEffect
 import `in`.eswarm.narada.resources.Res
 import `in`.eswarm.narada.resources.empty_warning
 import `in`.eswarm.narada.resources.enable_auth
 import `in`.eswarm.narada.resources.enable_ws_title
 import `in`.eswarm.narada.resources.mqtt_port_title
 import `in`.eswarm.narada.resources.password
+import `in`.eswarm.narada.system.BatteryOptimizationManager
 import `in`.eswarm.narada.resources.path
 import `in`.eswarm.narada.resources.port
 import `in`.eswarm.narada.resources.port_warning
@@ -66,8 +71,6 @@ fun SettingsScreen(
                 settingsViewModel.appPreferences.wsPath.collectAsState(initial = AppPreferences.WS_PATH_DEFAULT)
             val authEnabled =
                 settingsViewModel.appPreferences.authEnabled.collectAsState(initial = AppPreferences.AUTH_ENABLED_DEFAULT)
-            val ignoreBatteryOptimization =
-                settingsViewModel.appPreferences.ignoreBatteryOptimization.collectAsState(initial = AppPreferences.IGNORE_BATTERY_OPTIMIZATION_DEFAULT)
             val wakeLock =
                 settingsViewModel.appPreferences.wakeLock.collectAsState(initial = AppPreferences.WAKELOCK_DEFAULT)
             val userName = settingsViewModel.appPreferences.userName.collectAsState(initial = "")
@@ -105,6 +108,23 @@ fun SettingsScreen(
             val wsPathString = stringResource(Res.string.ws_path_title)
             val wsPortString = stringResource(Res.string.ws_port_title)
             val pathString = stringResource(Res.string.path)
+
+            val lifecycleOwner = LocalLifecycleOwner.current
+            val ignoreBatteryOptimization = remember { mutableStateOf(BatteryOptimizationManager.isIgnoringBatteryOptimizations()) }
+
+            if (BatteryOptimizationManager.isSupported) {
+                DisposableEffect(lifecycleOwner) {
+                    val observer = LifecycleEventObserver { _, event ->
+                        if (event == Lifecycle.Event.ON_RESUME) {
+                            ignoreBatteryOptimization.value = BatteryOptimizationManager.isIgnoringBatteryOptimizations()
+                        }
+                    }
+                    lifecycleOwner.lifecycle.addObserver(observer)
+                    onDispose {
+                        lifecycleOwner.lifecycle.removeObserver(observer)
+                    }
+                }
+            }
 
             if (showDialog.value) {
                 CustomDialog(
@@ -227,15 +247,19 @@ fun SettingsScreen(
                 }
             })
 
-            HorizontalDivider()
+            if (BatteryOptimizationManager.isSupported) {
+                HorizontalDivider()
 
-            SwitchPreference(
-                title = stringResource(Res.string.battery_optimization_title),
-                subtitle = stringResource(Res.string.battery_optimization_summary),
-                checked = ignoreBatteryOptimization.value,
-                onCheckedChange = {
-                    settingsViewModel.setIgnoreBatteryOptimization(it)
-                })
+                SwitchPreference(
+                    title = stringResource(Res.string.battery_optimization_title),
+                    subtitle = stringResource(Res.string.battery_optimization_summary),
+                    checked = ignoreBatteryOptimization.value,
+                    onCheckedChange = {
+                        if (it && !ignoreBatteryOptimization.value) {
+                            BatteryOptimizationManager.requestIgnoreBatteryOptimizations()
+                        }
+                    })
+            }
 
             HorizontalDivider()
 

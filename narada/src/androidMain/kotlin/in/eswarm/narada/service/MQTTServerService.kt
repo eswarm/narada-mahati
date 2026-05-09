@@ -86,11 +86,6 @@ class MQTTServerService : Service() {
             appComponent.appPreferences.setServerStarted()
             val serverProperties = appComponent.appPreferences.getServerProperties()
 
-            val ignoreBattery = appComponent.appPreferences.ignoreBatteryOptimization.first()
-            if (ignoreBattery) {
-                requestBatteryOptimizationExemption()
-            }
-
             val useWakeLock = appComponent.appPreferences.wakeLock.first()
             if (useWakeLock) {
                 acquireWakeLock()
