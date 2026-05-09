@@ -48,7 +48,7 @@ class HiveMqttManagerImpl(private val coroutineScope: CoroutineScope) : MqttMana
     private val logger = LoggerFactory.getLogger(HiveMqttManagerImpl::class.java)
 
     companion object {
-        private const val KEEP_ALIVE_SECONDS = 5 * 60 // 30 minutes
+        private const val KEEP_ALIVE_SECONDS = 5 * 60 // 5 minutes
         private const val SESSION_EXPIRY_SECONDS = 24 * 60 * 60L // 24 hours
         private const val RECONNECT_INITIAL_DELAY_SECONDS = 30L // 30 seconds
         private const val RECONNECT_MAX_DELAY_SECONDS = 2 * 60L // 2 minutes. 
@@ -59,7 +59,8 @@ class HiveMqttManagerImpl(private val coroutineScope: CoroutineScope) : MqttMana
         return message.contains("without disconnect") ||
                 message.contains("timed out") ||
                 message.contains("connection reset") ||
-                message.contains("broken pipe")
+                message.contains("broken pipe") ||
+                message.contains("connection refused")
     }
 
     private fun MqttClientConnectedContext.toServerUri(): String {
@@ -79,9 +80,11 @@ class HiveMqttManagerImpl(private val coroutineScope: CoroutineScope) : MqttMana
                 // Already connected or connecting with the same parameters
                 return
             }
-            // If connecting with different params, or if state is connecting but client is not, disconnect first
-            client?.disconnect()
         }
+
+        // Always forcefully disconnect the previous client to kill any lingering AutoReconnect
+        // loops that cause connection ping-pong when retrying after an Error state.
+        client?.disconnect()
 
         currentParams = params
         _connectionState.value = MqttClientState.Connecting

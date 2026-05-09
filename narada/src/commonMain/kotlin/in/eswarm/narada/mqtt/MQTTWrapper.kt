@@ -27,6 +27,10 @@ import kotlinx.coroutines.launch
 import java.lang.Boolean
 import java.nio.charset.StandardCharsets
 import java.util.*
+import java.util.logging.Handler
+import java.util.logging.LogRecord
+import java.util.logging.Logger
+import java.util.logging.Level
 import kotlin.Exception
 
 class MQTTWrapper(private val logStream: LogStream) {
@@ -40,10 +44,45 @@ class MQTTWrapper(private val logStream: LogStream) {
 
     val clientsConnected: StateFlow<Int> = _clientsConnected
     val isRunning: StateFlow<kotlin.Boolean> = _isRunning
+    var lastMessage: String = ""
 
     fun startMoquette(serverProperties: ServerProperties) {
         if (_isRunning.value) {
             return
+        }
+
+        try {
+            val moquetteLogger = Logger.getLogger("io.moquette")
+            moquetteLogger.level = Level.ALL
+            // Remove existing handlers to avoid duplicates if started multiple times
+            moquetteLogger.handlers.forEach { moquetteLogger.removeHandler(it) }
+            moquetteLogger.addHandler(object : Handler() {
+                override fun publish(record: LogRecord?) {
+                    if (record != null) {
+                        val simpleName = record.loggerName?.substringAfterLast('.') ?: "Moquette"
+                        // Filter repeat messages.
+                        if (lastMessage != record.message) {
+                            logStream.addLog(
+                                LogData(
+                                    tag = "MQ-$simpleName",
+                                    msg = record.message ?: ""
+                                )
+                            )
+                            lastMessage = record.message ?: ""
+                        }
+                    }
+                }
+
+                override fun flush() {}
+                override fun close() {}
+            })
+        } catch (e: Exception) {
+            logStream.addLog(
+                LogData(
+                    tag = TAG,
+                    msg = "Failed to setup moquette logger: ${e.message}"
+                )
+            )
         }
 
         scope.launch {
