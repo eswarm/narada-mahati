@@ -118,8 +118,8 @@ android {
         applicationId = "in.eswarm.mahati"
         minSdk = 26
         targetSdk = 36 // Added targetSdk
-        versionCode = 1 // Added versionCode
-        versionName = "1.0" // Added versionName
+        versionCode = 2 // Added versionCode
+        versionName = "1.1" // Added versionName
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
