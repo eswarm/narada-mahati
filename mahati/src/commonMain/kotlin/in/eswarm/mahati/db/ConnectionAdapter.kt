@@ -5,6 +5,8 @@ import app.cash.sqldelight.coroutines.mapToList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 data class MqttConnectionModel(
     val id: Long,
@@ -59,6 +61,8 @@ data class MqttConnectionModel(
 class ConnectionAdapter {
 
     private val queries = getMahatiDb().mqttConnectionParamsQueries
+    // Mutex to serialize database writes
+    private val writeMutex = Mutex()
 
     suspend fun addConnection(
         brokerHost: String,
@@ -71,18 +75,20 @@ class ConnectionAdapter {
         useWebsocket: Boolean,
         webSocketPath: String
     ) {
-        withContext(Dispatchers.IO) { // Perform DB operation on IO dispatcher
-            queries.insert(
-                brokerHost = brokerHost,
-                brokerPort = brokerPort,
-                clientID = clientID,
-                username = username,
-                password = password,
-                useSsl = useSsl,
-                topicPrefix = topicPrefix,
-                useWebsocket = useWebsocket,
-                websocketPath = webSocketPath
-            )
+        writeMutex.withLock {
+            withContext(Dispatchers.IO) { // Perform DB operation on IO dispatcher
+                queries.insert(
+                    brokerHost = brokerHost,
+                    brokerPort = brokerPort,
+                    clientID = clientID,
+                    username = username,
+                    password = password,
+                    useSsl = useSsl,
+                    topicPrefix = topicPrefix,
+                    useWebsocket = useWebsocket,
+                    websocketPath = webSocketPath
+                )
+            }
         }
     }
 
@@ -148,14 +154,18 @@ class ConnectionAdapter {
     }
 
     suspend fun deleteConnectionByClientId(clientID: String) {
-        withContext(Dispatchers.IO) {
-            queries.deleteByClientId(clientID)
+        writeMutex.withLock {
+            withContext(Dispatchers.IO) {
+                queries.deleteByClientId(clientID)
+            }
         }
     }
 
     suspend fun deleteAllConnections() {
-        withContext(Dispatchers.IO) {
-            queries.deleteAll()
+        writeMutex.withLock {
+            withContext(Dispatchers.IO) {
+                queries.deleteAll()
+            }
         }
     }
 }

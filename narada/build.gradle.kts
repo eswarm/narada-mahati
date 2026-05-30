@@ -77,8 +77,9 @@ kotlin {
                 implementation(libs.sqldelight.sqlite.driver)
 
                 // Dependencies from your existing file
-                //implementation(compose.desktop.currentOs)
-                //implementation(compose.desktop.common)
+                implementation(compose.desktop.currentOs)
+                implementation(compose.desktop.common)
+                implementation(libs.kotlinx.coroutines.swing)
             }
         }
 
@@ -95,9 +96,21 @@ kotlin {
             }
         }
 
+        val androidInstrumentedTest by getting {
+            dependencies {
+                implementation(libs.androidx.test.ext.junit)
+                implementation(libs.androidx.core)
+                implementation(libs.androidx.runner)
+                implementation(libs.androidx.uiautomator)
+                implementation(kotlin("test"))
+            }
+        }
+
         val desktopTest by getting {
             dependencies {
                 implementation(kotlin("test-junit"))
+                implementation(libs.hivemq.mqtt.client)
+                implementation(libs.kotlinx.coroutines.core)
             }
         }
     }

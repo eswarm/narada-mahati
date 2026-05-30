@@ -1,4 +1,4 @@
-CREATE TABLE Settings (
+CREATE TABLE IF NOT EXISTS Settings (
     key TEXT NOT NULL PRIMARY KEY,
     value_bool INTEGER, -- 0 for false, 1 for true
     value_text TEXT

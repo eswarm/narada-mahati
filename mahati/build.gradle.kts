@@ -69,8 +69,8 @@ kotlin {
                 // SQLDelight SQLite Driver (for JVM/Desktop)
                 implementation(libs.sqldelight.sqlite.driver)
 
-                //implementation(compose.desktop.currentOs)
-                //implementation(compose.desktop.common)
+                implementation(compose.desktop.currentOs)
+                implementation(compose.desktop.common)
                 implementation(libs.kotlinx.coroutines.swing)
 
                 implementation("org.xerial:sqlite-jdbc:3.51.1.0") {

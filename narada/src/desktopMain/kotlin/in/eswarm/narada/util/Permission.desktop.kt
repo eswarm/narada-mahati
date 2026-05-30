@@ -15,3 +15,11 @@ class DesktopPermissionState : PermissionState {
         // NOOP
     }
 }
+
+actual val postNotificationPermission: String
+    get() = "desktop.notification.permission"
+
+actual object PlatformUtil {
+    actual val isNotificationPermissionRequired: Boolean
+        get() = false
+}

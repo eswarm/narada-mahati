@@ -1,13 +1,14 @@
 package `in`.eswarm.narada.service
 
 import `in`.eswarm.narada.mqtt.MQTTWrapper
+import `in`.eswarm.narada.preferences.AppPreferences
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class DesktopServerManager(val mqttWrapper: MQTTWrapper) : ServerManager {
+class DesktopServerManager(val mqttWrapper: MQTTWrapper, val appPreferences: AppPreferences) : ServerManager {
 
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
@@ -19,7 +20,7 @@ class DesktopServerManager(val mqttWrapper: MQTTWrapper) : ServerManager {
 
     override fun start() {
         scope.launch {
-            val serverProperties = appComponent.appPreferences.getServerProperties()
+            val serverProperties = appPreferences.getServerProperties()
             mqttWrapper.startMoquette(serverProperties)
         }
     }
@@ -29,6 +30,6 @@ class DesktopServerManager(val mqttWrapper: MQTTWrapper) : ServerManager {
     }
 }
 
-actual fun getServerManager(mqttWrapper: MQTTWrapper): ServerManager {
-    return DesktopServerManager(mqttWrapper)
+actual fun getServerManager(mqttWrapper: MQTTWrapper, appPreferences: AppPreferences): ServerManager {
+    return DesktopServerManager(mqttWrapper, appPreferences)
 }

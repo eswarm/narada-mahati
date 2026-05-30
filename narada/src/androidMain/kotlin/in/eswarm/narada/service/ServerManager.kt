@@ -1,6 +1,7 @@
 package `in`.eswarm.narada.service
 
 import `in`.eswarm.narada.mqtt.MQTTWrapper
+import `in`.eswarm.narada.preferences.AppPreferences
 import `in`.eswarm.narada.util.AppContext
 import kotlinx.coroutines.flow.StateFlow
 
@@ -21,6 +22,6 @@ class AndroidServerManager(val mqttWrapper: MQTTWrapper) : ServerManager {
     }
 }
 
-actual fun getServerManager(mqttWrapper: MQTTWrapper): ServerManager {
+actual fun getServerManager(mqttWrapper: MQTTWrapper, appPreferences: AppPreferences): ServerManager {
     return AndroidServerManager(mqttWrapper)
 }

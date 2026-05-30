@@ -12,7 +12,7 @@ class AppComponent(val appPreferences: AppPreferences) {
 
     val logStream: LogStream = LogStream(appPreferences)
     val mqttWrapper: MQTTWrapper = MQTTWrapper( logStream)
-    val serverManager: ServerManager = getServerManager(mqttWrapper)
+    val serverManager: ServerManager = getServerManager(mqttWrapper, appPreferences)
 
     init {
         val binder = StaticLoggerBinder.getSingleton()
