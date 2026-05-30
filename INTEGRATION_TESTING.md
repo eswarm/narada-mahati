@@ -36,15 +36,26 @@ All tasks work identically on Windows, Mac, and Linux. Simply use:
 
 ### 1. Android Integration Tests
 
-Located in: `narada/src/androidInstrumentedTest/kotlin/in/eswarm/narada/BrokerClientIntegrationTest.kt`
+**Test  Files:**
+- `narada/src/androidInstrumentedTest/kotlin/in/eswarm/narada/AndroidServiceIntegrationTests.kt` - 3 platform-specific tests
+- `narada/src/androidInstrumentedTest/kotlin/in/eswarm/narada/BrokerClientIntegrationTest.kt` - Cross-app UI tests (has permission issues)
 
-**What it tests:**
-- Launches Narada on Android device/emulator
-- Starts the MQTT broker
-- Backgrounds Narada
-- Launches Mahati
-- Connects Mahati to the local broker
-- Verifies message publishing works
+**Platform-Specific Tests (AndroidServiceIntegrationTests.kt):**
+1. `testBrokerServiceLifecycle()` - Android Service start/stop lifecycle
+2. `testBasicPubSubOnAndroid()` - MQTT smoke test on Android runtime
+3. `testServiceSurvivesProcessDeath()` - Foreground service survival
+
+**What they test:**
+- Android Service lifecycle (foreground service, Intents)
+- Service state management via MQTTWrapper
+- MQTT broker accessibility on Android runtime
+- Service independence from app process
+
+**Why only 3 Android tests vs 21 desktop tests?**
+- MQTT protocol logic is in `commonMain` (shared code) - already tested by desktop
+- These 3 tests focus on Android-specific platform behavior
+- Desktop tests are faster and easier for CI/CD
+- See `tests/ANDROID_TESTS_ADDED.md` for detailed rationale
 
 **Prerequisites:**
 - Android device or emulator connected and running
@@ -138,13 +149,53 @@ After running, view the HTML report at:
 
 ### 2. Desktop Integration Tests
 
-Located in: `narada/src/desktopTest/kotlin/in/eswarm/narada/DesktopBrokerClientIntegrationTest.kt`
+The desktop integration tests provide comprehensive automated coverage of all passing CSV test cases from `tests/narada_mahati_testcases.csv`.
 
-**What it tests:**
-- Starts Moquette MQTT broker in-process
-- Connects test MQTT clients
-- Verifies publish/subscribe functionality
-- Tests message delivery
+**Test Files:**
+- `narada/src/desktopTest/kotlin/in/eswarm/narada/DesktopBrokerClientIntegrationTest.kt` - Original smoke test
+- `narada/src/desktopTest/kotlin/in/eswarm/narada/NaradaBrokerTests.kt` - 9 Narada broker tests (TC-N1 through TC-N10)
+- `narada/src/desktopTest/kotlin/in/eswarm/narada/MahatiClientTests.kt` - 11 Mahati client tests (TC-M2 through TC-M15)
+- `narada/src/desktopTest/kotlin/in/eswarm/narada/BrokerTestBase.kt` - Shared test infrastructure
+- `narada/src/desktopTest/kotlin/in/eswarm/narada/TestInterceptHandler.kt` - Broker event logging for verification
+
+**CSV Test Case Coverage:**
+
+| CSV Test ID | Test Method | Status |
+|-------------|-------------|--------|
+| TC-N1 | `NaradaBrokerTests.testBrokerStartStop()` | ✅ Automated |
+| TC-N2 | `NaradaBrokerTests.testBrokerStartStop()` | ✅ Automated |
+| TC-N3 | `NaradaBrokerTests.testClientConnectsToBroker()` | ✅ Automated |
+| TC-N4 | `NaradaBrokerTests.testPublishSubscribeLoopbackWithLogs()` | ✅ Automated |
+| TC-N5 | `NaradaBrokerTests.testPublishSubscribeLoopbackWithLogs()` | ✅ Automated |
+| TC-N6 | `NaradaBrokerTests.testMultipleClientsStability()` | ✅ Automated |
+| TC-N7 | `NaradaBrokerTests.testBrokerRestartWithClients()` | ✅ Automated |
+| TC-N9 | `NaradaBrokerTests.testAuthenticationFailure()` | ✅ Automated |
+| TC-N10 | `NaradaBrokerTests.testWebSocketConnection()` | ✅ Automated |
+| TC-M2 | `MahatiClientTests.testClientConnectionStates()` | ✅ Automated |
+| TC-M3 | `MahatiClientTests.testSubscribeAndChatForTopic()` | ✅ Automated |
+| TC-M4 | `MahatiClientTests.testSubscribeAndChatForTopic()` | ✅ Automated |
+| TC-M5 | `MahatiClientTests.testPublishMessageFromChat()` | ✅ Automated |
+| TC-M6 | `MahatiClientTests.testMessageRouting()` | ✅ Automated |
+| TC-M7 | `MahatiClientTests.testNotificationDeepLinkSimulation()` | ✅ Automated |
+| TC-M8 | `MahatiClientTests.testWildcardPlusFilter()` | ✅ Automated |
+| TC-M9 | `MahatiClientTests.testWildcardHashFilter()` | ✅ Automated |
+| TC-M13 | `MahatiClientTests.testOfflinePublishFailure()` | ✅ Automated |
+| TC-M14 | `MahatiClientTests.testReconnectAutoSubscribe()` | ✅ Automated |
+| TC-M15 | `MahatiClientTests.testUnsubscribeFlow()` | ✅ Automated |
+
+**What they test:**
+- Broker lifecycle (start/stop/restart)
+- Client connections and disconnections
+- MQTT publish/subscribe with multiple clients
+- Topic-based message routing
+- MQTT wildcard subscriptions (`+` and `#`)
+- Authentication with valid/invalid credentials
+- WebSocket connections
+- Broker stability under load
+- Offline publish handling
+- Subscription persistence after reconnect
+- Unsubscribe behavior
+- Broker event logging and monitoring
 
 **Prerequisites:**
 - Desktop builds compile successfully
@@ -154,11 +205,24 @@ Located in: `narada/src/desktopTest/kotlin/in/eswarm/narada/DesktopBrokerClientI
 
 Using Gradle tasks (works on Windows, Mac, Linux):
 ```bash
+# Run all desktop integration tests (21 tests total)
 # Windows
 .\gradlew runDesktopIntegrationTests
 
 # Mac/Linux
 ./gradlew runDesktopIntegrationTests
+```
+
+**Running specific test classes:**
+```bash
+# Run only broker tests (9 tests)
+.\gradlew :narada:desktopTest --tests "in.eswarm.narada.NaradaBrokerTests"
+
+# Run only client tests (11 tests)
+.\gradlew :narada:desktopTest --tests "in.eswarm.narada.MahatiClientTests"
+
+# Run a specific test method
+.\gradlew :narada:desktopTest --tests "in.eswarm.narada.MahatiClientTests.testWildcardPlusFilter"
 ```
 
 Or run all integration tests (Android + Desktop):

@@ -103,6 +103,7 @@ kotlin {
                 implementation(libs.androidx.runner)
                 implementation(libs.androidx.uiautomator)
                 implementation(kotlin("test"))
+                implementation(libs.hivemq.mqtt.client)  // For MQTT client testing
             }
         }
 

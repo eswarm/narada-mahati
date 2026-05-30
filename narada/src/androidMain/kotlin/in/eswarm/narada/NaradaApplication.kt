@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import `in`.eswarm.narada.preferences.AppPreferences
 import `in`.eswarm.narada.util.AppContext
+import `in`.eswarm.narada.util.NotificationUtil
 
 class NaradaApplication : Application() {
 
@@ -15,6 +16,9 @@ class NaradaApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         AppContext.context = this
+
+        // Create notification channel for foreground service
+        NotificationUtil.createNotificationChannel(this)
 
         val preferences = AppPreferences(prefStore)
         appComponent = AppComponent(preferences)

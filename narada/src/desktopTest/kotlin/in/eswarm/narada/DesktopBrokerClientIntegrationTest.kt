@@ -2,74 +2,31 @@ package `in`.eswarm.narada
 
 import com.hivemq.client.mqtt.MqttClient
 import com.hivemq.client.mqtt.mqtt3.Mqtt3BlockingClient
-import io.moquette.broker.Server
-import io.moquette.broker.config.MemoryConfig
-import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
-import java.util.Properties
 import kotlin.test.assertTrue
-import kotlin.test.fail
 
 /**
  * Desktop Integration Test for Narada (Broker) and MQTT Clients.
  *
- * This test starts the Moquette MQTT broker directly and verifies
- * that MQTT clients can communicate via the broker.
+ * This is the original smoke test that verifies basic broker-client communication.
+ * For comprehensive test coverage of all CSV test cases, see:
+ * - NaradaBrokerTests.kt (TC-N1 through TC-N10)
+ * - MahatiClientTests.kt (TC-M2 through TC-M7)
  */
-class DesktopBrokerClientIntegrationTest {
-
-    private var mqttBroker: Server? = null
-
-    private val brokerHost = "127.0.0.1"
-    private val brokerPort = 1883
-    private val brokerStartupWaitMs = 3000L  // Wait 3 seconds for broker to start
-    private val testTimeoutMs = 30000L  // 30 second timeout for tests
+class DesktopBrokerClientIntegrationTest : BrokerTestBase() {
 
     @Before
-    fun setUp() {
+    override fun setUp() {
+        super.setUp()
         println("=== Desktop Integration Test Setup ===")
         println("Starting Moquette MQTT Broker on $brokerHost:$brokerPort...")
 
-        try {
-            // Create and configure the broker
-            mqttBroker = Server()
-
-            val config = Properties()
-            config.setProperty("host", brokerHost)
-            config.setProperty("port", brokerPort.toString())
-            config.setProperty("allow_anonymous", "true")
-
-            val memoryConfig = MemoryConfig(config)
-
-            // Start the broker
-            mqttBroker?.startServer(memoryConfig)
-
-            println("Broker started successfully")
-
-            // Give broker a moment to fully initialize
-            Thread.sleep(brokerStartupWaitMs)
-
-        } catch (e: Exception) {
-            e.printStackTrace()
-            fail("Failed to start MQTT broker: ${e.message}")
-        }
-    }
-
-    @After
-    fun tearDown() {
-        println("=== Desktop Integration Test Teardown ===")
-        try {
-            mqttBroker?.stopServer()
-            println("Broker stopped successfully")
-        } catch (e: Exception) {
-            println("Warning: Error stopping broker: ${e.message}")
-        }
-
-        // Give a moment for port to be released
-        Thread.sleep(1000)
+        // Create and start broker with default config
+        val config = createDefaultConfig()
+        createBroker(config)
     }
 
     @Test

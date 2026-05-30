@@ -10,6 +10,7 @@ import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.Until
 import org.junit.After
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 import kotlin.test.assertNotNull
@@ -25,7 +26,13 @@ import kotlin.test.assertTrue
  * 3. Launches Mahati
  * 4. Connects Mahati to the local broker
  * 5. Verifies successful connection and message publishing
+ *
+ * Ignored by default because standard connectedAndroidTest instrumentation is not a
+ * trusted UID and cannot reliably drive another app with UI Automator. See
+ * ANDROID_CROSS_APP_TESTING_NOTES.md. Use AndroidServiceIntegrationTests for
+ * automated Android platform coverage.
  */
+@Ignore("Cross-app UI Automator requires trusted shell permissions; see ANDROID_CROSS_APP_TESTING_NOTES.md")
 @RunWith(AndroidJUnit4::class)
 class BrokerClientIntegrationTest {
 
