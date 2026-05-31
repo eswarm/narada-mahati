@@ -2,9 +2,13 @@
 -ignorewarnings
 -keepattributes Signature,RuntimeVisibleAnnotations
 
-# Keep the entry point of the application
+# Keep the entry point of the application (Android only)
 -keep public class * extends android.app.Application
 -keep public class * extends androidx.core.app.ComponentActivity
+
+# Suppress warnings for Android classes not present in desktop builds
+-dontwarn android.**
+-dontwarn androidx.**
 
 # --- Kotlinx Serialization ---
 # Keep classes annotated with @Serializable and their generated serializers.

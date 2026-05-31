@@ -2,9 +2,13 @@
 -ignorewarnings
 -keepattributes Signature,RuntimeVisibleAnnotations
 
-# Keep the entry point of the application
+# Keep the entry point of the application (Android only)
 -keep public class * extends android.app.Application
 -keep public class * extends androidx.core.app.ComponentActivity
+
+# Suppress warnings for Android classes not present in desktop builds
+-dontwarn android.**
+-dontwarn androidx.**
 
 # --- Kotlinx Serialization ---
 # Keep classes annotated with @Serializable, and their generated serializers.
@@ -39,9 +43,48 @@
 # --- Suppress Warnings for Moquette's Optional Dependencies ---
 # These are dependencies that Moquette can use but are not present in an Android environment.
 # It's safer to suppress these known warnings than to include the full libraries.
--dontwarn org.bouncycastle.**
--dontwarn sun.security.**
--dontwarn java.rmi.**
--dontwarn javax.jms.**
--dontwarn javax.management.**
+-dontwarn aQute.bnd.**
+-dontwarn com.aayushatharva.brotli4j.**
+-dontwarn com.codahale.metrics.**
 -dontwarn com.conversantmedia.**
+-dontwarn com.fasterxml.jackson.**
+-dontwarn com.github.luben.zstd.**
+-dontwarn com.google.protobuf.**
+-dontwarn com.jcraft.jzlib.**
+-dontwarn com.lmax.disruptor.**
+-dontwarn com.ning.compress.**
+-dontwarn com.oracle.svm.**
+-dontwarn com.zaxxer.hikari.**
+-dontwarn io.prometheus.**
+-dontwarn java.lang.management.**
+-dontwarn java.rmi.**
+-dontwarn javassist.**
+-dontwarn javax.activation.**
+-dontwarn javax.jms.**
+-dontwarn javax.lang.model.**
+-dontwarn javax.mail.**
+-dontwarn javax.management.**
+-dontwarn javax.naming.**
+-dontwarn javax.script.**
+-dontwarn javax.tools.**
+-dontwarn javax.xml.stream.**
+-dontwarn lzma.sdk.**
+-dontwarn net.jpountz.**
+-dontwarn org.apache.commons.compress.**
+-dontwarn org.apache.commons.csv.**
+-dontwarn org.apache.commons.logging.**
+-dontwarn org.apache.kafka.**
+-dontwarn org.apache.log4j.**
+-dontwarn org.apache.logging.log4j.**
+-dontwarn org.bouncycastle.**
+-dontwarn org.codehaus.stax2.**
+-dontwarn org.conscrypt.**
+-dontwarn org.eclipse.jetty.alpn.**
+-dontwarn org.eclipse.jetty.npn.**
+-dontwarn org.graalvm.**
+-dontwarn org.hibernate.**
+-dontwarn org.jboss.marshalling.**
+-dontwarn org.osgi.**
+-dontwarn org.zeromq.**
+-dontwarn reactor.blockhound.**
+-dontwarn sun.security.**

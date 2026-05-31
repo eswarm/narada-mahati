@@ -18,6 +18,9 @@ sqldelight {
 kotlin {
     androidTarget()
     jvm("desktop")
+
+    jvmToolchain(17)
+
     sourceSets {
         val commonMain by getting {
             dependencies {
@@ -137,9 +140,6 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlin {
-        jvmToolchain(17)
-    }
     packagingOptions {
         resources {
             excludes += "/META-INF/INDEX.LIST"
@@ -169,6 +169,11 @@ compose.resources {
 compose.desktop {
     application {
         mainClass = "in.eswarm.mahati.desktop.MainKt"
+
+        buildTypes.release.proguard {
+            configurationFiles.from(project.file("proguard-rules.pro"))
+        }
+
         nativeDistributions {
             targetFormats(
                 org.jetbrains.compose.desktop.application.dsl.TargetFormat.Dmg,
@@ -177,6 +182,9 @@ compose.desktop {
             )
             packageName = "Mahati"
             packageVersion = "1.0.0"
+
+            // For MSI packaging, you need a full JDK 17+ with jpackage
+            modules("java.sql")
         }
     }
 }

@@ -11,6 +11,8 @@ kotlin {
     androidTarget()
     jvm("desktop")
 
+    jvmToolchain(17)
+
     sourceSets {
         val commonMain by getting {
             dependencies {
@@ -185,6 +187,11 @@ compose.resources {
 compose.desktop {
     application {
         mainClass = "in.eswarm.narada.desktop.MainKt"
+
+        buildTypes.release.proguard {
+            configurationFiles.from(project.file("proguard-rules.pro"))
+        }
+
         nativeDistributions {
             targetFormats(
                 org.jetbrains.compose.desktop.application.dsl.TargetFormat.Dmg,
@@ -193,6 +200,10 @@ compose.desktop {
             )
             packageName = "Narada"
             packageVersion = "1.0.0"
+
+            // For MSI packaging, you need a full JDK 17+ with jpackage
+            // If build fails, see WINDOWS_BUILD_FIX.md for instructions
+            modules("java.sql")
         }
     }
 }
