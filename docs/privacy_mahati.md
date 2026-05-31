@@ -1,43 +1,160 @@
-**Privacy Policy**
+# Privacy Policy for Mahati
 
-This privacy policy applies to the Mahati app (hereby referred to as "Application") for mobile devices that was created by Eswar Malla (hereby referred to as "Service Provider") as an Open Source service. This service is intended for use "AS IS".
+**Last Updated:** May 31, 2026
 
-**What information does the Application obtain and how is it used?**
+## Introduction
 
-The Application does not obtain any information when you download and use it. Registration is not required to use the Application.
+Mahati ("we", "our", or "us") is committed to protecting your privacy. This Privacy Policy explains how our MQTT client application handles information when you use our app.
 
-**Does the Application collect precise real time location information of the device?**
+## Information Collection and Use
 
-This Application does not collect precise information about the location of your mobile device.
+### Data We DO NOT Collect
 
-**Do third parties see and/or have access to information obtained by the Application?**
+Mahati is designed with privacy as a priority. We do **not** collect, store, or transmit any of the following:
 
-Since the Application does not collect any information, no data is shared with third parties.
+- Personal identification information
+- Location data
+- Usage analytics or statistics
+- Crash reports or diagnostics
+- Advertising identifiers
+- Contact information
+- Photos, videos, or media files
+- Device identifiers (beyond what's required by Android)
 
-**What are my opt-out rights?**
+### Data Stored Locally on Your Device
 
-You can stop all collection of information by the Application easily by uninstalling it. You may use the standard uninstall processes as may be available as part of your mobile device or via the mobile application marketplace or network.
+Mahati stores the following information **locally on your device only**:
 
-**Children**
+1. **MQTT Connection Details:**
+   - Broker hostname/IP address
+   - Port number
+   - Client ID
+   - Username and password (if provided)
+   - Connection preferences
 
-The Application is not used to knowingly solicit data from or market to children under the age of 13.
+2. **Topic Subscriptions:**
+   - Topics you subscribe to
+   - Topic-specific settings
 
-The Service Provider does not knowingly collect personally identifiable information from children. The Service Provider encourages all children to never submit any personally identifiable information through the Application and/or Services. The Service Provider encourage parents and legal guardians to monitor their children's Internet usage and to help enforce this Policy by instructing their children never to provide personally identifiable information through the Application and/or Services without their permission. If you have reason to believe that a child has provided personally identifiable information to the Service Provider through the Application and/or Services, please contact the Service Provider (eswar.malla+support@gmail.com) so that they will be able to take the necessary actions. You must also be at least 16 years of age to consent to the processing of your personally identifiable information in your country (in some countries we may allow your parent or guardian to do so on your behalf).
+3. **Message History:**
+   - MQTT messages received and sent
+   - Message timestamps
 
-**Security**
+4. **App Settings:**
+   - User interface preferences
+   - App configuration
 
-The Service Provider is concerned about safeguarding the confidentiality of your information. However, since the Application does not collect any information, there is no risk of your data being accessed by unauthorized individuals.
+**Important:** All this data is stored in a local SQLite database on your device. It is **never transmitted to us or any third party**.
 
-**Changes**
+## Data You Share with Third Parties
 
-This Privacy Policy may be updated from time to time for any reason. The Service Provider will notify you of any changes to their Privacy Policy by updating this page with the new Privacy Policy. You are advised to consult this Privacy Policy regularly for any changes, as continued use is deemed approval of all changes.
+When you use Mahati to connect to an MQTT broker, you are establishing a direct connection between your device and that broker. Any data transmitted to or from the broker is subject to the broker operator's privacy policy, not ours.
 
-This privacy policy is effective as of 2025-12-15
+**We do not:**
+- Operate MQTT brokers
+- Have access to your MQTT communications
+- Monitor your connections
+- Intercept your messages
 
-**Your Consent**
+## Data Security
 
-By using the Application, you are consenting to the processing of your information as set forth in this Privacy Policy now and as amended by the Service Provider.
+### On-Device Security
+- All connection credentials are stored in the app's private database
+- The database is protected by Android's app sandboxing
+- Only Mahati can access this data on your device
 
-**Contact Us**
+### Network Security
+- When you enable TLS/SSL for MQTT connections, your communications are encrypted in transit
+- We strongly recommend using TLS/SSL for all connections to protect your data
 
-If you have any questions regarding privacy while using the Application, or have questions about the practices, please contact the Service Provider via email at eswar.malla+support@gmail.com.
+## Data Retention and Deletion
+
+### User Control
+You have complete control over your data:
+
+- **Delete Specific Connections:** Remove individual MQTT connection configurations within the app
+- **Clear Message History:** Delete message logs from within the app
+- **Complete Data Removal:** Uninstall the app or clear app data through Android settings to permanently delete all data
+
+### No Server-Side Storage
+Since we don't collect or store data on our servers, there is no data retention on our end.
+
+## Permissions
+
+Mahati requests the following Android permissions:
+
+### Camera Permission (Optional)
+- **Purpose:** To scan QR codes for quick broker configuration
+- **Usage:** Only when you explicitly use the QR scanner feature
+- **Can be denied:** The app works without this permission; you can manually enter connection details
+
+### Internet Permission (Required)
+- **Purpose:** To connect to MQTT brokers
+- **Usage:** Only for establishing MQTT connections to brokers you specify
+- **Cannot be denied:** This is essential for app functionality
+
+## Third-Party Services
+
+Mahati uses the following third-party libraries:
+
+### HiveMQ MQTT Client
+- **Purpose:** MQTT protocol implementation
+- **Data Access:** Only the connection data you explicitly configure
+- **Privacy Policy:** [HiveMQ Privacy Policy](https://www.hivemq.com/privacy-policy/)
+
+**Note:** This library runs entirely on your device and does not transmit data to third-party services.
+
+## Children's Privacy
+
+Mahati is a developer tool and not directed at children under 13. We do not knowingly collect information from children. If you believe a child has provided information through our app, please contact us, though note that we don't collect such data in any case.
+
+## Changes to This Privacy Policy
+
+We may update this Privacy Policy from time to time. Changes will be reflected in the "Last Updated" date at the top of this policy. We encourage you to review this policy periodically.
+
+Significant changes will be communicated through:
+- App update release notes
+- In-app notifications (if implemented)
+
+## Your Rights
+
+Depending on your jurisdiction, you may have rights regarding your data:
+
+- **Access:** You have full access to all data through the app interface
+- **Deletion:** You can delete data at any time through the app or Android settings
+- **Portability:** Your data is stored in a standard SQLite format on your device
+
+## International Users
+
+Mahati is available globally. Since all data is stored locally on your device, there are no international data transfers involving us.
+
+## Contact Us
+
+If you have questions about this Privacy Policy or Mahati's privacy practices, please contact us:
+
+**Email:** [eswar.malla+support@gmail.com]  
+**GitHub:** [https://github.com/eswarm/narada-mahati] 
+
+## Consent
+
+By using Mahati, you consent to this Privacy Policy.
+
+---
+
+## Summary (TL;DR)
+
+✅ **We don't collect your data**  
+✅ **Everything stays on your device**  
+✅ **No tracking or analytics**  
+✅ **No ads**  
+✅ **You can delete everything anytime**  
+✅ **Direct MQTT connections only**  
+✅ **Your privacy matters**
+
+---
+
+**Mahati - Privacy-First MQTT Client**
+
+*This privacy policy was generated on May 31, 2026 and reflects the practices of Mahati version 1.1 and all subsequent versions unless otherwise noted.*
+
+
