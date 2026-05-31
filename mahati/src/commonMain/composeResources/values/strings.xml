@@ -1,0 +1,30 @@
+<resources>
+    <string name="app_name">Mahati: MQTT Client</string>
+
+    <string name="notification_mqtt_service_title">MQTT Service</string>
+    <string name="notification_mqtt_service_content">"MQTT service running …"</string>
+    <string name="notification_mqtt_ticker">MQTT service running</string>
+
+    <string name="fg_channel_name">MQTT client</string>
+    <string name="fg_channel_description">Mahati foreground service</string>
+
+    <string name="message_channel_name">Mahati messages</string>
+    <string name="message_channel_description">Channel to receive messages from other clients</string>
+
+
+    <string name="settings">Settings</string>
+    <string name="settings_info">Manage App Preferences</string>
+    <string name="auto_reconnect_title">Auto Reconnect</string>
+    <string name="auto_reconnect_summary">Automatically reconnect to MQTT broker if connection is lost</string>
+
+    <string name="battery_optimization_title">Ignore Battery Optimization</string>
+    <string name="battery_optimization_summary">Request to disable battery optimization for better background connectivity (Android)</string>
+
+    <string name="wakelock_title">Acquire WakeLock</string>
+    <string name="wakelock_summary">Keep CPU awake when connected to MQTT broker (Android)</string>
+
+    <string name="permission_denied_notification">The app does not work properly without the notification permission. Please go to settings to grant them.</string>
+
+    <string name="permission_rationale">App needs notification permission to function properly, press below to grant it.</string>
+    <string name="permission_grant">Grant permission</string>
+</resources>

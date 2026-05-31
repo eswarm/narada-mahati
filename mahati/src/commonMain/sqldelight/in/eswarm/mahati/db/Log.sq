@@ -1,0 +1,19 @@
+CREATE TABLE IF NOT EXISTS Log(
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    message TEXT NOT NULL
+);
+
+insert:
+INSERT INTO Log(message) VALUES (?);
+
+selectAll:
+SELECT message FROM Log ORDER BY id DESC;
+
+-- Keep only the most recent 1000 logs
+trimOldLogs:
+DELETE FROM Log WHERE id NOT IN (
+    SELECT id FROM Log ORDER BY id DESC LIMIT ?
+);
+
+deleteAll:
+DELETE FROM Log;

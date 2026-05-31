@@ -1,0 +1,112 @@
+[versions]
+# Root build.gradle versions
+androidGradlePlugin = "9.0.1"
+componentsResources = "1.10.3"
+foundation = "1.10.3"
+kotlin = "2.3.20" # Also for KMP
+composeMultiplatform = "1.10.3" # JetBrains Compose Multiplatform plugin and libraries
+lifecycleViewmodelCompose = "2.10.0"
+material3 = "1.9.0"
+materialIconsExtended = "1.7.3"
+kotlinxCoroutines = "1.10.2"
+jetbrainsKotlinJvm = "2.3.20"
+runtime = "1.10.3"
+sqlDelight = "2.3.2"
+
+# app module versions (and some Android specific for KMP androidTarget)
+androidxCoreKtx = "1.18.0"
+androidxLifecycle = "2.10.0"
+androidxActivityCompose = "1.13.0"
+junit = "4.13.2" # For JVM tests
+androidxTestExtJunit = "1.3.0"
+androidxDatastorePreferences = "1.2.1"
+
+accompanistPermissions = "0.37.3" # Android specific (for app module)
+hivemqMqttClient = "1.3.12" # Java lib, for JVM targets (androidMain, desktopMain)
+
+# mahati module versions (for Android tests)
+desugar_jdk_libs = "2.1.5"
+navigationCompose = "2.9.2"
+
+kotlinxSerializationJson = "1.10.0"
+customQrGenerator = "1.1.2"
+camera = "1.6.0"
+googleMlkitBarcodeScanning = "17.3.0"
+slf4j = "2.0.17"
+kotlinStdlib = "2.3.10"
+kotlinTest = "2.3.10"
+runner = "1.7.0"
+core = "1.7.0"
+ui = "1.10.3"
+uiautomator = "2.3.0"
+
+[libraries]
+# KMP Common - Coroutines
+androidx-datastore = { module = "androidx.datastore:datastore", version.ref = "androidxDatastorePreferences" }
+components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "componentsResources" }
+foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "foundation" }
+kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
+
+# KMP Common - Multiplatform Settings
+kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinxCoroutines" }
+lifecycle-runtime-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycleViewmodelCompose" }
+lifecycle-viewmodel-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleViewmodelCompose" }
+material-icons-extended = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
+
+# SQLDelight
+material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "material3" }
+runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "runtime" }
+sqldelight-runtime = { group = "app.cash.sqldelight", name = "runtime", version.ref = "sqlDelight" }
+sqldelight-android-driver = { group = "app.cash.sqldelight", name = "android-driver", version.ref = "sqlDelight" }
+sqldelight-sqlite-driver = { group = "app.cash.sqldelight", name = "sqlite-driver", version.ref = "sqlDelight" }
+sqldelight-coroutines-extensions = { group = "app.cash.sqldelight", name = "coroutines-extensions", version.ref = "sqlDelight" }
+
+# Android Specific (can be used in androidMain of KMP module or in app module)
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidxCoreKtx" }
+androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "androidxLifecycle" }
+androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "androidxActivityCompose" }
+# https://issuetracker.google.com/issues/357653528, only this version has 16 KB support, update after fix is done.
+androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "androidxDatastorePreferences" }
+
+desugar-jdk-libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugar_jdk_libs" }
+
+# JVM/Android specific libraries (for actual implementations where KMP common code uses expect)
+hivemq-mqtt-client = { group = "com.hivemq", name = "hivemq-mqtt-client", version.ref = "hivemqMqttClient" }
+accompanist-permissions = { group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "accompanistPermissions" } # For app module
+
+# Testing
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidxTestExtJunit" } # For app module android tests
+
+navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
+
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
+custom-qr-generator = { module = "io.github.alexzhirkevich:qrose", version.ref = "customQrGenerator" }
+androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "camera" }
+androidx-camera-view = { module = "androidx.camera:camera-view", version.ref = "camera" }
+androidx-camera-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "camera" }
+google-mlkit-barcode-scanning = { module = "com.google.mlkit:barcode-scanning", version.ref = "googleMlkitBarcodeScanning" }
+slf4j-api = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
+kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "kotlinStdlib" }
+kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlinTest" }
+androidx-runner = { group = "androidx.test", name = "runner", version.ref = "runner" }
+androidx-core = { group = "androidx.test", name = "core", version.ref = "core" }
+androidx-uiautomator = { group = "androidx.test.uiautomator", name = "uiautomator", version.ref = "uiautomator" }
+ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "ui" }
+ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "ui" }
+
+[plugins]
+androidApplication = { id = "com.android.application", version.ref = "androidGradlePlugin" }
+composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }
+kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlinxSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+androidLibrary = { id = "com.android.library", version.ref = "androidGradlePlugin" }
+kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+jetbrainsKotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "jetbrainsKotlinJvm" }
+sqldelight = { id = "app.cash.sqldelight", version.ref = "sqlDelight" }
+androidKotlinMultiplatformLibrary = { id = "com.android.kotlin.multiplatform.library", version.ref = "androidGradlePlugin" }
+androidLint = { id = "com.android.lint", version.ref = "androidGradlePlugin" }
+
+[bundles]
+# No bundles defined for now, can be added later if needed

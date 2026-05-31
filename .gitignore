@@ -38,6 +38,7 @@ captures/
 
 # IntelliJ
 *.iml
+/.idea/*
 .idea/workspace.xml
 .idea/tasks.xml
 .idea/gradle.xml
@@ -89,3 +90,7 @@ google-services.json
 
 # Android Profiling
 *.hprof
+/upload_certificate.pem
+/app/release/*
+/.kotlin/*
+/narada/release/*

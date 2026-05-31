@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Narada MQTT Broker</string>
+
+    <string name="notification_mqtt_service_title">MQTT Service</string>
+    <string name="notification_mqtt_service_content">"MQTT service running …"</string>
+    <string name="notification_mqtt_ticker">MQTT service running</string>
+    <string name="fg_channel_name">MQTT service</string>
+    <string name="fg_channel_description">MQTT Foreground service</string>
+</resources>

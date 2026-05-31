@@ -1,0 +1,52 @@
+import in.eswarm.mahati.db.MessageDirection;
+import kotlin.Boolean;
+
+CREATE TABLE IF NOT EXISTS AppMqttMessage (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    connectionID TEXT NOT NULL,             -- The connection profile ID in this app that this message is associated with
+    publisherID TEXT NOT NULL,              -- The client ID of the original publisher of the message
+    topicName TEXT NOT NULL,                -- The actual topic the message was published to/received on
+    payload BLOB NOT NULL,                  -- Message content as ByteArray
+    qos INTEGER NOT NULL,                   -- QoS level of the message
+    retained INTEGER AS Boolean NOT NULL DEFAULT FALSE,    -- Boolean: 0 for false, 1 for true (message was retained)
+    direction INTEGER AS MessageDirection NOT NULL,             -- 0 for RECEIVED, 1 for SENT
+    timestamp INTEGER NOT NULL DEFAULT (STRFTIME('%s', 'now')) -- Unix timestamp of when message was processed/stored
+);
+
+-- Indexes for common query patterns
+CREATE INDEX IF NOT EXISTS idx_topicmessage_connection_topic ON AppMqttMessage(connectionID, topicName, timestamp);
+CREATE INDEX IF NOT EXISTS idx_topicmessage_timestamp ON AppMqttMessage(timestamp);
+
+-- Common Queries for TopicMessageEntity
+
+generateId:
+SELECT 0;
+
+getAllMessages:
+SELECT * FROM AppMqttMessage ORDER BY timestamp DESC;
+
+getMessagesByConnectionIdAndTopic:
+SELECT * FROM AppMqttMessage
+WHERE connectionID = ? AND topicName = ?
+ORDER BY timestamp ASC;
+
+getMessagesByConnectionId:
+SELECT * FROM AppMqttMessage
+WHERE connectionID = ?
+ORDER BY timestamp ASC;
+
+insertMessage:
+INSERT INTO AppMqttMessage(connectionID, publisherID, topicName, payload, qos, retained, direction, timestamp)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+deleteMessagesByConnectionIdAndTopic:
+DELETE FROM AppMqttMessage WHERE connectionID = ? AND topicName = ?;
+
+deleteMessagesByConnectionId:
+DELETE FROM AppMqttMessage WHERE connectionID = ?;
+
+deleteAllMessages:
+DELETE FROM AppMqttMessage;
+
+deleteMessagesOlderThan:
+DELETE FROM AppMqttMessage WHERE timestamp < ?;

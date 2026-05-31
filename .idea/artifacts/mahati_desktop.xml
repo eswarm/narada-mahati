@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="mahati-desktop">
+    <output-path>$PROJECT_DIR$/mahati/build/libs</output-path>
+    <root id="archive" name="mahati-desktop.jar">
+      <element id="module-output" name="Narada_&amp;_Mahati.mahati.desktopMain" />
+    </root>
+  </artifact>
+</component>

@@ -1,0 +1,124 @@
+name: Release Builds
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  android-build:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Setup Android Keystores & Properties
+        env:
+          NARADA_KEYSTORE_B64: ${{ secrets.NARADA_KEYSTORE_B64 }}
+          NARADA_STORE_PASSWORD: ${{ secrets.NARADA_STORE_PASSWORD }}
+          NARADA_KEY_ALIAS: ${{ secrets.NARADA_KEY_ALIAS }}
+          NARADA_KEY_PASSWORD: ${{ secrets.NARADA_KEY_PASSWORD }}
+          MAHATI_KEYSTORE_B64: ${{ secrets.MAHATI_KEYSTORE_B64 }}
+          MAHATI_STORE_PASSWORD: ${{ secrets.MAHATI_STORE_PASSWORD }}
+          MAHATI_KEY_ALIAS: ${{ secrets.MAHATI_KEY_ALIAS }}
+          MAHATI_KEY_PASSWORD: ${{ secrets.MAHATI_KEY_PASSWORD }}
+        run: |
+          # Only decode if secrets are provided, else fallback to files in repo if any
+          if [ -n "$NARADA_KEYSTORE_B64" ]; then
+            echo "$NARADA_KEYSTORE_B64" | base64 --decode > narada.jks
+          fi
+          if [ -n "$MAHATI_KEYSTORE_B64" ]; then
+            echo "$MAHATI_KEYSTORE_B64" | base64 --decode > mahati.jks
+          fi
+          
+          echo "NARADA_STORE_FILE=${GITHUB_WORKSPACE}/narada.jks" >> gradle.properties
+          echo "NARADA_STORE_PASSWORD=$NARADA_STORE_PASSWORD" >> gradle.properties
+          echo "NARADA_KEY_ALIAS=$NARADA_KEY_ALIAS" >> gradle.properties
+          echo "NARADA_KEY_PASSWORD=$NARADA_KEY_PASSWORD" >> gradle.properties
+          
+          echo "MAHATI_STORE_FILE=${GITHUB_WORKSPACE}/mahati.jks" >> gradle.properties
+          echo "MAHATI_STORE_PASSWORD=$MAHATI_STORE_PASSWORD" >> gradle.properties
+          echo "MAHATI_KEY_ALIAS=$MAHATI_KEY_ALIAS" >> gradle.properties
+          echo "MAHATI_KEY_PASSWORD=$MAHATI_KEY_PASSWORD" >> gradle.properties
+
+      - name: Build Release APKs
+        run: ./gradlew assembleRelease
+
+      - name: Upload Narada APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: narada-android-apk
+          path: narada/build/outputs/apk/release/*.apk
+
+      - name: Upload Mahati APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: mahati-android-apk
+          path: mahati/build/outputs/apk/release/*.apk
+
+  windows-build:
+    name: Build Windows MSI
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Build Release MSIs
+        run: .\gradlew.bat :narada:packageReleaseMsi :mahati:packageReleaseMsi
+
+      - name: Upload Narada MSI
+        uses: actions/upload-artifact@v4
+        with:
+          name: narada-windows-msi
+          path: narada\build\compose\binaries\main\msi\*.msi
+
+      - name: Upload Mahati MSI
+        uses: actions/upload-artifact@v4
+        with:
+          name: mahati-windows-msi
+          path: mahati\build\compose\binaries\main\msi\*.msi
+
+  linux-build:
+    name: Build Linux DEB
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Build Release DEBs
+        run: ./gradlew :narada:packageReleaseDeb :mahati:packageReleaseDeb
+
+      - name: Upload Narada DEB
+        uses: actions/upload-artifact@v4
+        with:
+          name: narada-linux-deb
+          path: narada/build/compose/binaries/main/deb/*.deb
+
+      - name: Upload Mahati DEB
+        uses: actions/upload-artifact@v4
+        with:
+          name: mahati-linux-deb
+          path: mahati/build/compose/binaries/main/deb/*.deb
