@@ -19,7 +19,6 @@ kotlin {
     androidTarget()
     jvm("desktop")
 
-    // Use JDK 17 toolchain for desktop builds (includes jpackage for MSI creation)
     jvmToolchain(17)
 
     sourceSets {
